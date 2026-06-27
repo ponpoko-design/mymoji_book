@@ -36,6 +36,7 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  button, a, .nav-btn, .back-btn, .fav-btn, .cat-chip, .sort-btn, .font-card, .usage-card, .carousel-item, .photo-thumb, .photo-slot { touch-action: manipulation; }
 
   body {
     font-family: 'Zen Maru Gothic', 'Meiryo UI', sans-serif;
@@ -619,7 +620,7 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   /* ── Back button ── */
-  .back-btn { background: none; border: none; cursor: pointer; color: var(--c-text); padding: 12px; margin: -12px; display: flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; }
+  .back-btn { background: none; border: none; cursor: pointer; color: var(--c-text); padding: 8px; margin: 0; display: flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; }
 
   .empty-state {
     text-align: center; padding: 60px 20px;
@@ -684,6 +685,12 @@
         <input type="text" id="search-input" placeholder="フォント名・メーカー・メモで検索">
       </div>
       <button class="sort-btn" id="sort-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M7 12h10M11 18h2"/></svg> <span id="sort-label">新しい順</span></button>
+    </div>
+    <!-- Lang filter -->
+    <div style="display:flex;gap:8px;padding:2px 16px 6px;">
+      <button class="cat-chip active" id="lang-all" data-lang="">すべて</button>
+      <button class="cat-chip" id="lang-ja" data-lang="ja">日本語</button>
+      <button class="cat-chip" id="lang-en" data-lang="en">欧文</button>
     </div>
     <!-- Category filter -->
     <div class="cat-filter-wrap">
@@ -1066,6 +1073,7 @@ let selectedUsageFontId = null;
 let sortMode = 'new'; // 'new' | 'fav'
 let searchQuery = '';
 let categoryFilter = '';
+let langFilter = ''; // '' | 'ja' | 'en'
 let usageCatFilter = ''; // 用例採集画面の絞り込み
 
 // photo slots state
@@ -1073,6 +1081,21 @@ let afPhotoFiles = [null,null,null,null,null];
 let afPhotoMemos = ['','','','',''];
 let auPhotoFiles = [null,null,null,null,null];
 let auPhotoMemos = ['','','','',''];
+
+// ── Crown SVG ─────────────────────────────
+const CROWN_FILLED = `<svg width="18" height="14" viewBox="0 0 363.11 268.06" xmlns="http://www.w3.org/2000/svg"><path fill="#00bfb0" d="M363.11,72.4c-20.47,52.84-40.33,104.11-60.66,156.6-80.97-15.8-162.53-14.92-244.82-.28C38.46,176.99,19.37,125.49,0,73.22c18.67,9.23,36.12,18.56,54.18,26.5,10.46,4.6,21.73,7.74,32.93,10.14,18.78,4.02,35.88-1.01,45.91-17.56,15.15-25.01,28.16-51.33,41.97-77.14,2.27-4.24,3.99-8.76,6.87-15.16,4.19,9.68,7.19,17.78,11.09,25.41,10.48,20.49,19.92,41.71,32.41,60.91,16.1,24.74,33.69,30.77,61.44,21.03,22.61-7.94,44.01-19.34,65.91-29.28,3.06-1.39,5.93-3.22,10.4-5.68Z"/><ellipse fill="#00bfb0" cx="181.56" cy="254.99" rx="119.12" ry="13.08"/></svg>`;
+const CROWN_OUTLINE = `<svg width="18" height="14" viewBox="0 0 384.29 287.78" xmlns="http://www.w3.org/2000/svg"><path fill="none" stroke="#c8c0dc" stroke-width="18" stroke-miterlimit="10" d="M373.38,86.44c-20.47,52.84-40.33,104.11-60.66,156.6-80.97-15.8-162.53-14.92-244.82-.28-19.17-51.73-38.26-103.22-57.63-155.49,18.67,9.23,36.12,18.56,54.18,26.5,10.46,4.6,21.73,7.74,32.93,10.14,18.78,4.02,35.88-1.01,45.91-17.56,15.15-25.01,28.16-51.33,41.97-77.14,2.27-4.24,3.99-8.76,6.87-15.16,4.19,9.68,7.19,17.78,11.09,25.41,10.48,20.49,19.92,41.71,32.41,60.91,16.1,24.74,33.69,30.77,61.44,21.03,22.61-7.94,44.01-19.34,65.91-29.28,3.06-1.39,5.93-3.22,10.4-5.68Z"/><ellipse fill="none" stroke="#c8c0dc" stroke-width="18" stroke-miterlimit="10" cx="191.83" cy="269.03" rx="119.12" ry="13.08"/></svg>`;
+
+// ── Basic font names set ───────────────────
+const BASIC_FONT_NAMES = new Set([
+  'ITC Berkeley Oldstyle','ITC Garamond','ITC Caslon 224','Bauer Bodoni','Clarendon',
+  'Futura','Helvetica','Univers','Frutiger','Optima','ITC Friz Quadrata',
+  'Excelsior Script','Brush Script','Copper Black','Broadway','Goudy Text MT','Fette Fraktur',
+  'Aachen','American Typewriter','Avant Garde','Baskerville','Bauhaus','Bookman',
+  'Century','Concorde','Didot','DIN','ITC Garamond','Helvetica','Hoefler Text',
+  'Impact','Lubalin Graph','Rockwell','Snell Roundhand','Tiffany','Times',
+  'Times New Roman','Gill Sans','Trajan','ITC Avant Garde Gothic',
+]);
 
 // ── Font Database ──────────────────────────
 const FONT_DB = {
@@ -1226,6 +1249,10 @@ const FONT_DB = {
     { name: '丸フォーク', maker: 'モリサワ', category: 'ゴシック' },
     { name: 'はれやか', maker: 'モリサワ', category: 'その他' },
     { name: 'ニシン', maker: 'モリサワ', category: 'その他' },
+    { name: '凸版文久明朝', maker: 'モリサワ', category: '明朝' },
+    { name: '凸版文久見出し明朝', maker: 'モリサワ', category: '明朝' },
+    { name: '凸版文久ゴシック', maker: 'モリサワ', category: 'ゴシック' },
+    { name: '凸版文久見出しゴシック', maker: 'モリサワ', category: 'ゴシック' },
     // フォントワークス 追加書体
     { name: 'ニューロダン', maker: 'フォントワークス', category: 'ゴシック' },
     { name: 'スーラ', maker: 'フォントワークス', category: 'ゴシック' },
@@ -1397,6 +1424,7 @@ const FONT_DB = {
     { name: 'ゴナ', maker: '写研', category: 'ゴシック' },
     { name: 'ナール', maker: '写研', category: 'ゴシック' },
     { name: '石井明朝', maker: '写研', category: '明朝' },
+    { name: '石井明朝オールドスタイル', maker: '写研', category: '明朝' },
     { name: '石井ゴシック', maker: '写研', category: 'ゴシック' },
     { name: '石井中教科書体', maker: '写研', category: 'その他' },
     { name: 'スーボ', maker: '写研', category: 'ゴシック' },
@@ -1407,6 +1435,8 @@ const FONT_DB = {
     { name: 'アキフリー', maker: '写研', category: 'その他' },
     { name: 'カービィ', maker: '写研', category: 'ゴシック' },
     { name: '岩蔭行書', maker: '写研', category: 'その他' },
+  ],
+  en: [
     { name: 'Proxima Nova', maker: 'Adobe', category: 'サンセリフ' },
     { name: 'Futura PT', maker: 'Adobe', category: 'サンセリフ' },
     { name: 'Neue Haas Grotesk', maker: 'Adobe', category: 'サンセリフ' },
@@ -1569,6 +1599,45 @@ const FONT_DB = {
     { name: 'Nohemi', maker: 'CoType Foundry', category: 'サンセリフ' },
     { name: 'Degular', maker: 'OH no Type', category: 'サンセリフ' },
     { name: 'Trim Poster', maker: 'OH no Type', category: 'サンセリフ' },
+    // Basic Fonts / 加藤フォント講座 追加書体
+    { name: 'ITC Berkeley Oldstyle', maker: 'ITC', category: 'セリフ' },
+    { name: 'ITC Garamond', maker: 'ITC', category: 'セリフ' },
+    { name: 'ITC Caslon 224', maker: 'ITC', category: 'セリフ' },
+    { name: 'LTC Caslon', maker: 'Lanston Type', category: 'セリフ' },
+    { name: 'Adobe Caslon', maker: 'Adobe', category: 'セリフ' },
+    { name: 'Bauer Bodoni', maker: 'Bauer', category: 'セリフ' },
+    { name: 'Clarendon', maker: 'Linotype', category: 'セリフ' },
+    { name: 'ITC Friz Quadrata', maker: 'ITC', category: 'セリフ' },
+    { name: 'Excelsior Script', maker: 'Linotype', category: 'その他' },
+    { name: 'Brush Script', maker: 'Monotype', category: 'その他' },
+    { name: 'Prisma', maker: 'Linotype', category: 'その他' },
+    { name: 'Copper Black', maker: 'Monotype', category: 'その他' },
+    { name: 'Broadway', maker: 'Monotype', category: 'その他' },
+    { name: 'Goudy Text MT', maker: 'Monotype', category: 'その他' },
+    { name: 'Linotext', maker: 'Linotype', category: 'その他' },
+    { name: 'Fette Fraktur', maker: 'Bauer', category: 'その他' },
+    { name: 'Aachen', maker: 'Letraset', category: 'セリフ' },
+    { name: 'American Typewriter', maker: 'Linotype', category: 'セリフ' },
+    { name: 'Avant Garde', maker: 'ITC', category: 'サンセリフ' },
+    { name: 'ITC Avant Garde Gothic', maker: 'ITC', category: 'サンセリフ' },
+    { name: 'Bauhaus', maker: 'ITC', category: 'サンセリフ' },
+    { name: 'Bookman', maker: 'ITC', category: 'セリフ' },
+    { name: 'Century', maker: 'Monotype', category: 'セリフ' },
+    { name: 'Compacta', maker: 'Letraset', category: 'サンセリフ' },
+    { name: 'Concorde', maker: 'Linotype', category: 'セリフ' },
+    { name: 'Didot', maker: 'Linotype', category: 'セリフ' },
+    { name: 'Hoefler Text', maker: 'Apple', category: 'セリフ' },
+    { name: 'Impact', maker: 'Monotype', category: 'サンセリフ' },
+    { name: 'Lubalin Graph', maker: 'ITC', category: 'セリフ' },
+    { name: 'Pioneer', maker: 'Letraset', category: 'サンセリフ' },
+    { name: 'Scriptina', maker: 'Apostrophic Labs', category: 'その他' },
+    { name: 'Rufina', maker: 'TipoType', category: 'セリフ' },
+    { name: 'Snell Roundhand', maker: 'Linotype', category: 'その他' },
+    { name: 'Stencil', maker: 'Monotype', category: 'その他' },
+    { name: 'Tiffany', maker: 'ITC', category: 'セリフ' },
+    { name: 'Rockwell', maker: 'Monotype', category: 'セリフ' },
+    { name: 'Pisutilli Roman', maker: 'Letraset', category: 'セリフ' },
+    { name: 'Adobe Jenson', maker: 'Adobe', category: 'セリフ' },
   ]
 };
 
@@ -1746,6 +1815,12 @@ function renderFontList() {
   if (categoryFilter) {
     list = list.filter(f => f.category === categoryFilter);
   }
+  if (langFilter) {
+    const jaNames = new Set(FONT_DB.ja.map(x => x.name));
+    const enNames = new Set(FONT_DB.en.map(x => x.name));
+    if (langFilter === 'ja') list = list.filter(f => jaNames.has(f.name));
+    if (langFilter === 'en') list = list.filter(f => enNames.has(f.name));
+  }
   if (sortMode === 'fav') {
     list = list.filter(f => f.favorite);
   }
@@ -1768,7 +1843,7 @@ function renderFontList() {
       <div class="font-info">
         <div class="font-name">${f.name}</div>
         <div class="font-maker">${f.maker||''}</div>
-        <div><span class="font-cat-badge">${f.category||''}</span></div>
+        <div style="display:flex;align-items:center;gap:5px;margin-top:5px;"><span class="font-cat-badge" style="margin-top:0;">${f.category||''}</span>${f.basic ? `<span style="display:inline-flex;align-items:center;">${CROWN_FILLED}</span>` : ''}</div>
       </div>
       <button class="fav-btn" data-id="${f.id}">${f.favorite ? '<svg width="22" height="22" viewBox="0 0 24 24" fill="#e06090" stroke="#e06090" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>' : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c8c0dc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>'}</button>
       <span style="color:var(--c-text-sub);font-size: 20px;">›</span>
@@ -1797,10 +1872,20 @@ $('sort-btn').addEventListener('click', () => {
   renderFontList();
 });
 
-// ── Category filter ────────────────────────
-document.querySelectorAll('.cat-chip').forEach(btn => {
+// ── Lang filter ────────────────────────────
+document.querySelectorAll('[data-lang]').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.cat-chip').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('[data-lang]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    langFilter = btn.dataset.lang;
+    renderFontList();
+  });
+});
+
+// ── Category filter ────────────────────────
+document.querySelectorAll('.cat-chip[data-cat]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.cat-chip[data-cat]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     categoryFilter = btn.dataset.cat;
     renderFontList();
@@ -1819,6 +1904,17 @@ async function toggleFav(id) {
     btn.style.color=''; btn.innerHTML = f.favorite ? '<svg width="22" height="22" viewBox="0 0 24 24" fill="#e06090" stroke="#e06090" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>' : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c8c0dc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>';
     btn.style.color = f.favorite ? '#e06090' : '';
   }
+}
+
+async function toggleBasic(id) {
+  const f = fonts.find(x=>x.id===id);
+  if (!f) return;
+  f.basic = !f.basic;
+  await updateDoc(doc(db,'fonts',id), { basic: f.basic });
+  renderFontList();
+  const btn = $('detail-crown');
+  if (btn) btn.innerHTML = f.basic ? CROWN_FILLED : CROWN_OUTLINE;
+  showToast(f.basic ? '基本フォントに設定しました' : '基本フォントを解除しました');
 }
 
 // ── Detail ────────────────────────────────
@@ -1852,7 +1948,10 @@ async function openDetail(id) {
       <div class="detail-title">${f.name}</div>
       ${f.reading?`<div class="detail-reading">（${f.reading}）</div>`:''}
       <div class="detail-maker">${f.maker||''}</div>
-      <span class="chip">${f.category||''}</span>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:10px;">
+        <span class="chip" style="margin-top:0;">${f.category||''}</span>
+        <button id="detail-crown" title="基本フォント" style="background:none;border:none;cursor:pointer;padding:2px;display:flex;align-items:center;transition:transform 0.15s;" onclick="toggleBasic('${id}')">${f.basic ? CROWN_FILLED : CROWN_OUTLINE}</button>
+      </div>
 
       ${weights ? `
       <div class="detail-section">
@@ -1958,11 +2057,11 @@ async function openDetail(id) {
         }
       }, 500);
     });
-    heroWrap.addEventListener('pointerup', () => clearTimeout(heroTimer));
-    heroWrap.addEventListener('pointercancel', () => clearTimeout(heroTimer));
-    heroWrap.addEventListener('pointermove', () => clearTimeout(heroTimer));
+    heroWrap.addEventListener('pointerup', () => { clearTimeout(heroTimer); });
+    heroWrap.addEventListener('pointercancel', () => { clearTimeout(heroTimer); heroLongPressed = false; });
+    heroWrap.addEventListener('pointermove', e => { if (Math.abs(e.movementX) > 6 || Math.abs(e.movementY) > 6) clearTimeout(heroTimer); });
     heroWrap.addEventListener('click', () => {
-      if (heroLongPressed) return;
+      if (heroLongPressed) { heroLongPressed = false; return; }
       const currentSrc = $('detail-cover-img')?.src || photos[0].url;
       openLightbox(currentSrc, '');
     });
@@ -2030,7 +2129,7 @@ async function openDetail(id) {
     });
     el.addEventListener('pointerup', () => clearTimeout(pressTimer));
     el.addEventListener('pointercancel', () => clearTimeout(pressTimer));
-    el.addEventListener('pointermove', () => clearTimeout(pressTimer));
+    el.addEventListener('pointermove', e => { if (Math.abs(e.movementX) > 6 || Math.abs(e.movementY) > 6) clearTimeout(pressTimer); });
 
     // 短タップはライトボックス
     el.addEventListener('click', e => {
@@ -2146,11 +2245,11 @@ function openUsageDetail(fontId, usageId, usages) {
         }
       }, 500);
     });
-    usageHeroWrap.addEventListener('pointerup', () => clearTimeout(usageHeroTimer));
-    usageHeroWrap.addEventListener('pointercancel', () => clearTimeout(usageHeroTimer));
-    usageHeroWrap.addEventListener('pointermove', () => clearTimeout(usageHeroTimer));
+    usageHeroWrap.addEventListener('pointerup', () => { clearTimeout(usageHeroTimer); });
+    usageHeroWrap.addEventListener('pointercancel', () => { clearTimeout(usageHeroTimer); usageLongPressed = false; });
+    usageHeroWrap.addEventListener('pointermove', e => { if (Math.abs(e.movementX) > 6 || Math.abs(e.movementY) > 6) clearTimeout(usageHeroTimer); });
     usageHeroWrap.addEventListener('click', () => {
-      if (usageLongPressed) return;
+      if (usageLongPressed) { usageLongPressed = false; return; }
       openLightbox(photos[0].url, photos[0].memo || '');
     });
   }
@@ -2445,7 +2544,7 @@ function buildPhotoSlots(containerId, memoWrapId, filesArr, memosArr) {
     });
     slot.addEventListener('pointerup', () => clearTimeout(pressTimer));
     slot.addEventListener('pointercancel', () => clearTimeout(pressTimer));
-    slot.addEventListener('pointermove', () => clearTimeout(pressTimer));
+    slot.addEventListener('pointermove', e => { if (Math.abs(e.movementX) > 6 || Math.abs(e.movementY) > 6) clearTimeout(pressTimer); });
 
     slot.addEventListener('click', e => {
       if (didLongPress) { didLongPress = false; return; }
@@ -2554,13 +2653,14 @@ $('af-submit').addEventListener('click', async () => {
   try {
     const photos = await uploadPhotos('fonts', afPhotoFiles, afPhotoMemos);
     const cat = document.querySelector('input[name="af-cat"]:checked').value;
+    const isBasic = BASIC_FONT_NAMES.has(name);
     const docRef = await addDoc(collection(db,'fonts'), {
       name, reading: $('af-reading').value.trim(),
       maker: $('af-maker').value.trim(),
       category: cat, memo: $('af-memo').value.trim(),
-      photos, favorite: false, createdAt: serverTimestamp()
+      photos, favorite: false, basic: isBasic, createdAt: serverTimestamp()
     });
-    fonts.unshift({ id:docRef.id, name, reading:$('af-reading').value.trim(), maker:$('af-maker').value.trim(), category:cat, memo:$('af-memo').value.trim(), photos, favorite:false });
+    fonts.unshift({ id:docRef.id, name, reading:$('af-reading').value.trim(), maker:$('af-maker').value.trim(), category:cat, memo:$('af-memo').value.trim(), photos, favorite:false, basic:isBasic });
     showToast('登録しました！');
     initAddFont();
     showScreen('screen-home');
@@ -2613,7 +2713,7 @@ function renderUsageFontList() {
       <div class="font-info">
         <div class="font-name">${f.name}</div>
         <div class="font-maker">${f.maker||''}</div>
-        <div><span class="font-cat-badge">${f.category||''}</span></div>
+        <div style="display:flex;align-items:center;gap:5px;margin-top:5px;"><span class="font-cat-badge" style="margin-top:0;">${f.category||''}</span>${f.basic ? `<span style="display:inline-flex;align-items:center;">${CROWN_FILLED}</span>` : ''}</div>
       </div>
       ${f.favorite ? '<span style="color:#e06090;display:flex;align-items:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="#e06090" stroke="#e06090" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></span>' : ''}
       <span style="color:var(--c-text-sub);font-size:20px;">›</span>
