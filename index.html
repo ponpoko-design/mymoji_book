@@ -693,7 +693,7 @@
       <button class="cat-chip" id="lang-en" data-lang="en">欧文</button>
     </div>
     <!-- Category filter -->
-    <div class="cat-filter-wrap">
+    <div class="cat-filter-wrap" id="cat-filter-wrap">
       <button class="cat-chip active" data-cat="">すべて</button>
       <button class="cat-chip" data-cat="ゴシック">ゴシック</button>
       <button class="cat-chip" data-cat="明朝">明朝</button>
@@ -1083,8 +1083,8 @@ let auPhotoFiles = [null,null,null,null,null];
 let auPhotoMemos = ['','','','',''];
 
 // ── Crown SVG ─────────────────────────────
-const CROWN_FILLED = `<svg width="18" height="14" viewBox="0 0 363.11 268.06" xmlns="http://www.w3.org/2000/svg"><path fill="#00bfb0" d="M363.11,72.4c-20.47,52.84-40.33,104.11-60.66,156.6-80.97-15.8-162.53-14.92-244.82-.28C38.46,176.99,19.37,125.49,0,73.22c18.67,9.23,36.12,18.56,54.18,26.5,10.46,4.6,21.73,7.74,32.93,10.14,18.78,4.02,35.88-1.01,45.91-17.56,15.15-25.01,28.16-51.33,41.97-77.14,2.27-4.24,3.99-8.76,6.87-15.16,4.19,9.68,7.19,17.78,11.09,25.41,10.48,20.49,19.92,41.71,32.41,60.91,16.1,24.74,33.69,30.77,61.44,21.03,22.61-7.94,44.01-19.34,65.91-29.28,3.06-1.39,5.93-3.22,10.4-5.68Z"/><ellipse fill="#00bfb0" cx="181.56" cy="254.99" rx="119.12" ry="13.08"/></svg>`;
-const CROWN_OUTLINE = `<svg width="18" height="14" viewBox="0 0 384.29 287.78" xmlns="http://www.w3.org/2000/svg"><path fill="none" stroke="#c8c0dc" stroke-width="18" stroke-miterlimit="10" d="M373.38,86.44c-20.47,52.84-40.33,104.11-60.66,156.6-80.97-15.8-162.53-14.92-244.82-.28-19.17-51.73-38.26-103.22-57.63-155.49,18.67,9.23,36.12,18.56,54.18,26.5,10.46,4.6,21.73,7.74,32.93,10.14,18.78,4.02,35.88-1.01,45.91-17.56,15.15-25.01,28.16-51.33,41.97-77.14,2.27-4.24,3.99-8.76,6.87-15.16,4.19,9.68,7.19,17.78,11.09,25.41,10.48,20.49,19.92,41.71,32.41,60.91,16.1,24.74,33.69,30.77,61.44,21.03,22.61-7.94,44.01-19.34,65.91-29.28,3.06-1.39,5.93-3.22,10.4-5.68Z"/><ellipse fill="none" stroke="#c8c0dc" stroke-width="18" stroke-miterlimit="10" cx="191.83" cy="269.03" rx="119.12" ry="13.08"/></svg>`;
+const CROWN_FILLED = `<svg width="22" height="17" viewBox="0 0 363.11 268.06" xmlns="http://www.w3.org/2000/svg"><path fill="#00bfb0" d="M363.11,72.4c-20.47,52.84-40.33,104.11-60.66,156.6-80.97-15.8-162.53-14.92-244.82-.28C38.46,176.99,19.37,125.49,0,73.22c18.67,9.23,36.12,18.56,54.18,26.5,10.46,4.6,21.73,7.74,32.93,10.14,18.78,4.02,35.88-1.01,45.91-17.56,15.15-25.01,28.16-51.33,41.97-77.14,2.27-4.24,3.99-8.76,6.87-15.16,4.19,9.68,7.19,17.78,11.09,25.41,10.48,20.49,19.92,41.71,32.41,60.91,16.1,24.74,33.69,30.77,61.44,21.03,22.61-7.94,44.01-19.34,65.91-29.28,3.06-1.39,5.93-3.22,10.4-5.68Z"/><ellipse fill="#00bfb0" cx="181.56" cy="254.99" rx="119.12" ry="13.08"/></svg>`;
+const CROWN_OUTLINE = `<svg width="22" height="17" viewBox="0 0 384.29 287.78" xmlns="http://www.w3.org/2000/svg"><path fill="none" stroke="#c8c0dc" stroke-width="18" stroke-miterlimit="10" d="M373.38,86.44c-20.47,52.84-40.33,104.11-60.66,156.6-80.97-15.8-162.53-14.92-244.82-.28-19.17-51.73-38.26-103.22-57.63-155.49,18.67,9.23,36.12,18.56,54.18,26.5,10.46,4.6,21.73,7.74,32.93,10.14,18.78,4.02,35.88-1.01,45.91-17.56,15.15-25.01,28.16-51.33,41.97-77.14,2.27-4.24,3.99-8.76,6.87-15.16,4.19,9.68,7.19,17.78,11.09,25.41,10.48,20.49,19.92,41.71,32.41,60.91,16.1,24.74,33.69,30.77,61.44,21.03,22.61-7.94,44.01-19.34,65.91-29.28,3.06-1.39,5.93-3.22,10.4-5.68Z"/><ellipse fill="none" stroke="#c8c0dc" stroke-width="18" stroke-miterlimit="10" cx="191.83" cy="269.03" rx="119.12" ry="13.08"/></svg>`;
 
 // ── Basic font names set ───────────────────
 const BASIC_FONT_NAMES = new Set([
@@ -1872,12 +1872,42 @@ $('sort-btn').addEventListener('click', () => {
   renderFontList();
 });
 
+// ── Cat chips per lang ────────────────────
+const CAT_CHIPS = {
+  '':   ['すべて', 'ゴシック', '明朝', 'セリフ', 'サンセリフ', 'UD', 'その他'],
+  'ja': ['すべて', 'ゴシック', '明朝', 'UD', 'その他'],
+  'en': ['すべて', 'セリフ', 'サンセリフ', 'UD', 'その他'],
+};
+const CAT_VALUES = {
+  'すべて': '', 'ゴシック': 'ゴシック', '明朝': '明朝',
+  'セリフ': 'セリフ', 'サンセリフ': 'サンセリフ', 'UD': 'UD', 'その他': 'その他',
+};
+
+function updateCatChips(lang) {
+  const wrap = $('cat-filter-wrap');
+  const labels = CAT_CHIPS[lang] || CAT_CHIPS[''];
+  wrap.innerHTML = labels.map((label, i) =>
+    `<button class="cat-chip${i === 0 ? ' active' : ''}" data-cat="${CAT_VALUES[label]}">${label}</button>`
+  ).join('');
+  categoryFilter = '';
+  // 新しいチップにリスナーを再登録
+  wrap.querySelectorAll('.cat-chip[data-cat]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      wrap.querySelectorAll('.cat-chip[data-cat]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      categoryFilter = btn.dataset.cat;
+      renderFontList();
+    });
+  });
+}
+
 // ── Lang filter ────────────────────────────
 document.querySelectorAll('[data-lang]').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('[data-lang]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     langFilter = btn.dataset.lang;
+    updateCatChips(langFilter);
     renderFontList();
   });
 });
@@ -1950,7 +1980,7 @@ async function openDetail(id) {
       <div class="detail-maker">${f.maker||''}</div>
       <div style="display:flex;align-items:center;gap:8px;margin-top:10px;">
         <span class="chip" style="margin-top:0;">${f.category||''}</span>
-        <button id="detail-crown" title="基本フォント" style="background:none;border:none;cursor:pointer;padding:2px;display:flex;align-items:center;transition:transform 0.15s;" onclick="toggleBasic('${id}')">${f.basic ? CROWN_FILLED : CROWN_OUTLINE}</button>
+        <button id="detail-crown" data-id="${id}" title="基本フォント" style="background:none;border:none;cursor:pointer;padding:2px;display:flex;align-items:center;transition:transform 0.15s;">${f.basic ? CROWN_FILLED : CROWN_OUTLINE}</button>
       </div>
 
       ${weights ? `
@@ -2140,6 +2170,10 @@ async function openDetail(id) {
   $('detail-content').querySelectorAll('.usage-card').forEach(el => {
     el.addEventListener('click', () => openUsageDetail(el.dataset.fontId, el.dataset.usageId, usages));
   });
+
+  // crownボタン
+  const crownBtn = $('detail-crown');
+  if (crownBtn) crownBtn.addEventListener('click', () => toggleBasic(crownBtn.dataset.id));
 
   // 自動保存メモ
   let memoTimer = null;
