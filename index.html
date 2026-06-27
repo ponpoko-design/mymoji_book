@@ -383,7 +383,39 @@
     line-height: 1;
   }
 
-  /* ── Suggestions ── */
+  /* ── Weight chips ── */
+  .weight-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .weight-chip {
+    padding: 4px 12px; border-radius: 50px;
+    font-size: 11px; font-weight: 600;
+    background: rgba(155,127,232,0.1);
+    color: #7a5cc0; border: 1px solid rgba(155,127,232,0.25);
+  }
+
+  /* ── Edit button in header ── */
+  .edit-header-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--c-text-sub); padding: 4px;
+    display: flex; align-items: center;
+  }
+
+  /* ── Confirm dialog ── */
+  #confirm-dialog {
+    display: none; position: fixed; inset: 0; z-index: 500;
+    background: rgba(0,0,0,0.5); align-items: center; justify-content: center;
+  }
+  #confirm-dialog.active { display: flex; }
+  .confirm-box {
+    background: white; border-radius: var(--radius);
+    padding: 28px 24px; width: calc(100% - 48px); max-width: 320px;
+    text-align: center;
+  }
+  .confirm-box h3 { font-size: 16px; font-weight: 700; margin-bottom: 10px; }
+  .confirm-box p { font-size: 13px; color: var(--c-text-sub); margin-bottom: 20px; }
+  .confirm-btns { display: flex; gap: 10px; }
+  .confirm-btns button { flex: 1; padding: 12px; border-radius: 50px; border: none; cursor: pointer; font-size: 14px; font-weight: 600; font-family: inherit; }
+  .confirm-cancel { background: var(--c-border); color: var(--c-text); }
+  .confirm-delete { background: #e05c7a; color: white; }
   .suggestions-box {
     position: absolute; top: 100%; left: 0; right: 0;
     background: white; border: 1.5px solid var(--c-border);
@@ -539,7 +571,12 @@
     <div class="app-header">
       <button class="back-btn" id="detail-back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
       <h1>フォント詳細</h1>
-      <button class="fav-btn" id="detail-fav">♡</button>
+      <div style="display:flex;gap:4px;align-items:center;">
+        <button class="edit-header-btn" id="detail-edit-btn" title="編集">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="fav-btn" id="detail-fav">♡</button>
+      </div>
     </div>
     <div id="detail-content"></div>
   </div>
@@ -549,7 +586,9 @@
     <div class="app-header">
       <button class="back-btn" id="usage-detail-back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
       <h1>用例詳細</h1>
-      <div></div>
+      <button class="edit-header-btn" id="usage-detail-edit-btn" title="編集">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
     </div>
     <div id="usage-detail-content"></div>
   </div>
@@ -649,7 +688,77 @@
     </div>
   </div>
 
-  <!-- Bottom Nav -->
+  <!-- ===== EDIT FONT ===== -->
+  <div id="screen-edit-font" class="screen">
+    <div class="app-header">
+      <button class="back-btn" id="edit-font-back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <h1>フォントを編集</h1>
+      <button class="header-btn" id="delete-font-btn" title="削除" style="color:#e05c7a;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+      </button>
+    </div>
+    <div class="form-page">
+      <div class="form-group">
+        <label>フォント名 *</label>
+        <input type="text" id="ef-name" placeholder="フォント名">
+      </div>
+      <div class="form-group">
+        <label>読み方</label>
+        <input type="text" id="ef-reading">
+      </div>
+      <div class="form-group">
+        <label>メーカー名</label>
+        <input type="text" id="ef-maker">
+      </div>
+      <div class="form-group">
+        <label>カテゴリー</label>
+        <div class="radio-group">
+          <label class="radio-label"><input type="radio" name="ef-cat" value="ゴシック"> ゴシック</label>
+          <label class="radio-label"><input type="radio" name="ef-cat" value="明朝"> 明朝</label>
+          <label class="radio-label"><input type="radio" name="ef-cat" value="セリフ"> セリフ</label>
+          <label class="radio-label"><input type="radio" name="ef-cat" value="サンセリフ"> サンセリフ</label>
+          <label class="radio-label"><input type="radio" name="ef-cat" value="その他"> その他</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>メモ</label>
+        <textarea id="ef-memo"></textarea>
+      </div>
+      <div class="form-group">
+        <label>写真（最大5枚）</label>
+        <div class="photo-upload-row" id="ef-photos"></div>
+      </div>
+      <div class="form-group" id="ef-photo-memos-wrap"></div>
+      <button class="btn-primary" id="ef-submit">保存する</button>
+    </div>
+  </div>
+
+  <!-- ===== EDIT USAGE ===== -->
+  <div id="screen-edit-usage" class="screen">
+    <div class="app-header">
+      <button class="back-btn" id="edit-usage-back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <h1>用例を編集</h1>
+      <button class="header-btn" id="delete-usage-btn" title="削除" style="color:#e05c7a;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+      </button>
+    </div>
+    <div class="form-page">
+      <div class="form-group">
+        <label>登録日</label>
+        <input type="date" id="eu-date">
+      </div>
+      <div class="form-group">
+        <label>実例をみつけた場所</label>
+        <input type="text" id="eu-place">
+      </div>
+      <div class="form-group">
+        <label>写真（最大5枚）</label>
+        <div class="photo-upload-row" id="eu-photos"></div>
+      </div>
+      <div class="form-group" id="eu-photo-memos-wrap"></div>
+      <button class="btn-primary" id="eu-submit">保存する</button>
+    </div>
+  </div>
   <nav class="bottom-nav" id="bottom-nav" style="display:none;">
     <button class="nav-btn active" id="nav-home" data-screen="home">
       <span class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></span>
@@ -665,6 +774,18 @@
     </button>
   </nav>
 
+</div>
+
+<!-- Confirm Dialog -->
+<div id="confirm-dialog">
+  <div class="confirm-box">
+    <h3 id="confirm-title">削除しますか？</h3>
+    <p id="confirm-msg">この操作は取り消せません</p>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" id="confirm-cancel">キャンセル</button>
+      <button class="confirm-delete" id="confirm-ok">削除する</button>
+    </div>
+  </div>
 </div>
 
 <!-- Lightbox -->
@@ -833,6 +954,60 @@ function highlightMatch(text, query) {
     text.slice(idx+query.length);
 }
 
+// ── Weight Database ────────────────────────
+const WEIGHT_DB = {
+  // モリサワ
+  '新ゴ': ['L','R','M','DB','B','H','U','XU'],
+  'UD新ゴ': ['L','R','M','DB','B','H','U'],
+  'ゴシックMB101': ['L','R','M','DB','B','H','U'],
+  'A1ゴシック': ['L','R','M','B'],
+  'リュウミン': ['L','R','M','B','H','U'],
+  '黎ミン': ['L','R','M','B','H','U'],
+  'UD黎ミン': ['L','R','M','B'],
+  // フォントワークス
+  'マティス': ['EL','L','R','M','B','EB','H'],
+  'ロダン': ['B','DB','EB','H','L','M','R','UB'],
+  'ナウ': ['L','R','M','B','H'],
+  'マティスPr6N': ['EL','L','R','M','B','EB','H'],
+  'ロダンPr6N': ['B','DB','EB','H','L','M','R','UB'],
+  // Google日本語
+  'Noto Sans JP': ['Thin 100','Light 300','Regular 400','Medium 500','Bold 700','Black 900'],
+  'Noto Serif JP': ['ExtraLight 200','Light 300','Regular 400','Medium 500','SemiBold 600','Bold 700','Black 900'],
+  'Zen Maru Gothic': ['Light 300','Regular 400','Medium 500','Bold 700','Black 900'],
+  'Zen Kaku Gothic New': ['Light 300','Regular 400','Medium 500','Bold 700','Black 900'],
+  'M PLUS 1p': ['Thin 100','ExtraLight 200','Light 300','Regular 400','Medium 500','Bold 700','ExtraBold 800','Black 900'],
+  'M PLUS Rounded 1c': ['Thin 100','Light 300','Regular 400','Medium 500','Bold 700','ExtraBold 800','Black 900'],
+  'BIZ UDGothic': ['Regular 400','Bold 700'],
+  'Shippori Mincho': ['Regular 400','Medium 500','SemiBold 600','Bold 700','ExtraBold 800'],
+  'Dela Gothic One': ['Regular 400'],
+  // Google欧文
+  'Inter': ['Thin 100','ExtraLight 200','Light 300','Regular 400','Medium 500','SemiBold 600','Bold 700','ExtraBold 800','Black 900'],
+  'Roboto': ['Thin 100','Light 300','Regular 400','Medium 500','Bold 700','Black 900'],
+  'Open Sans': ['Light 300','Regular 400','Medium 500','SemiBold 600','Bold 700','ExtraBold 800'],
+  'Montserrat': ['Thin 100','ExtraLight 200','Light 300','Regular 400','Medium 500','SemiBold 600','Bold 700','ExtraBold 800','Black 900'],
+  'Lato': ['Thin 100','Light 300','Regular 400','Bold 700','Black 900'],
+  'Poppins': ['Thin 100','ExtraLight 200','Light 300','Regular 400','Medium 500','SemiBold 600','Bold 700','ExtraBold 800','Black 900'],
+  'Raleway': ['Thin 100','ExtraLight 200','Light 300','Regular 400','Medium 500','SemiBold 600','Bold 700','ExtraBold 800','Black 900'],
+  'Playfair Display': ['Regular 400','Medium 500','SemiBold 600','Bold 700','ExtraBold 800','Black 900'],
+  'DM Sans': ['ExtraLight 200','Light 300','Regular 400','Medium 500','Bold 700','ExtraBold 800'],
+  'Space Grotesk': ['Light 300','Regular 400','Medium 500','SemiBold 600','Bold 700'],
+  // Adobe欧文
+  'Proxima Nova': ['Thin','Light','Regular','Medium','Semibold','Bold','Extrabold','Black'],
+  'Futura PT': ['Light','Book','Medium','Demi','Bold','ExtraBold','Heavy'],
+  'Myriad Pro': ['Light','Regular','Semibold','Bold','Black'],
+  'Acumin Pro': ['ExtraLight','Light','Regular','Semibold','Bold','Black'],
+  // その他欧文
+  'Helvetica Neue': ['UltraLight','Thin','Light','Regular','Medium','Bold','Heavy','Black'],
+  'Helvetica': ['Light','Regular','Bold','Black'],
+  'Gill Sans': ['Light','Regular','Bold','ExtraBold','UltraBold'],
+  'Avenir': ['Book','Roman','Medium','Heavy','Black'],
+  'Univers': ['ExtraLight','Light','Regular','Medium','Bold','Black'],
+};
+
+function getWeights(fontName) {
+  return WEIGHT_DB[fontName] || null;
+}
+
 // ── Helpers ────────────────────────────────
 const $ = id => document.getElementById(id);
 const showToast = msg => {
@@ -999,7 +1174,6 @@ async function openDetail(id) {
   const f = fonts.find(x=>x.id===id);
   if (!f) return;
 
-  // load usages
   const usnap = await getDocs(collection(db,'fonts',id,'usages'));
   const usages = usnap.docs.map(d=>({id:d.id,...d.data()}))
     .sort((a,b)=> (b.date||'').localeCompare(a.date||''));
@@ -1009,7 +1183,12 @@ async function openDetail(id) {
   favBtn.style.color = f.favorite ? '#e06090' : '';
   favBtn.onclick = () => toggleFav(id);
 
+  // 編集ボタン
+  $('detail-edit-btn').onclick = () => openEditFont(id);
+
   const photos = f.photos||[];
+  const weights = getWeights(f.name);
+
   $('detail-content').innerHTML = `
     ${photos[0] ? `<div class="detail-hero"><img src="${photos[0].url}" alt="${f.name}"></div>` : ''}
     <div class="detail-body">
@@ -1017,6 +1196,14 @@ async function openDetail(id) {
       ${f.reading?`<div class="detail-reading">（${f.reading}）</div>`:''}
       <div class="detail-maker">${f.maker||''}</div>
       <span class="chip">${f.category||''}</span>
+
+      ${weights ? `
+      <div class="detail-section">
+        <h3>WEIGHTS</h3>
+        <div class="weight-chips">
+          ${weights.map(w=>`<span class="weight-chip">${w}</span>`).join('')}
+        </div>
+      </div>` : ''}
 
       ${f.memo?`<div class="detail-section"><h3>MEMO</h3><div class="memo-text">${f.memo.replace(/\n/g,'<br>')}</div></div>`:''}
 
@@ -1053,11 +1240,9 @@ async function openDetail(id) {
     </div>
   `;
 
-  // photo lightbox
   $('detail-content').querySelectorAll('.photo-thumb').forEach(el => {
     el.addEventListener('click', () => openLightbox(el.dataset.url, el.dataset.memo));
   });
-  // usage detail
   $('detail-content').querySelectorAll('.usage-card').forEach(el => {
     el.addEventListener('click', () => openUsageDetail(el.dataset.fontId, el.dataset.usageId, usages));
   });
@@ -1068,9 +1253,15 @@ async function openDetail(id) {
 $('detail-back').addEventListener('click', () => showScreen('screen-home'));
 
 // ── Usage Detail ──────────────────────────
+let currentUsageFontId = null;
+let currentUsageData = null;
+
 function openUsageDetail(fontId, usageId, usages) {
   const u = usages.find(x=>x.id===usageId);
   if (!u) return;
+  currentUsageId = usageId;
+  currentUsageFontId = fontId;
+  currentUsageData = u;
   const f = fonts.find(x=>x.id===fontId);
   const photos = u.photos||[];
   $('usage-detail-content').innerHTML = `
@@ -1079,7 +1270,6 @@ function openUsageDetail(fontId, usageId, usages) {
       <div style="font-size:13px;color:var(--c-text-sub);">登録日：${u.date||'-'}</div>
       <div class="detail-title" style="font-size:18px;margin-top:4px;">${u.place||'場所未記入'}</div>
       ${f?`<div class="detail-maker" style="margin-top:4px;">${f.name}</div>`:''}
-
       ${photos.length?`
         <div class="detail-section">
           <h3>PHOTOS</h3>
@@ -1096,12 +1286,218 @@ function openUsageDetail(fontId, usageId, usages) {
   $('usage-detail-content').querySelectorAll('.photo-thumb').forEach(el => {
     el.addEventListener('click', () => openLightbox(el.dataset.url, el.dataset.memo));
   });
+  $('usage-detail-edit-btn').onclick = () => openEditUsage(fontId, u);
   showScreen('screen-usage-detail');
 }
+
 $('usage-detail-back').addEventListener('click', () => {
   if (currentFontId) openDetail(currentFontId);
   else showScreen('screen-home');
 });
+
+// ── Confirm Dialog ─────────────────────────
+let confirmCallback = null;
+function showConfirm(title, msg, onOk) {
+  $('confirm-title').textContent = title;
+  $('confirm-msg').textContent = msg;
+  confirmCallback = onOk;
+  $('confirm-dialog').classList.add('active');
+}
+$('confirm-cancel').addEventListener('click', () => $('confirm-dialog').classList.remove('active'));
+$('confirm-ok').addEventListener('click', async () => {
+  $('confirm-dialog').classList.remove('active');
+  if (confirmCallback) await confirmCallback();
+});
+
+// ── Edit Font ──────────────────────────────
+let efPhotoFiles = [null,null,null,null,null];
+let efPhotoMemos = ['','','','',''];
+let efExistingPhotos = [];
+
+function openEditFont(id) {
+  const f = fonts.find(x=>x.id===id);
+  if (!f) return;
+  $('ef-name').value = f.name||'';
+  $('ef-reading').value = f.reading||'';
+  $('ef-maker').value = f.maker||'';
+  $('ef-memo').value = f.memo||'';
+  const catRadio = document.querySelector(`input[name="ef-cat"][value="${f.category}"]`);
+  if (catRadio) catRadio.checked = true;
+  efExistingPhotos = f.photos ? [...f.photos] : [];
+  efPhotoFiles = [null,null,null,null,null];
+  efPhotoMemos = ['','','','',''];
+  buildEditPhotoSlots('ef-photos','ef-photo-memos-wrap', efExistingPhotos, efPhotoFiles, efPhotoMemos);
+  $('ef-submit').onclick = () => saveEditFont(id);
+  $('delete-font-btn').onclick = () => showConfirm(
+    'フォントを削除しますか？',
+    '登録した用例もすべて削除されます',
+    () => deleteFont(id)
+  );
+  showScreen('screen-edit-font');
+}
+
+$('edit-font-back').addEventListener('click', () => {
+  if (currentFontId) openDetail(currentFontId);
+});
+
+async function saveEditFont(id) {
+  const name = $('ef-name').value.trim();
+  if (!name) { showToast('フォント名を入力してください'); return; }
+  $('ef-submit').disabled = true; $('ef-submit').textContent = '保存中…';
+  try {
+    const newPhotos = await uploadPhotos(`fonts`, efPhotoFiles, efPhotoMemos);
+    const allPhotos = [...efExistingPhotos, ...newPhotos];
+    const cat = document.querySelector('input[name="ef-cat"]:checked').value;
+    await updateDoc(doc(db,'fonts',id), {
+      name, reading: $('ef-reading').value.trim(),
+      maker: $('ef-maker').value.trim(),
+      category: cat, memo: $('ef-memo').value.trim(),
+      photos: allPhotos
+    });
+    const f = fonts.find(x=>x.id===id);
+    if (f) Object.assign(f, { name, reading: $('ef-reading').value.trim(), maker: $('ef-maker').value.trim(), category: cat, memo: $('ef-memo').value.trim(), photos: allPhotos });
+    showToast('保存しました！');
+    openDetail(id);
+  } catch(e) { console.error(e); showToast('エラーが発生しました'); }
+  $('ef-submit').disabled = false; $('ef-submit').textContent = '保存する';
+}
+
+async function deleteFont(id) {
+  try {
+    // 用例も削除
+    const usnap = await getDocs(collection(db,'fonts',id,'usages'));
+    for (const d of usnap.docs) await deleteDoc(doc(db,'fonts',id,'usages',d.id));
+    await deleteDoc(doc(db,'fonts',id));
+    fonts = fonts.filter(x=>x.id!==id);
+    showToast('削除しました');
+    showScreen('screen-home');
+    renderHome();
+  } catch(e) { console.error(e); showToast('エラーが発生しました'); }
+}
+
+// ── Edit Usage ─────────────────────────────
+let euPhotoFiles = [null,null,null,null,null];
+let euPhotoMemos = ['','','','',''];
+let euExistingPhotos = [];
+
+function openEditUsage(fontId, u) {
+  $('eu-date').value = u.date||'';
+  $('eu-place').value = u.place||'';
+  euExistingPhotos = u.photos ? [...u.photos] : [];
+  euPhotoFiles = [null,null,null,null,null];
+  euPhotoMemos = ['','','','',''];
+  buildEditPhotoSlots('eu-photos','eu-photo-memos-wrap', euExistingPhotos, euPhotoFiles, euPhotoMemos);
+  $('eu-submit').onclick = () => saveEditUsage(fontId, u.id);
+  $('delete-usage-btn').onclick = () => showConfirm(
+    '用例を削除しますか？',
+    'この操作は取り消せません',
+    () => deleteUsage(fontId, u.id)
+  );
+  showScreen('screen-edit-usage');
+}
+
+$('edit-usage-back').addEventListener('click', () => {
+  if (currentUsageFontId && currentUsageData) openUsageDetail(currentUsageFontId, currentUsageData.id, [currentUsageData]);
+  else if (currentFontId) openDetail(currentFontId);
+});
+
+async function saveEditUsage(fontId, usageId) {
+  $('eu-submit').disabled = true; $('eu-submit').textContent = '保存中…';
+  try {
+    const newPhotos = await uploadPhotos(`fonts/${fontId}/usages`, euPhotoFiles, euPhotoMemos);
+    const allPhotos = [...euExistingPhotos, ...newPhotos];
+    await updateDoc(doc(db,'fonts',fontId,'usages',usageId), {
+      date: $('eu-date').value,
+      place: $('eu-place').value.trim(),
+      photos: allPhotos
+    });
+    showToast('保存しました！');
+    openDetail(fontId);
+  } catch(e) { console.error(e); showToast('エラーが発生しました'); }
+  $('eu-submit').disabled = false; $('eu-submit').textContent = '保存する';
+}
+
+async function deleteUsage(fontId, usageId) {
+  try {
+    await deleteDoc(doc(db,'fonts',fontId,'usages',usageId));
+    showToast('削除しました');
+    openDetail(fontId);
+  } catch(e) { console.error(e); showToast('エラーが発生しました'); }
+}
+
+// ── Edit Photo Slots（既存写真＋新規追加）──
+function buildEditPhotoSlots(containerId, memoWrapId, existingArr, filesArr, memosArr) {
+  const wrap = $(containerId);
+  const memoWrap = $(memoWrapId);
+  wrap.innerHTML = ''; memoWrap.innerHTML = '';
+
+  // 既存写真
+  existingArr.forEach((p, i) => {
+    const slot = document.createElement('div');
+    slot.className = 'photo-slot';
+    slot.innerHTML = `<img src="${p.url}"><button class="remove-btn" data-type="existing" data-idx="${i}">✕</button>`;
+    wrap.appendChild(slot);
+  });
+
+  // 新規スロット（既存＋新規が5枚以下の分）
+  const remaining = 5 - existingArr.length;
+  for (let i=0; i<Math.min(remaining, 5); i++) {
+    const slot = document.createElement('div');
+    slot.className = 'photo-slot';
+    slot.dataset.idx = i;
+    slot.dataset.type = 'new';
+    if (filesArr[i]) {
+      const url = URL.createObjectURL(filesArr[i]);
+      slot.innerHTML = `<img src="${url}"><button class="remove-btn" data-type="new" data-idx="${i}">✕</button>`;
+    } else {
+      slot.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+    }
+    wrap.appendChild(slot);
+  }
+
+  // メモ欄（既存写真）
+  if (existingArr.length > 0) {
+    const lbl = document.createElement('label');
+    lbl.style.cssText = 'display:block;font-size:12px;color:var(--c-text-sub);margin-bottom:8px;font-weight:500;';
+    lbl.textContent = '写真へのメモ（既存）';
+    memoWrap.appendChild(lbl);
+    existingArr.forEach((p, i) => {
+      const inp = document.createElement('input');
+      inp.type = 'text'; inp.value = p.memo||'';
+      inp.placeholder = `写真${i+1}へのメモ`;
+      inp.style.cssText = 'width:100%;padding:10px 12px;border:1.5px solid var(--c-border);border-radius:10px;font-size:14px;margin-bottom:8px;font-family:inherit;color:var(--c-text);background:rgba(255,255,255,0.9);outline:none;';
+      inp.addEventListener('input', () => { existingArr[i] = {...existingArr[i], memo: inp.value}; });
+      memoWrap.appendChild(inp);
+    });
+  }
+
+  // クリックイベント
+  wrap.querySelectorAll('.photo-slot').forEach(slot => {
+    slot.addEventListener('click', e => {
+      const btn = e.target.closest('.remove-btn');
+      if (btn) {
+        if (btn.dataset.type === 'existing') {
+          existingArr.splice(parseInt(btn.dataset.idx), 1);
+        } else {
+          filesArr[parseInt(btn.dataset.idx)] = null;
+          memosArr[parseInt(btn.dataset.idx)] = '';
+        }
+        buildEditPhotoSlots(containerId, memoWrapId, existingArr, filesArr, memosArr);
+        return;
+      }
+      if (slot.dataset.type !== 'new') return;
+      const idx = parseInt(slot.dataset.idx);
+      if (filesArr[idx]) return;
+      const input = document.createElement('input');
+      input.type='file'; input.accept='image/*';
+      input.onchange = e2 => {
+        filesArr[idx] = e2.target.files[0];
+        buildEditPhotoSlots(containerId, memoWrapId, existingArr, filesArr, memosArr);
+      };
+      input.click();
+    });
+  });
+}
 
 // ── Lightbox ──────────────────────────────
 function openLightbox(url, memo) {
