@@ -383,6 +383,28 @@
     line-height: 1;
   }
 
+  /* ── Suggestions ── */
+  .suggestions-box {
+    position: absolute; top: 100%; left: 0; right: 0;
+    background: white; border: 1.5px solid var(--c-border);
+    border-radius: var(--radius-sm); margin-top: 4px;
+    max-height: 220px; overflow-y: auto;
+    z-index: 50; box-shadow: 0 8px 24px rgba(155,127,232,0.12);
+    display: none;
+  }
+  .suggestions-box.open { display: block; }
+  .suggestion-item {
+    padding: 12px 16px; cursor: pointer;
+    border-bottom: 1px solid var(--c-border);
+    transition: background 0.15s;
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .suggestion-item:last-child { border-bottom: none; }
+  .suggestion-item:active { background: var(--c-bg); }
+  .suggestion-name { font-size: 15px; font-weight: 600; color: var(--c-text); }
+  .suggestion-meta { font-size: 11px; color: var(--c-text-sub); }
+  .suggestion-highlight { color: #9b7fe8; }
+
   /* ── Form page ── */
   .form-page { padding: 16px 20px; }
   .form-page h2 { font-size: 18px; font-weight: 800; margin-bottom: 20px; }
@@ -540,9 +562,19 @@
       <div></div>
     </div>
     <div class="form-page">
+      <!-- 言語選択 -->
       <div class="form-group">
+        <label>フォントの種類</label>
+        <div class="radio-group">
+          <label class="radio-label"><input type="radio" name="af-lang" value="ja" checked> 日本語フォント</label>
+          <label class="radio-label"><input type="radio" name="af-lang" value="en"> 欧文フォント</label>
+        </div>
+      </div>
+      <!-- フォント名（オートコンプリート） -->
+      <div class="form-group" style="position:relative;">
         <label>フォント名 *</label>
-        <input type="text" id="af-name" placeholder="例：源ノ角ゴシック">
+        <input type="text" id="af-name" placeholder="フォント名を入力して検索" autocomplete="off">
+        <div id="af-suggestions" class="suggestions-box"></div>
       </div>
       <div class="form-group">
         <label>読み方</label>
@@ -684,6 +716,122 @@ let afPhotoFiles = [null,null,null,null,null];
 let afPhotoMemos = ['','','','',''];
 let auPhotoFiles = [null,null,null,null,null];
 let auPhotoMemos = ['','','','',''];
+
+// ── Font Database ──────────────────────────
+const FONT_DB = {
+  ja: [
+    { name: '新ゴ', maker: 'モリサワ', category: 'ゴシック' },
+    { name: '中ゴシックBBB', maker: 'モリサワ', category: 'ゴシック' },
+    { name: '太ゴB101', maker: 'モリサワ', category: 'ゴシック' },
+    { name: 'ゴシックMB101', maker: 'モリサワ', category: 'ゴシック' },
+    { name: 'A1ゴシック', maker: 'モリサワ', category: 'ゴシック' },
+    { name: '黎ミン', maker: 'モリサワ', category: '明朝' },
+    { name: '明朝オールドBBB', maker: 'モリサワ', category: '明朝' },
+    { name: '小塚明朝', maker: 'モリサワ', category: '明朝' },
+    { name: '小塚ゴシック', maker: 'モリサワ', category: 'ゴシック' },
+    { name: 'リュウミン', maker: 'モリサワ', category: '明朝' },
+    { name: 'じゅん', maker: 'モリサワ', category: 'ゴシック' },
+    { name: 'UD新ゴ', maker: 'モリサワ', category: 'ゴシック' },
+    { name: 'UD黎ミン', maker: 'モリサワ', category: '明朝' },
+    { name: 'フォーク', maker: 'モリサワ', category: 'ゴシック' },
+    { name: 'キャパス', maker: 'モリサワ', category: 'ゴシック' },
+    { name: 'ニューシネマA', maker: 'モリサワ', category: '明朝' },
+    { name: 'ぶらっしゅ', maker: 'モリサワ', category: 'その他' },
+    { name: 'マティス', maker: 'フォントワークス', category: '明朝' },
+    { name: 'ロダン', maker: 'フォントワークス', category: 'ゴシック' },
+    { name: 'スキップ', maker: 'フォントワークス', category: 'ゴシック' },
+    { name: 'ナウ', maker: 'フォントワークス', category: 'ゴシック' },
+    { name: 'クレー', maker: 'フォントワークス', category: 'その他' },
+    { name: 'ゴールド', maker: 'フォントワークス', category: '明朝' },
+    { name: 'ネクスト', maker: 'フォントワークス', category: 'ゴシック' },
+    { name: 'マティスPr6N', maker: 'フォントワークス', category: '明朝' },
+    { name: 'ロダンPr6N', maker: 'フォントワークス', category: 'ゴシック' },
+    { name: '源ノ角ゴシック', maker: 'Adobe', category: 'ゴシック' },
+    { name: '源ノ明朝', maker: 'Adobe', category: '明朝' },
+    { name: 'Noto Sans JP', maker: 'Google', category: 'ゴシック' },
+    { name: 'Noto Serif JP', maker: 'Google', category: '明朝' },
+    { name: 'M PLUS 1p', maker: 'Google', category: 'ゴシック' },
+    { name: 'M PLUS Rounded 1c', maker: 'Google', category: 'ゴシック' },
+    { name: 'Zen Maru Gothic', maker: 'Google', category: 'ゴシック' },
+    { name: 'Zen Kaku Gothic New', maker: 'Google', category: 'ゴシック' },
+    { name: 'Zen Old Mincho', maker: 'Google', category: '明朝' },
+    { name: 'Shippori Mincho', maker: 'Google', category: '明朝' },
+    { name: 'BIZ UDGothic', maker: 'Google', category: 'ゴシック' },
+    { name: 'BIZ UDMincho', maker: 'Google', category: '明朝' },
+    { name: 'Klee One', maker: 'Google', category: 'その他' },
+    { name: 'Kaisei Decol', maker: 'Google', category: '明朝' },
+    { name: 'Sawarabi Gothic', maker: 'Google', category: 'ゴシック' },
+    { name: 'Sawarabi Mincho', maker: 'Google', category: '明朝' },
+    { name: 'Dela Gothic One', maker: 'Google', category: 'ゴシック' },
+    { name: 'Yuji Syuku', maker: 'Google', category: '明朝' },
+    { name: '游ゴシック', maker: '字游工房', category: 'ゴシック' },
+    { name: '游明朝', maker: '字游工房', category: '明朝' },
+    { name: 'ヒラギノ角ゴシック', maker: '字游工房', category: 'ゴシック' },
+    { name: 'ヒラギノ明朝', maker: '字游工房', category: '明朝' },
+    { name: 'ヒラギノ丸ゴ', maker: '字游工房', category: 'ゴシック' },
+    { name: 'DFP平成ゴシック', maker: 'ダイナコムウェア', category: 'ゴシック' },
+    { name: 'DFP平成明朝', maker: 'ダイナコムウェア', category: '明朝' },
+  ],
+  en: [
+    { name: 'Proxima Nova', maker: 'Adobe', category: 'サンセリフ' },
+    { name: 'Futura PT', maker: 'Adobe', category: 'サンセリフ' },
+    { name: 'Neue Haas Grotesk', maker: 'Adobe', category: 'サンセリフ' },
+    { name: 'Garamond Premier Pro', maker: 'Adobe', category: 'セリフ' },
+    { name: 'Minion Pro', maker: 'Adobe', category: 'セリフ' },
+    { name: 'Myriad Pro', maker: 'Adobe', category: 'サンセリフ' },
+    { name: 'Acumin Pro', maker: 'Adobe', category: 'サンセリフ' },
+    { name: 'Inter', maker: 'Google', category: 'サンセリフ' },
+    { name: 'Roboto', maker: 'Google', category: 'サンセリフ' },
+    { name: 'Open Sans', maker: 'Google', category: 'サンセリフ' },
+    { name: 'Lato', maker: 'Google', category: 'サンセリフ' },
+    { name: 'Montserrat', maker: 'Google', category: 'サンセリフ' },
+    { name: 'Playfair Display', maker: 'Google', category: 'セリフ' },
+    { name: 'Merriweather', maker: 'Google', category: 'セリフ' },
+    { name: 'Raleway', maker: 'Google', category: 'サンセリフ' },
+    { name: 'Nunito', maker: 'Google', category: 'サンセリフ' },
+    { name: 'Poppins', maker: 'Google', category: 'サンセリフ' },
+    { name: 'Oswald', maker: 'Google', category: 'サンセリフ' },
+    { name: 'DM Sans', maker: 'Google', category: 'サンセリフ' },
+    { name: 'Space Grotesk', maker: 'Google', category: 'サンセリフ' },
+    { name: 'Bebas Neue', maker: 'Google', category: 'サンセリフ' },
+    { name: 'EB Garamond', maker: 'Google', category: 'セリフ' },
+    { name: 'Cormorant Garamond', maker: 'Google', category: 'セリフ' },
+    { name: 'Josefin Sans', maker: 'Google', category: 'サンセリフ' },
+    { name: 'Quicksand', maker: 'Google', category: 'サンセリフ' },
+    { name: 'Helvetica', maker: 'Linotype', category: 'サンセリフ' },
+    { name: 'Helvetica Neue', maker: 'Linotype', category: 'サンセリフ' },
+    { name: 'Univers', maker: 'Linotype', category: 'サンセリフ' },
+    { name: 'Frutiger', maker: 'Linotype', category: 'サンセリフ' },
+    { name: 'Optima', maker: 'Linotype', category: 'サンセリフ' },
+    { name: 'Palatino', maker: 'Linotype', category: 'セリフ' },
+    { name: 'Avenir', maker: 'Linotype', category: 'サンセリフ' },
+    { name: 'Trade Gothic', maker: 'Linotype', category: 'サンセリフ' },
+    { name: 'Times New Roman', maker: 'Monotype', category: 'セリフ' },
+    { name: 'Gill Sans', maker: 'Monotype', category: 'サンセリフ' },
+    { name: 'Futura', maker: 'Bauer', category: 'サンセリフ' },
+    { name: 'Bodoni', maker: 'Berthold', category: 'セリフ' },
+    { name: 'Akzidenz Grotesk', maker: 'Berthold', category: 'サンセリフ' },
+    { name: 'FF Meta', maker: 'FontFont', category: 'サンセリフ' },
+    { name: 'FF Din', maker: 'FontFont', category: 'サンセリフ' },
+    { name: 'Brandon Grotesque', maker: 'HVD Fonts', category: 'サンセリフ' },
+    { name: 'GT Walsheim', maker: 'Grilli Type', category: 'サンセリフ' },
+    { name: 'Canela', maker: 'Commercial Type', category: 'セリフ' },
+  ]
+};
+
+function searchFonts(query, lang) {
+  if (!query || query.length < 1) return [];
+  const q = query.toLowerCase();
+  return FONT_DB[lang].filter(f => f.name.toLowerCase().includes(q)).slice(0, 8);
+}
+
+function highlightMatch(text, query) {
+  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return text;
+  return text.slice(0, idx) +
+    `<span class="suggestion-highlight">${text.slice(idx, idx+query.length)}</span>` +
+    text.slice(idx+query.length);
+}
 
 // ── Helpers ────────────────────────────────
 const $ = id => document.getElementById(id);
@@ -1040,10 +1188,55 @@ $('add-font-back').addEventListener('click', () => { showScreen('screen-home'); 
 function initAddFont() {
   $('af-name').value=''; $('af-reading').value=''; $('af-maker').value=''; $('af-memo').value='';
   document.querySelector('input[name="af-cat"][value="ゴシック"]').checked = true;
+  document.querySelector('input[name="af-lang"][value="ja"]').checked = true;
+  $('af-suggestions').classList.remove('open');
+  $('af-suggestions').innerHTML = '';
   afPhotoFiles = [null,null,null,null,null];
   afPhotoMemos = ['','','','',''];
   buildPhotoSlots('af-photos','af-photo-memos-wrap',afPhotoFiles,afPhotoMemos);
 }
+
+// オートコンプリート
+$('af-name').addEventListener('input', () => {
+  const lang = document.querySelector('input[name="af-lang"]:checked').value;
+  const q = $('af-name').value.trim();
+  const results = searchFonts(q, lang);
+  const box = $('af-suggestions');
+  if (!results.length) { box.classList.remove('open'); return; }
+  box.innerHTML = results.map(f => `
+    <div class="suggestion-item"
+      data-name="${f.name}" data-maker="${f.maker}" data-cat="${f.category}">
+      <div class="suggestion-name">${highlightMatch(f.name, q)}</div>
+      <div class="suggestion-meta">${f.maker} · ${f.category}</div>
+    </div>
+  `).join('');
+  box.classList.add('open');
+  box.querySelectorAll('.suggestion-item').forEach(el => {
+    el.addEventListener('click', () => {
+      $('af-name').value = el.dataset.name;
+      $('af-maker').value = el.dataset.maker;
+      const cat = el.dataset.cat;
+      const radio = document.querySelector(`input[name="af-cat"][value="${cat}"]`);
+      if (radio) radio.checked = true;
+      box.classList.remove('open');
+    });
+  });
+});
+
+// 言語切替でサジェストリセット
+document.querySelectorAll('input[name="af-lang"]').forEach(r => {
+  r.addEventListener('change', () => {
+    $('af-suggestions').classList.remove('open');
+    if ($('af-name').value) $('af-name').dispatchEvent(new Event('input'));
+  });
+});
+
+// 外クリックで閉じる
+document.addEventListener('click', e => {
+  if (!e.target.closest('#af-suggestions') && e.target !== $('af-name')) {
+    $('af-suggestions').classList.remove('open');
+  }
+});
 
 $('af-submit').addEventListener('click', async () => {
   const name = $('af-name').value.trim();
