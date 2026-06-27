@@ -419,6 +419,13 @@
     font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center;
     line-height: 1;
   }
+  .photo-slot .edit-btn {
+    position: absolute; bottom: 2px; right: 2px;
+    background: rgba(0,0,0,0.45); color: white;
+    border: none; border-radius: 50%; width: 20px; height: 20px;
+    font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    touch-action: manipulation;
+  }
 
   /* フォーム系ヘッダーはサイズ小さめ */
   #screen-add-font .app-header h1,
@@ -2531,7 +2538,9 @@ function buildPhotoSlots(containerId, memoWrapId, filesArr, memosArr) {
     slot.dataset.idx = i;
     if (filesArr[i]) {
       const url = URL.createObjectURL(filesArr[i]);
-      slot.innerHTML = `<img src="${url}"><button class="remove-btn" data-idx="${i}">✕</button>`;
+      slot.innerHTML = `<img src="${url}">
+        <button class="remove-btn" data-idx="${i}">✕</button>
+        <button class="edit-btn" data-idx="${i}" title="編集"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>`;
     } else {
       slot.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
     }
@@ -2557,45 +2566,33 @@ function buildPhotoSlots(containerId, memoWrapId, filesArr, memosArr) {
     });
   }
 
-  // click to add / long press to edit
   wrap.querySelectorAll('.photo-slot').forEach(slot => {
-    let pressTimer = null;
-    let didLongPress = false;
-
-    // 長押しで写真エディタを開く
-    slot.addEventListener('pointerdown', e => {
-      const idx = parseInt(slot.dataset.idx);
-      if (!filesArr[idx]) return;
-      didLongPress = false;
-      pressTimer = setTimeout(() => {
-        didLongPress = true;
+    slot.addEventListener('click', e => {
+      // ✕ ボタン
+      if (e.target.closest('.remove-btn')) {
+        const idx = parseInt(e.target.closest('.remove-btn').dataset.idx);
+        filesArr[idx] = null; memosArr[idx] = '';
+        buildPhotoSlots(containerId, memoWrapId, filesArr, memosArr);
+        return;
+      }
+      // ✏️ ペンボタン
+      if (e.target.closest('.edit-btn')) {
+        const idx = parseInt(e.target.closest('.edit-btn').dataset.idx);
+        if (!filesArr[idx]) return;
         const url = URL.createObjectURL(filesArr[idx]);
         openPhotoEditor(url, blob => {
           filesArr[idx] = new File([blob], 'edited.jpg', { type: 'image/jpeg' });
           buildPhotoSlots(containerId, memoWrapId, filesArr, memosArr);
         });
-      }, 600);
-    });
-    slot.addEventListener('pointerup', () => clearTimeout(pressTimer));
-    slot.addEventListener('pointercancel', () => clearTimeout(pressTimer));
-    slot.addEventListener('pointermove', e => { if (Math.abs(e.movementX) > 6 || Math.abs(e.movementY) > 6) clearTimeout(pressTimer); });
-
-    slot.addEventListener('click', e => {
-      if (didLongPress) { didLongPress = false; return; }
-      if (e.target.classList.contains('remove-btn')) {
-        const idx = parseInt(e.target.dataset.idx);
-        filesArr[idx] = null; memosArr[idx] = '';
-        buildPhotoSlots(containerId, memoWrapId, filesArr, memosArr);
         return;
       }
+      // 空スロットタップ → ファイル選択
       const idx = parseInt(slot.dataset.idx);
       if (filesArr[idx]) return;
-
-      // iOSのためにDOMに追加してからclick()
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = 'image/*';
-      input.capture = 'environment'; // カメラを優先
+      input.capture = 'environment';
       input.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
       document.body.appendChild(input);
       input.addEventListener('change', e2 => {
@@ -2606,9 +2603,7 @@ function buildPhotoSlots(containerId, memoWrapId, filesArr, memosArr) {
         }
         document.body.removeChild(input);
       });
-      input.addEventListener('cancel', () => {
-        document.body.removeChild(input);
-      });
+      input.addEventListener('cancel', () => document.body.removeChild(input));
       input.click();
     });
   });
