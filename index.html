@@ -1848,12 +1848,17 @@ async function openDetail(id) {
     });
   }
 
-  // カバー写真エリア長押し → 写真選択メニュー
+  // カバー写真エリア — タップで拡大、長押しで変更
   const heroWrap = $('detail-content').querySelector('#detail-hero-wrap');
-  if (heroWrap && photos.length > 1) {
+  if (heroWrap && photos.length > 0) {
     let heroTimer = null;
+    let heroLongPressed = false;
+
     heroWrap.addEventListener('pointerdown', e => {
+      heroLongPressed = false;
+      if (photos.length <= 1) return;
       heroTimer = setTimeout(async () => {
+        heroLongPressed = true;
         const items = photos.map((p, i) => ({
           action: String(i),
           icon: i === 0 ? '★' : `${i + 1}枚目`,
@@ -1880,6 +1885,11 @@ async function openDetail(id) {
     heroWrap.addEventListener('pointerup', () => clearTimeout(heroTimer));
     heroWrap.addEventListener('pointercancel', () => clearTimeout(heroTimer));
     heroWrap.addEventListener('pointermove', () => clearTimeout(heroTimer));
+    heroWrap.addEventListener('click', () => {
+      if (heroLongPressed) return;
+      const currentSrc = $('detail-cover-img')?.src || photos[0].url;
+      openLightbox(currentSrc, '');
+    });
   }
 
   // ── コンテキストメニュー ────────────────────
@@ -2029,12 +2039,16 @@ function openUsageDetail(fontId, usageId, usages) {
     el.addEventListener('click', () => openLightbox(el.dataset.url, el.dataset.memo));
   });
 
-  // 用例カバー写真長押し
+  // 用例カバー写真 — タップで拡大、長押しで変更
   const usageHeroWrap = $('usage-detail-content').querySelector('#usage-hero-wrap');
-  if (usageHeroWrap && photos.length > 1) {
+  if (usageHeroWrap && photos.length > 0) {
     let usageHeroTimer = null;
+    let usageLongPressed = false;
     usageHeroWrap.addEventListener('pointerdown', e => {
+      usageLongPressed = false;
+      if (photos.length <= 1) return;
       usageHeroTimer = setTimeout(async () => {
+        usageLongPressed = true;
         const items = photos.map((p, i) => ({
           action: String(i),
           icon: i === 0 ? '★' : `${i + 1}枚目`,
@@ -2059,6 +2073,10 @@ function openUsageDetail(fontId, usageId, usages) {
     usageHeroWrap.addEventListener('pointerup', () => clearTimeout(usageHeroTimer));
     usageHeroWrap.addEventListener('pointercancel', () => clearTimeout(usageHeroTimer));
     usageHeroWrap.addEventListener('pointermove', () => clearTimeout(usageHeroTimer));
+    usageHeroWrap.addEventListener('click', () => {
+      if (usageLongPressed) return;
+      openLightbox(photos[0].url, photos[0].memo || '');
+    });
   }
 
   $('usage-detail-edit-btn').onclick = () => openEditUsage(fontId, u);
