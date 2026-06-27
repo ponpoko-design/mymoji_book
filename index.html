@@ -985,6 +985,17 @@ const FONT_DB = {
     { name: 'ネクスト', maker: 'フォントワークス', category: 'ゴシック' },
     { name: 'マティスPr6N', maker: 'フォントワークス', category: '明朝' },
     { name: 'ロダンPr6N', maker: 'フォントワークス', category: 'ゴシック' },
+    { name: '筑紫A丸ゴシック', maker: 'フォントワークス', category: 'ゴシック' },
+    { name: '筑紫B丸ゴシック', maker: 'フォントワークス', category: 'ゴシック' },
+    { name: '筑紫アンティークL明朝', maker: 'フォントワークス', category: '明朝' },
+    { name: '筑紫アンティークS明朝', maker: 'フォントワークス', category: '明朝' },
+    { name: '筑紫明朝', maker: 'フォントワークス', category: '明朝' },
+    { name: '筑紫ゴシック', maker: 'フォントワークス', category: 'ゴシック' },
+    { name: '筑紫オールドゴシック', maker: 'フォントワークス', category: 'ゴシック' },
+    { name: 'はるひ学園', maker: 'フォントワークス', category: 'その他' },
+    { name: 'セザンヌ', maker: 'フォントワークス', category: 'その他' },
+    { name: 'らんぱく', maker: 'フォントワークス', category: 'その他' },
+    { name: 'ニコモジ', maker: 'フォントワークス', category: 'ゴシック' },
     { name: '源ノ角ゴシック', maker: 'Adobe', category: 'ゴシック' },
     { name: '源ノ明朝', maker: 'Adobe', category: '明朝' },
     { name: 'Noto Sans JP', maker: 'Google', category: 'ゴシック' },
@@ -1088,6 +1099,10 @@ const WEIGHT_DB = {
   'ナウ': ['L','R','M','B','H'],
   'マティスPr6N': ['EL','L','R','M','B','EB','H'],
   'ロダンPr6N': ['B','DB','EB','H','L','M','R','UB'],
+  '筑紫A丸ゴシック': ['L','R','M','B','H'],
+  '筑紫B丸ゴシック': ['L','R','M','B','H'],
+  '筑紫明朝': ['L','R','M','B','H'],
+  '筑紫ゴシック': ['L','R','M','B','H'],
   // Google日本語
   'Noto Sans JP': ['Thin 100','Light 300','Regular 400','Medium 500','Bold 700','Black 900'],
   'Noto Serif JP': ['ExtraLight 200','Light 300','Regular 400','Medium 500','SemiBold 600','Bold 700','Black 900'],
@@ -1137,8 +1152,8 @@ const hideLoading = () => $('loading').style.display = 'none';
 const showScreen = id => {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   $(id).classList.add('active');
-  const navScreens = ['home','add-font','add-usage'];
-  $('bottom-nav').style.display = navScreens.includes(id.replace('screen-','')) ? 'flex' : 'none';
+  // ログイン画面以外は常にナビを表示
+  $('bottom-nav').style.display = id === 'screen-login' ? 'none' : 'flex';
   document.querySelectorAll('.nav-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.screen === id.replace('screen-',''));
   });
