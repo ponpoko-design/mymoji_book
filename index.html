@@ -21,7 +21,18 @@
     --radius-sm: 12px;
     --nav-h: 64px;
     --header-h: 56px;
-    --max-w: 390px;
+    --max-w: 600px;
+    --col: 1;
+  }
+
+  /* iPad Pro: 2カラムレイアウト */
+  @media (min-width: 768px) {
+    :root {
+      --max-w: 1024px;
+      --col: 2;
+      --nav-h: 72px;
+      --header-h: 64px;
+    }
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -49,7 +60,8 @@
     position: fixed;
     top: 0; left: 50%;
     transform: translateX(-50%);
-    width: var(--max-w);
+    width: 100%;
+    max-width: var(--max-w);
     height: 100vh;
     pointer-events: none;
     z-index: 0;
@@ -126,6 +138,10 @@
     display: flex;
     z-index: 100;
   }
+  @media (min-width: 768px) {
+    .nav-btn { font-size: 12px; gap: 6px; }
+    .nav-btn .icon svg { width: 28px; height: 28px; }
+  }
   .nav-btn {
     flex: 1; background: none; border: none; cursor: pointer;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -148,6 +164,7 @@
     border-radius: var(--radius);
     padding: 32px 28px;
     width: calc(100% - 48px);
+    max-width: 440px;
     box-shadow: 0 8px 40px rgba(155,127,232,0.12);
     border: 1px solid var(--c-border);
   }
@@ -188,7 +205,7 @@
   /* ── Cards / List ── */
   .section-pad { padding: 16px 20px; }
 
-  .font-list { display: flex; flex-direction: column; gap: 10px; padding: 0 16px 16px; }
+  .font-list { display: grid; grid-template-columns: repeat(var(--col), 1fr); gap: 10px; padding: 0 16px 16px; }
 
   .font-card {
     background: var(--c-card);
@@ -268,6 +285,9 @@
     background: var(--c-border);
     position: relative;
   }
+  @media (min-width: 768px) {
+    .carousel-item { width: 280px; height: 180px; }
+  }
   .carousel-item img { width: 100%; height: 100%; object-fit: cover; }
   .carousel-label {
     position: absolute; bottom: 0; left: 0; right: 0;
@@ -294,6 +314,13 @@
   .detail-hero {
     width: 100%; height: 220px;
     background: var(--c-border); overflow: hidden; position: relative;
+  }
+  @media (min-width: 768px) {
+    .detail-hero { height: 320px; }
+    .detail-body { padding: 28px 32px; }
+    .photos-grid { grid-template-columns: repeat(5, 1fr); }
+    .usage-grid { grid-template-columns: repeat(3, 1fr); }
+    .form-page { max-width: 600px; margin: 0 auto; }
   }
   .detail-hero img { width: 100%; height: 100%; object-fit: cover; }
   .detail-body { padding: 20px; }
