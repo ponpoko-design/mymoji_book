@@ -110,7 +110,7 @@
     -webkit-backdrop-filter: blur(12px);
   }
   .app-header h1 {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 700;
     letter-spacing: 0.02em;
     background: linear-gradient(135deg, #9b7fe8, #5aaae8);
@@ -120,7 +120,7 @@
   }
   .header-btn {
     background: none; border: none; cursor: pointer;
-    color: var(--c-text-sub); font-size: 22px; padding: 4px;
+    color: var(--c-text-sub); font-size: 24px; padding: 4px;
   }
 
   /* ── Bottom Nav ── */
@@ -139,26 +139,26 @@
     z-index: 100;
   }
   @media (min-width: 768px) {
-    .nav-btn { font-size: 12px; gap: 6px; }
+    .nav-btn { font-size: 14px; gap: 6px; }
     .nav-btn .icon svg { width: 28px; height: 28px; }
   }
   .nav-btn {
     flex: 1; background: none; border: none; cursor: pointer;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 4px; color: var(--c-text-sub); font-size: 10px; font-weight: 500;
+    gap: 4px; color: var(--c-text-sub); font-size: 12px; font-weight: 500;
     transition: color 0.2s;
   }
-  .nav-btn .icon { font-size: 24px; }
+  .nav-btn .icon { font-size: 26px; }
   .nav-btn.active { color: #9b7fe8; }
 
   /* ── Login ── */
   .login-logo {
-    font-size: 26px; font-weight: 800; letter-spacing: 0.02em;
+    font-size: 28px; font-weight: 800; letter-spacing: 0.02em;
     background: linear-gradient(135deg, #9b7fe8, #5aaae8);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     margin-bottom: 6px;
   }
-  .login-sub { color: var(--c-text-sub); font-size: 13px; margin-bottom: 40px; }
+  .login-sub { color: var(--c-text-sub); font-size: 15px; margin-bottom: 40px; }
   .login-card {
     background: var(--c-card);
     border-radius: var(--radius);
@@ -169,12 +169,12 @@
     border: 1px solid var(--c-border);
   }
   .form-group { margin-bottom: 18px; }
-  .form-group label { display: block; font-size: 12px; color: var(--c-text-sub); margin-bottom: 6px; font-weight: 500; }
+  .form-group label { display: block; font-size: 14px; color: var(--c-text-sub); margin-bottom: 6px; font-weight: 500; }
   .form-group input, .form-group textarea, .form-group select {
     width: 100%; padding: 12px 14px;
     border: 1.5px solid var(--c-border);
     border-radius: var(--radius-sm);
-    font-size: 15px; color: var(--c-text);
+    font-size: 17px; color: var(--c-text);
     background: rgba(255,255,255,0.9);
     outline: none; transition: border-color 0.2s;
     font-family: inherit;
@@ -188,7 +188,7 @@
     width: 100%; padding: 14px;
     background: linear-gradient(135deg, #b8a0f0, #7ab8f5);
     border: none; border-radius: 50px;
-    color: white; font-size: 15px; font-weight: 700;
+    color: white; font-size: 17px; font-weight: 700;
     cursor: pointer; letter-spacing: 0.04em;
     transition: opacity 0.2s, transform 0.1s;
     font-family: inherit;
@@ -198,7 +198,7 @@
   .btn-secondary {
     background: none; border: 1.5px solid var(--c-border);
     border-radius: 50px; color: var(--c-text-sub);
-    font-size: 13px; cursor: pointer;
+    font-size: 15px; cursor: pointer;
     margin-top: 12px; display: block; text-align: center;
     width: 100%; padding: 10px;
     font-family: inherit;
@@ -206,7 +206,7 @@
   }
   .btn-secondary:active { background: var(--c-border); }
 
-  .error-msg { color: #e05c7a; font-size: 13px; margin-top: 10px; text-align: center; }
+  .error-msg { color: #e05c7a; font-size: 15px; margin-top: 10px; text-align: center; }
 
   /* ── Cards / List ── */
   .section-pad { padding: 16px 20px; }
@@ -228,23 +228,23 @@
     width: 52px; height: 52px; border-radius: 14px;
     object-fit: cover; background: var(--c-border); flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    font-size: 22px; color: var(--c-text-sub);
+    font-size: 24px; color: var(--c-text-sub);
     overflow: hidden;
   }
   .font-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
   .font-info { flex: 1; min-width: 0; }
-  .font-name { font-size: 16px; font-weight: 700; }
-  .font-maker { font-size: 12px; color: var(--c-text-sub); margin-top: 2px; }
+  .font-name { font-size: 18px; font-weight: 700; }
+  .font-maker { font-size: 14px; color: var(--c-text-sub); margin-top: 2px; }
   .font-cat-badge {
-    display: inline-block; font-size: 10px; padding: 2px 8px;
+    display: inline-block; font-size: 12px; padding: 2px 8px;
     border-radius: 20px; margin-top: 5px; font-weight: 600;
     background: linear-gradient(135deg, var(--c-lavender), var(--c-sky));
     color: #5a4a8a;
   }
 
   .fav-btn {
-    background: none; border: none; cursor: pointer; font-size: 22px;
+    background: none; border: none; cursor: pointer; font-size: 24px;
     color: var(--c-border); transition: color 0.2s; flex-shrink: 0;
   }
   .fav-btn.active { color: #e06090; }
@@ -262,13 +262,13 @@
   .search-icon { color: var(--c-text-sub); display: flex; align-items: center; flex-shrink: 0; }
   .search-box input {
     border: none; background: none; outline: none;
-    font-size: 14px; color: var(--c-text); flex: 1; min-width: 0;
+    font-size: 16px; color: var(--c-text); flex: 1; min-width: 0;
     font-family: inherit;
   }
   .sort-btn {
     background: var(--c-card); border: 1.5px solid var(--c-border);
     border-radius: 50px; padding: 8px 12px;
-    font-size: 12px; color: var(--c-text-sub);
+    font-size: 14px; color: var(--c-text-sub);
     cursor: pointer; white-space: nowrap; flex-shrink: 0;
     display: flex; align-items: center; gap: 4px;
     font-family: inherit;
@@ -298,20 +298,20 @@
   .carousel-label {
     position: absolute; bottom: 0; left: 0; right: 0;
     background: linear-gradient(transparent, rgba(45,38,64,0.7));
-    color: white; font-size: 12px; font-weight: 600;
+    color: white; font-size: 14px; font-weight: 600;
     padding: 8px 12px;
   }
   .carousel-empty {
     width: 100%; height: 100px;
     background: var(--c-card); border-radius: var(--radius);
     display: flex; align-items: center; justify-content: center;
-    color: var(--c-text-sub); font-size: 13px;
+    color: var(--c-text-sub); font-size: 15px;
     border: 1.5px dashed var(--c-border);
   }
 
   /* ── Section label ── */
   .sec-label {
-    font-size: 12px; font-weight: 700; color: var(--c-text-sub);
+    font-size: 14px; font-weight: 700; color: var(--c-text-sub);
     letter-spacing: 0.08em; text-transform: uppercase;
     padding: 8px 16px 4px;
   }
@@ -330,18 +330,18 @@
   }
   .detail-hero img { width: 100%; height: 100%; object-fit: cover; }
   .detail-body { padding: 20px; }
-  .detail-title { font-size: 22px; font-weight: 800; }
-  .detail-reading { font-size: 13px; color: var(--c-text-sub); margin-top: 2px; }
-  .detail-maker { font-size: 14px; color: var(--c-text-sub); margin-top: 4px; }
+  .detail-title { font-size: 24px; font-weight: 800; }
+  .detail-reading { font-size: 15px; color: var(--c-text-sub); margin-top: 2px; }
+  .detail-maker { font-size: 16px; color: var(--c-text-sub); margin-top: 4px; }
   .chip {
-    display: inline-block; font-size: 11px; padding: 4px 12px;
+    display: inline-block; font-size: 13px; padding: 4px 12px;
     border-radius: 20px; font-weight: 700;
     background: linear-gradient(135deg, var(--c-lavender), var(--c-sky));
     color: #5a4a8a; margin-top: 10px;
   }
   .detail-section { margin-top: 22px; }
-  .detail-section h3 { font-size: 13px; font-weight: 700; color: var(--c-text-sub); margin-bottom: 10px; letter-spacing: 0.05em; }
-  .memo-text { font-size: 14px; line-height: 1.7; color: var(--c-text); }
+  .detail-section h3 { font-size: 15px; font-weight: 700; color: var(--c-text-sub); margin-bottom: 10px; letter-spacing: 0.05em; }
+  .memo-text { font-size: 16px; line-height: 1.7; color: var(--c-text); }
   .divider { height: 1px; background: var(--c-border); margin: 20px 0; }
 
   /* photos grid */
@@ -361,8 +361,8 @@
   }
   .usage-card-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; background: var(--c-border); }
   .usage-card-info { padding: 8px 10px; }
-  .usage-card-date { font-size: 10px; color: var(--c-text-sub); }
-  .usage-card-place { font-size: 12px; font-weight: 600; margin-top: 2px; }
+  .usage-card-date { font-size: 12px; color: var(--c-text-sub); }
+  .usage-card-place { font-size: 14px; font-weight: 600; margin-top: 2px; }
 
   /* ── Photo upload ── */
   .photo-upload-row { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -374,12 +374,12 @@
     background: rgba(255,255,255,0.6);
   }
   .photo-slot img { width: 100%; height: 100%; object-fit: cover; }
-  .photo-slot .add-icon { font-size: 24px; color: var(--c-text-sub); }
+  .photo-slot .add-icon { font-size: 26px; color: var(--c-text-sub); }
   .photo-slot .remove-btn {
     position: absolute; top: 2px; right: 2px;
     background: rgba(0,0,0,0.4); color: white;
     border: none; border-radius: 50%; width: 18px; height: 18px;
-    font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center;
     line-height: 1;
   }
 
@@ -387,7 +387,7 @@
   .weight-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
   .weight-chip {
     padding: 4px 12px; border-radius: 50px;
-    font-size: 11px; font-weight: 600;
+    font-size: 13px; font-weight: 600;
     background: rgba(155,127,232,0.1);
     color: #7a5cc0; border: 1px solid rgba(155,127,232,0.25);
   }
@@ -410,10 +410,10 @@
     padding: 28px 24px; width: calc(100% - 48px); max-width: 320px;
     text-align: center;
   }
-  .confirm-box h3 { font-size: 16px; font-weight: 700; margin-bottom: 10px; }
-  .confirm-box p { font-size: 13px; color: var(--c-text-sub); margin-bottom: 20px; }
+  .confirm-box h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+  .confirm-box p { font-size: 15px; color: var(--c-text-sub); margin-bottom: 20px; }
   .confirm-btns { display: flex; gap: 10px; }
-  .confirm-btns button { flex: 1; padding: 12px; border-radius: 50px; border: none; cursor: pointer; font-size: 14px; font-weight: 600; font-family: inherit; }
+  .confirm-btns button { flex: 1; padding: 12px; border-radius: 50px; border: none; cursor: pointer; font-size: 16px; font-weight: 600; font-family: inherit; }
   .confirm-cancel { background: var(--c-border); color: var(--c-text); }
   .confirm-delete { background: #e05c7a; color: white; }
   .suggestions-box {
@@ -433,18 +433,18 @@
   }
   .suggestion-item:last-child { border-bottom: none; }
   .suggestion-item:active { background: var(--c-bg); }
-  .suggestion-name { font-size: 15px; font-weight: 600; color: var(--c-text); }
-  .suggestion-meta { font-size: 11px; color: var(--c-text-sub); }
+  .suggestion-name { font-size: 17px; font-weight: 600; color: var(--c-text); }
+  .suggestion-meta { font-size: 13px; color: var(--c-text-sub); }
   .suggestion-highlight { color: #9b7fe8; }
 
   /* ── Form page ── */
   .form-page { padding: 16px 20px; }
-  .form-page h2 { font-size: 18px; font-weight: 800; margin-bottom: 20px; }
+  .form-page h2 { font-size: 20px; font-weight: 800; margin-bottom: 20px; }
 
   .radio-group { display: flex; gap: 10px; flex-wrap: wrap; }
   .radio-label {
     display: flex; align-items: center; gap: 6px;
-    font-size: 14px; cursor: pointer;
+    font-size: 16px; cursor: pointer;
   }
   .radio-label input { accent-color: #9b7fe8; }
 
@@ -457,10 +457,10 @@
   }
   #lightbox.active { display: flex; }
   #lightbox img { max-width: 94vw; max-height: 80vh; border-radius: 12px; object-fit: contain; }
-  #lightbox-memo { color: white; font-size: 13px; margin-top: 14px; max-width: 80vw; text-align: center; }
+  #lightbox-memo { color: white; font-size: 15px; margin-top: 14px; max-width: 80vw; text-align: center; }
   #lightbox-close {
     position: absolute; top: 20px; right: 20px;
-    color: white; font-size: 28px; background: none; border: none; cursor: pointer;
+    color: white; font-size: 30px; background: none; border: none; cursor: pointer;
   }
 
   /* ── Toast ── */
@@ -469,7 +469,7 @@
     transform: translateX(-50%) translateY(20px);
     background: rgba(45,38,64,0.88); color: white;
     padding: 10px 24px; border-radius: 50px;
-    font-size: 13px; z-index: 300; opacity: 0;
+    font-size: 15px; z-index: 300; opacity: 0;
     transition: opacity 0.3s, transform 0.3s;
     pointer-events: none; white-space: nowrap;
   }
@@ -483,7 +483,7 @@
     flex-direction: column; gap: 16px;
   }
   .loading-logo {
-    font-size: 28px; font-weight: 800;
+    font-size: 30px; font-weight: 800;
     background: linear-gradient(135deg, #9b7fe8, #5aaae8);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   }
@@ -499,7 +499,7 @@
 
   .empty-state {
     text-align: center; padding: 60px 20px;
-    color: var(--c-text-sub); font-size: 14px; line-height: 2;
+    color: var(--c-text-sub); font-size: 16px; line-height: 2;
   }
   .empty-state .empty-icon { display: block; margin: 0 auto 16px; opacity: 0.4; }
 </style>
@@ -656,7 +656,7 @@
     <div class="form-page" id="add-usage-body">
       <!-- Step 1: search font -->
       <div id="usage-step1">
-        <p style="font-size:14px;color:var(--c-text-sub);margin-bottom:16px;">用例を登録するフォントを検索してください</p>
+        <p style="font-size: 16px;color:var(--c-text-sub);margin-bottom:16px;">用例を登録するフォントを検索してください</p>
         <div class="search-box" style="margin-bottom:12px;">
           <span class="search-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
           <input type="text" id="usage-font-search" placeholder="フォント名で検索">
@@ -666,8 +666,8 @@
       <!-- Step 2: form -->
       <div id="usage-step2" style="display:none;">
         <div style="background:var(--c-card);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:20px;border:1px solid var(--c-border);">
-          <div style="font-size:12px;color:var(--c-text-sub);">登録フォント</div>
-          <div id="usage-selected-font" style="font-size:16px;font-weight:700;margin-top:4px;"></div>
+          <div style="font-size: 14px;color:var(--c-text-sub);">登録フォント</div>
+          <div id="usage-selected-font" style="font-size: 18px;font-weight:700;margin-top:4px;"></div>
         </div>
         <div class="form-group">
           <label>登録日 *</label>
@@ -1128,7 +1128,7 @@ function renderFontList() {
         <div><span class="font-cat-badge">${f.category||''}</span></div>
       </div>
       <button class="fav-btn ${f.favorite?'active':''}" data-id="${f.id}">♡</button>
-      <span style="color:var(--c-text-sub);font-size:18px;">›</span>
+      <span style="color:var(--c-text-sub);font-size: 20px;">›</span>
     </div>
   `).join('');
 
@@ -1235,7 +1235,7 @@ async function openDetail(id) {
               </div>
             `).join('')}
           </div>
-        ` : '<div style="color:var(--c-text-sub);font-size:13px;">用例はまだありません</div>'}
+        ` : '<div style="color:var(--c-text-sub);font-size: 15px;">用例はまだありません</div>'}
       </div>
     </div>
   `;
@@ -1267,8 +1267,8 @@ function openUsageDetail(fontId, usageId, usages) {
   $('usage-detail-content').innerHTML = `
     ${photos[0]?`<div class="detail-hero"><img src="${photos[0].url}" alt="用例写真"></div>`:''}
     <div class="detail-body">
-      <div style="font-size:13px;color:var(--c-text-sub);">登録日：${u.date||'-'}</div>
-      <div class="detail-title" style="font-size:18px;margin-top:4px;">${u.place||'場所未記入'}</div>
+      <div style="font-size: 15px;color:var(--c-text-sub);">登録日：${u.date||'-'}</div>
+      <div class="detail-title" style="font-size: 20px;margin-top:4px;">${u.place||'場所未記入'}</div>
       ${f?`<div class="detail-maker" style="margin-top:4px;">${f.name}</div>`:''}
       ${photos.length?`
         <div class="detail-section">
@@ -1458,14 +1458,14 @@ function buildEditPhotoSlots(containerId, memoWrapId, existingArr, filesArr, mem
   // メモ欄（既存写真）
   if (existingArr.length > 0) {
     const lbl = document.createElement('label');
-    lbl.style.cssText = 'display:block;font-size:12px;color:var(--c-text-sub);margin-bottom:8px;font-weight:500;';
+    lbl.style.cssText = 'display:block;font-size: 14px;color:var(--c-text-sub);margin-bottom:8px;font-weight:500;';
     lbl.textContent = '写真へのメモ（既存）';
     memoWrap.appendChild(lbl);
     existingArr.forEach((p, i) => {
       const inp = document.createElement('input');
       inp.type = 'text'; inp.value = p.memo||'';
       inp.placeholder = `写真${i+1}へのメモ`;
-      inp.style.cssText = 'width:100%;padding:10px 12px;border:1.5px solid var(--c-border);border-radius:10px;font-size:14px;margin-bottom:8px;font-family:inherit;color:var(--c-text);background:rgba(255,255,255,0.9);outline:none;';
+      inp.style.cssText = 'width:100%;padding:10px 12px;border:1.5px solid var(--c-border);border-radius:10px;font-size: 16px;margin-bottom:8px;font-family:inherit;color:var(--c-text);background:rgba(255,255,255,0.9);outline:none;';
       inp.addEventListener('input', () => { existingArr[i] = {...existingArr[i], memo: inp.value}; });
       memoWrap.appendChild(inp);
     });
@@ -1532,7 +1532,7 @@ function buildPhotoSlots(containerId, memoWrapId, filesArr, memosArr) {
   const hasMemos = filesArr.some(f=>f);
   if (hasMemos) {
     const label = document.createElement('label');
-    label.style.cssText = 'display:block;font-size:12px;color:var(--c-text-sub);margin-bottom:8px;font-weight:500;';
+    label.style.cssText = 'display:block;font-size: 14px;color:var(--c-text-sub);margin-bottom:8px;font-weight:500;';
     label.textContent = '写真へのメモ';
     memoWrap.appendChild(label);
     filesArr.forEach((f,i) => {
@@ -1541,7 +1541,7 @@ function buildPhotoSlots(containerId, memoWrapId, filesArr, memosArr) {
       inp.type = 'text';
       inp.placeholder = `写真${i+1}へのメモ`;
       inp.value = memosArr[i]||'';
-      inp.style.cssText = 'width:100%;padding:10px 12px;border:1.5px solid var(--c-border);border-radius:10px;font-size:14px;margin-bottom:8px;font-family:inherit;color:var(--c-text);background:rgba(255,255,255,0.9);outline:none;';
+      inp.style.cssText = 'width:100%;padding:10px 12px;border:1.5px solid var(--c-border);border-radius:10px;font-size: 16px;margin-bottom:8px;font-family:inherit;color:var(--c-text);background:rgba(255,255,255,0.9);outline:none;';
       inp.addEventListener('input', () => memosArr[i] = inp.value);
       memoWrap.appendChild(inp);
     });
@@ -1682,12 +1682,12 @@ $('usage-font-search').addEventListener('input', e => {
   const results = fonts.filter(f => (f.name||'').toLowerCase().includes(q));
   const wrap = $('usage-font-results');
   if (!q) { wrap.innerHTML=''; return; }
-  if (!results.length) { wrap.innerHTML='<div style="color:var(--c-text-sub);font-size:13px;padding:8px 0;">見つかりません</div>'; return; }
+  if (!results.length) { wrap.innerHTML='<div style="color:var(--c-text-sub);font-size: 15px;padding:8px 0;">見つかりません</div>'; return; }
   wrap.innerHTML = results.map(f=>`
     <div class="font-card" data-id="${f.id}" style="cursor:pointer;">
       <div class="font-thumb">${f.photos&&f.photos[0]?`<img src="${f.photos[0].url}">`:`<svg width="28" height="28" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="32" y1="8" x2="8" y2="56" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="32" y1="8" x2="56" y2="56" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="18" y1="38" x2="46" y2="38" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`}</div>
       <div class="font-info"><div class="font-name">${f.name}</div><div class="font-maker">${f.maker||''}</div></div>
-      <span style="color:var(--c-text-sub);font-size:18px;">›</span>
+      <span style="color:var(--c-text-sub);font-size: 20px;">›</span>
     </div>
   `).join('');
   wrap.querySelectorAll('.font-card').forEach(el => {
