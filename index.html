@@ -423,7 +423,11 @@
   #screen-add-font .app-header h1,
   #screen-add-usage .app-header h1,
   #screen-edit-font .app-header h1,
-  #screen-edit-usage .app-header h1 {
+  #screen-edit-usage .app-header h1,
+  #screen-detail .app-header h1,
+  #screen-usage-detail .app-header h1,
+  #screen-edit-font .app-header h1,
+  #screen-unassigned-detail .app-header h1 {
     font-size: 17px;
     font-weight: 800;
   }
@@ -1494,7 +1498,12 @@ async function openDetail(id) {
       <div class="divider"></div>
 
       <div class="detail-section">
-        <h3>フォント用例</h3>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <h3 style="margin-bottom:0;">フォント用例</h3>
+          <button id="detail-add-usage-btn" style="background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;color:var(--c-text-sub);">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          </button>
+        </div>
         ${usages.length ? `
           <div class="usage-grid">
             ${usages.map(u=>`
@@ -1511,6 +1520,21 @@ async function openDetail(id) {
       </div>
     </div>
   `;
+
+  // 用例追加ボタン
+  const addUsageBtn = $('detail-content').querySelector('#detail-add-usage-btn');
+  if (addUsageBtn) {
+    addUsageBtn.addEventListener('click', () => {
+      initAddUsage();
+      // フォントを事前に選択した状態で用例登録へ
+      selectedUsageFontId = id;
+      $('usage-selected-font').textContent = `${f.name}${f.maker?' / '+f.maker:''}`;
+      $('usage-step1').style.display = 'none';
+      $('usage-step2').style.display = 'block';
+      buildPhotoSlots('au-photos','au-photo-memos-wrap',auPhotoFiles,auPhotoMemos);
+      showScreen('screen-add-usage');
+    });
+  }
 
   // カバー写真エリア長押し → 写真選択メニュー
   const heroWrap = $('detail-content').querySelector('#detail-hero-wrap');
