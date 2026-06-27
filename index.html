@@ -2264,11 +2264,19 @@ function buildEditPhotoSlots(containerId, memoWrapId, existingArr, filesArr, mem
       const idx = parseInt(slot.dataset.idx);
       if (filesArr[idx]) return;
       const input = document.createElement('input');
-      input.type='file'; input.accept='image/*';
-      input.onchange = e2 => {
-        filesArr[idx] = e2.target.files[0];
-        buildEditPhotoSlots(containerId, memoWrapId, existingArr, filesArr, memosArr);
-      };
+      input.type = 'file'; input.accept = 'image/*';
+      input.capture = 'environment';
+      input.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
+      document.body.appendChild(input);
+      input.addEventListener('change', e2 => {
+        const file = e2.target.files[0];
+        if (file) {
+          filesArr[idx] = file;
+          buildEditPhotoSlots(containerId, memoWrapId, existingArr, filesArr, memosArr);
+        }
+        document.body.removeChild(input);
+      });
+      input.addEventListener('cancel', () => document.body.removeChild(input));
       input.click();
     });
   });
@@ -2325,12 +2333,15 @@ function buildPhotoSlots(containerId, memoWrapId, filesArr, memosArr) {
   // click to add / long press to edit
   wrap.querySelectorAll('.photo-slot').forEach(slot => {
     let pressTimer = null;
+    let didLongPress = false;
 
     // 長押しで写真エディタを開く
     slot.addEventListener('pointerdown', e => {
       const idx = parseInt(slot.dataset.idx);
       if (!filesArr[idx]) return;
+      didLongPress = false;
       pressTimer = setTimeout(() => {
+        didLongPress = true;
         const url = URL.createObjectURL(filesArr[idx]);
         openPhotoEditor(url, blob => {
           filesArr[idx] = new File([blob], 'edited.jpg', { type: 'image/jpeg' });
@@ -2340,8 +2351,10 @@ function buildPhotoSlots(containerId, memoWrapId, filesArr, memosArr) {
     });
     slot.addEventListener('pointerup', () => clearTimeout(pressTimer));
     slot.addEventListener('pointercancel', () => clearTimeout(pressTimer));
+    slot.addEventListener('pointermove', () => clearTimeout(pressTimer));
 
     slot.addEventListener('click', e => {
+      if (didLongPress) { didLongPress = false; return; }
       if (e.target.classList.contains('remove-btn')) {
         const idx = parseInt(e.target.dataset.idx);
         filesArr[idx] = null; memosArr[idx] = '';
@@ -2350,12 +2363,25 @@ function buildPhotoSlots(containerId, memoWrapId, filesArr, memosArr) {
       }
       const idx = parseInt(slot.dataset.idx);
       if (filesArr[idx]) return;
+
+      // iOSのためにDOMに追加してからclick()
       const input = document.createElement('input');
-      input.type='file'; input.accept='image/*';
-      input.onchange = e2 => {
-        filesArr[idx] = e2.target.files[0];
-        buildPhotoSlots(containerId, memoWrapId, filesArr, memosArr);
-      };
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.capture = 'environment'; // カメラを優先
+      input.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
+      document.body.appendChild(input);
+      input.addEventListener('change', e2 => {
+        const file = e2.target.files[0];
+        if (file) {
+          filesArr[idx] = file;
+          buildPhotoSlots(containerId, memoWrapId, filesArr, memosArr);
+        }
+        document.body.removeChild(input);
+      });
+      input.addEventListener('cancel', () => {
+        document.body.removeChild(input);
+      });
       input.click();
     });
   });
