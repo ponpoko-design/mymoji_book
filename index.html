@@ -187,18 +187,24 @@
   .btn-primary {
     width: 100%; padding: 14px;
     background: linear-gradient(135deg, #b8a0f0, #7ab8f5);
-    border: none; border-radius: var(--radius-sm);
+    border: none; border-radius: 50px;
     color: white; font-size: 15px; font-weight: 700;
     cursor: pointer; letter-spacing: 0.04em;
     transition: opacity 0.2s, transform 0.1s;
+    font-family: inherit;
   }
   .btn-primary:active { opacity: 0.85; transform: scale(0.98); }
 
   .btn-secondary {
-    background: none; border: none; color: var(--c-text-sub);
-    font-size: 13px; cursor: pointer; text-decoration: underline;
-    margin-top: 16px; display: block; text-align: center; width: 100%;
+    background: none; border: 1.5px solid var(--c-border);
+    border-radius: 50px; color: var(--c-text-sub);
+    font-size: 13px; cursor: pointer;
+    margin-top: 12px; display: block; text-align: center;
+    width: 100%; padding: 10px;
+    font-family: inherit;
+    transition: background 0.2s;
   }
+  .btn-secondary:active { background: var(--c-border); }
 
   .error-msg { color: #e05c7a; font-size: 13px; margin-top: 10px; text-align: center; }
 
@@ -249,23 +255,23 @@
     display: flex; gap: 8px; align-items: center;
   }
   .search-box {
-    flex: 1; display: flex; align-items: center;
+    flex: 1; min-width: 0; display: flex; align-items: center;
     background: var(--c-card); border: 1.5px solid var(--c-border);
     border-radius: 50px; padding: 8px 14px; gap: 8px;
   }
+  .search-icon { color: var(--c-text-sub); display: flex; align-items: center; flex-shrink: 0; }
   .search-box input {
     border: none; background: none; outline: none;
-    font-size: 14px; color: var(--c-text); flex: 1;
+    font-size: 14px; color: var(--c-text); flex: 1; min-width: 0;
     font-family: inherit;
   }
-  .search-icon { color: var(--c-text-sub); font-size: 16px; }
-
   .sort-btn {
     background: var(--c-card); border: 1.5px solid var(--c-border);
-    border-radius: 50px; padding: 8px 14px;
+    border-radius: 50px; padding: 8px 12px;
     font-size: 12px; color: var(--c-text-sub);
-    cursor: pointer; white-space: nowrap;
+    cursor: pointer; white-space: nowrap; flex-shrink: 0;
     display: flex; align-items: center; gap: 4px;
+    font-family: inherit;
   }
 
   /* ── Carousel ── */
@@ -437,12 +443,11 @@
   /* ── Back button ── */
   .back-btn { background: none; border: none; cursor: pointer; color: var(--c-text); padding: 4px; display: flex; align-items: center; }
 
-  /* empty state */
   .empty-state {
     text-align: center; padding: 60px 20px;
     color: var(--c-text-sub); font-size: 14px; line-height: 2;
   }
-  .empty-state .emoji { font-size: 48px; display: block; margin-bottom: 12px; }
+  .empty-state .empty-icon { display: block; margin: 0 auto 16px; opacity: 0.4; }
 </style>
 </head>
 <body>
@@ -779,13 +784,19 @@ function renderFontList() {
     list = list.filter(f => f.favorite);
   }
   if (!list.length) {
-    wrap.innerHTML = '<div class="empty-state"><span class="emoji">🔡</span>フォントがまだありません<br>「フォント追加」から登録しましょう</div>';
+    wrap.innerHTML = `<div class="empty-state">
+      <svg class="empty-icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="4 20 9 4 12 12 15 4 20 20"/>
+        <line x1="7" y1="14" x2="17" y2="14"/>
+      </svg>
+      フォントがまだありません<br>「フォント追加」から登録しましょう
+    </div>`;
     return;
   }
   wrap.innerHTML = list.map(f => `
     <div class="font-card" data-id="${f.id}">
       <div class="font-thumb">
-        ${f.photos && f.photos[0] ? `<img src="${f.photos[0].url}" loading="lazy">` : '🔡'}
+      ${f.photos && f.photos[0] ? `<img src="${f.photos[0].url}" loading="lazy">` : `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 20 9 4 12 12 15 4 20 20"/><line x1="7" y1="14" x2="17" y2="14"/></svg>`}
       </div>
       <div class="font-info">
         <div class="font-name">${f.name}</div>
@@ -880,7 +891,7 @@ async function openDetail(id) {
           <div class="usage-grid">
             ${usages.map(u=>`
               <div class="usage-card" data-font-id="${id}" data-usage-id="${u.id}">
-                ${u.photos&&u.photos[0]?`<img class="usage-card-img" src="${u.photos[0].url}" loading="lazy">`:'<div class="usage-card-img" style="display:flex;align-items:center;justify-content:center;font-size:32px;">📷</div>'}
+                ${u.photos&&u.photos[0]?`<img class="usage-card-img" src="${u.photos[0].url}" loading="lazy">`:`<div class="usage-card-img" style="display:flex;align-items:center;justify-content:center;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c0b8d8" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div>`}
                 <div class="usage-card-info">
                   <div class="usage-card-date">${u.date||''}</div>
                   <div class="usage-card-place">${u.place||'場所未記入'}</div>
@@ -1084,7 +1095,7 @@ $('usage-font-search').addEventListener('input', e => {
   if (!results.length) { wrap.innerHTML='<div style="color:var(--c-text-sub);font-size:13px;padding:8px 0;">見つかりません</div>'; return; }
   wrap.innerHTML = results.map(f=>`
     <div class="font-card" data-id="${f.id}" style="cursor:pointer;">
-      <div class="font-thumb">${f.photos&&f.photos[0]?`<img src="${f.photos[0].url}">`:'🔡'}</div>
+      <div class="font-thumb">${f.photos&&f.photos[0]?`<img src="${f.photos[0].url}">`:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 20 9 4 12 12 15 4 20 20"/><line x1="7" y1="14" x2="17" y2="14"/></svg>`}</div>
       <div class="font-info"><div class="font-name">${f.name}</div><div class="font-maker">${f.maker||''}</div></div>
       <span style="color:var(--c-text-sub);font-size:18px;">›</span>
     </div>
