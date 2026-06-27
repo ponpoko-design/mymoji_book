@@ -674,6 +674,7 @@ const showScreen = id => {
 
 // ── Auth ───────────────────────────────────
 onAuthStateChanged(auth, user => {
+  console.log('onAuthStateChanged:', user ? user.email : 'ログインなし');
   hideLoading();
   if (user) {
     showScreen('screen-home');
@@ -687,11 +688,18 @@ $('login-btn').addEventListener('click', async () => {
   const email = $('login-email').value.trim();
   const pw = $('login-password').value;
   $('login-error').textContent = '';
+  console.log('ログイン試行:', email);
   try {
-    await signInWithEmailAndPassword(auth, email, pw);
+    const result = await signInWithEmailAndPassword(auth, email, pw);
+    console.log('ログイン成功:', result.user.email);
   } catch(e) {
-    $('login-error').textContent = 'メールアドレスまたはパスワードが違います';
+    console.error('ログインエラー:', e.code, e.message);
+    $('login-error').textContent = `エラー: ${e.code}`;
   }
+});
+
+onAuthStateChanged(auth, user => {
+  console.log('Auth状態変化:', user ? user.email : 'null');
 });
 
 $('login-email').addEventListener('keydown', e => { if(e.key==='Enter') $('login-btn').click(); });
