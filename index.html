@@ -785,9 +785,10 @@ function renderFontList() {
   }
   if (!list.length) {
     wrap.innerHTML = `<div class="empty-state">
-      <svg class="empty-icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="4 20 9 4 12 12 15 4 20 20"/>
-        <line x1="7" y1="14" x2="17" y2="14"/>
+      <svg class="empty-icon" width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <line x1="32" y1="8" x2="8" y2="56" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        <line x1="32" y1="8" x2="56" y2="56" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        <line x1="18" y1="38" x2="46" y2="38" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
       </svg>
       フォントがまだありません<br>「フォント追加」から登録しましょう
     </div>`;
@@ -796,7 +797,7 @@ function renderFontList() {
   wrap.innerHTML = list.map(f => `
     <div class="font-card" data-id="${f.id}">
       <div class="font-thumb">
-      ${f.photos && f.photos[0] ? `<img src="${f.photos[0].url}" loading="lazy">` : `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 20 9 4 12 12 15 4 20 20"/><line x1="7" y1="14" x2="17" y2="14"/></svg>`}
+      ${f.photos && f.photos[0] ? `<img src="${f.photos[0].url}" loading="lazy">` : `<svg width="28" height="28" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="32" y1="8" x2="8" y2="56" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="32" y1="8" x2="56" y2="56" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="18" y1="38" x2="46" y2="38" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`}
       </div>
       <div class="font-info">
         <div class="font-name">${f.name}</div>
@@ -1095,7 +1096,7 @@ $('usage-font-search').addEventListener('input', e => {
   if (!results.length) { wrap.innerHTML='<div style="color:var(--c-text-sub);font-size:13px;padding:8px 0;">見つかりません</div>'; return; }
   wrap.innerHTML = results.map(f=>`
     <div class="font-card" data-id="${f.id}" style="cursor:pointer;">
-      <div class="font-thumb">${f.photos&&f.photos[0]?`<img src="${f.photos[0].url}">`:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 20 9 4 12 12 15 4 20 20"/><line x1="7" y1="14" x2="17" y2="14"/></svg>`}</div>
+      <div class="font-thumb">${f.photos&&f.photos[0]?`<img src="${f.photos[0].url}">`:`<svg width="28" height="28" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="32" y1="8" x2="8" y2="56" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="32" y1="8" x2="56" y2="56" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="18" y1="38" x2="46" y2="38" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`}</div>
       <div class="font-info"><div class="font-name">${f.name}</div><div class="font-maker">${f.maker||''}</div></div>
       <span style="color:var(--c-text-sub);font-size:18px;">›</span>
     </div>
