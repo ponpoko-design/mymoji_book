@@ -2444,7 +2444,11 @@ function buildEditPhotoSlots(containerId, memoWrapId, existingArr, filesArr, mem
   existingArr.forEach((p, i) => {
     const slot = document.createElement('div');
     slot.className = 'photo-slot';
-    slot.innerHTML = `<img src="${p.url}"><button class="remove-btn" data-type="existing" data-idx="${i}">✕</button>`;
+    slot.dataset.type = 'existing';
+    slot.dataset.idx = i;
+    slot.innerHTML = `<img src="${p.url}">
+      <button class="remove-btn" data-type="existing" data-idx="${i}">✕</button>
+      <button class="edit-btn" data-type="existing" data-idx="${i}" title="編集"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>`;
     wrap.appendChild(slot);
   });
 
@@ -2457,7 +2461,9 @@ function buildEditPhotoSlots(containerId, memoWrapId, existingArr, filesArr, mem
     slot.dataset.type = 'new';
     if (filesArr[i]) {
       const url = URL.createObjectURL(filesArr[i]);
-      slot.innerHTML = `<img src="${url}"><button class="remove-btn" data-type="new" data-idx="${i}">✕</button>`;
+      slot.innerHTML = `<img src="${url}">
+        <button class="remove-btn" data-type="new" data-idx="${i}">✕</button>
+        <button class="edit-btn" data-type="new" data-idx="${i}" title="編集"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>`;
     } else {
       slot.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
     }
@@ -2483,17 +2489,47 @@ function buildEditPhotoSlots(containerId, memoWrapId, existingArr, filesArr, mem
   // クリックイベント
   wrap.querySelectorAll('.photo-slot').forEach(slot => {
     slot.addEventListener('click', e => {
-      const btn = e.target.closest('.remove-btn');
-      if (btn) {
-        if (btn.dataset.type === 'existing') {
-          existingArr.splice(parseInt(btn.dataset.idx), 1);
+      // ✕ 削除
+      const removeBtn = e.target.closest('.remove-btn');
+      if (removeBtn) {
+        if (removeBtn.dataset.type === 'existing') {
+          existingArr.splice(parseInt(removeBtn.dataset.idx), 1);
         } else {
-          filesArr[parseInt(btn.dataset.idx)] = null;
-          memosArr[parseInt(btn.dataset.idx)] = '';
+          filesArr[parseInt(removeBtn.dataset.idx)] = null;
+          memosArr[parseInt(removeBtn.dataset.idx)] = '';
         }
         buildEditPhotoSlots(containerId, memoWrapId, existingArr, filesArr, memosArr);
         return;
       }
+      // ✏️ 編集
+      const editBtn = e.target.closest('.edit-btn');
+      if (editBtn) {
+        const idx = parseInt(editBtn.dataset.idx);
+        const type = editBtn.dataset.type;
+        if (type === 'existing') {
+          // 既存写真：URLからblobに変換してエディタへ
+          fetch(existingArr[idx].url).then(r => r.blob()).then(blob => {
+            const url = URL.createObjectURL(blob);
+            openPhotoEditor(url, newBlob => {
+              const file = new File([newBlob], 'edited.jpg', { type: 'image/jpeg' });
+              // 既存配列から削除して新規に追加
+              existingArr.splice(idx, 1);
+              const emptySlot = filesArr.findIndex(f => !f);
+              if (emptySlot !== -1) filesArr[emptySlot] = file;
+              buildEditPhotoSlots(containerId, memoWrapId, existingArr, filesArr, memosArr);
+            });
+          });
+        } else {
+          if (!filesArr[idx]) return;
+          const url = URL.createObjectURL(filesArr[idx]);
+          openPhotoEditor(url, newBlob => {
+            filesArr[idx] = new File([newBlob], 'edited.jpg', { type: 'image/jpeg' });
+            buildEditPhotoSlots(containerId, memoWrapId, existingArr, filesArr, memosArr);
+          });
+        }
+        return;
+      }
+      // 空スロットタップ → ファイル選択
       if (slot.dataset.type !== 'new') return;
       const idx = parseInt(slot.dataset.idx);
       if (filesArr[idx]) return;
