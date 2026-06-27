@@ -244,10 +244,11 @@
   }
 
   .fav-btn {
-    background: none; border: none; cursor: pointer; font-size: 24px;
-    color: var(--c-border); transition: color 0.2s; flex-shrink: 0;
+    background: none; border: none; cursor: pointer;
+    flex-shrink: 0; padding: 4px; transition: transform 0.15s;
+    display: flex; align-items: center;
   }
-  .fav-btn.active { color: #e06090; }
+  .fav-btn:active { transform: scale(1.25); }
 
   /* ── Search bar ── */
   .search-wrap {
@@ -642,7 +643,7 @@
         <button class="edit-header-btn" id="detail-edit-btn" title="編集">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         </button>
-        <button class="fav-btn" id="detail-fav">♡</button>
+        <button class="fav-btn" id="detail-fav"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c8c0dc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></button>
       </div>
     </div>
     <div id="detail-content"></div>
@@ -723,10 +724,21 @@
     <div class="form-page" id="add-usage-body">
       <!-- Step 1: search font -->
       <div id="usage-step1">
-        <p style="font-size: 16px;color:var(--c-text-sub);margin-bottom:16px;">用例を登録するフォントを検索してください</p>
-        <div class="search-box" style="margin-bottom:12px;">
+        <p style="font-size: 16px;color:var(--c-text-sub);margin-bottom:12px;">用例を登録するフォントを選んでください</p>
+        <!-- 検索 -->
+        <div class="search-box" style="margin-bottom:10px;">
           <span class="search-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
           <input type="text" id="usage-font-search" placeholder="フォント名で検索">
+        </div>
+        <!-- カテゴリー絞り込み -->
+        <div class="cat-filter-wrap" style="padding:0 0 8px;">
+          <button class="cat-chip active" data-ucat="">すべて</button>
+          <button class="cat-chip" data-ucat="ゴシック">ゴシック</button>
+          <button class="cat-chip" data-ucat="明朝">明朝</button>
+          <button class="cat-chip" data-ucat="セリフ">セリフ</button>
+          <button class="cat-chip" data-ucat="サンセリフ">サンセリフ</button>
+          <button class="cat-chip" data-ucat="その他">その他</button>
+          <button class="cat-chip" data-ucat="__fav__">♡ お気に入り</button>
         </div>
         <div id="usage-font-results" class="font-list" style="padding:0;"></div>
         <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--c-border);text-align:center;">
@@ -949,6 +961,7 @@ let selectedUsageFontId = null;
 let sortMode = 'new'; // 'new' | 'fav'
 let searchQuery = '';
 let categoryFilter = '';
+let usageCatFilter = ''; // 用例採集画面の絞り込み
 
 // photo slots state
 let afPhotoFiles = [null,null,null,null,null];
@@ -1264,7 +1277,7 @@ function renderFontList() {
         <div class="font-maker">${f.maker||''}</div>
         <div><span class="font-cat-badge">${f.category||''}</span></div>
       </div>
-      <button class="fav-btn ${f.favorite?'active':''}" data-id="${f.id}">♡</button>
+      <button class="fav-btn" data-id="${f.id}">${f.favorite ? '<svg width="22" height="22" viewBox="0 0 24 24" fill="#e06090" stroke="#e06090" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>' : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c8c0dc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>'}</button>
       <span style="color:var(--c-text-sub);font-size: 20px;">›</span>
     </div>
   `).join('');
@@ -1310,7 +1323,7 @@ async function toggleFav(id) {
   renderFontList();
   if (currentFontId === id) {
     const btn = $('detail-fav');
-    btn.textContent = f.favorite ? '♥' : '♡';
+    btn.style.color=''; btn.innerHTML = f.favorite ? '<svg width="22" height="22" viewBox="0 0 24 24" fill="#e06090" stroke="#e06090" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>' : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c8c0dc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>';
     btn.style.color = f.favorite ? '#e06090' : '';
   }
 }
@@ -1326,8 +1339,8 @@ async function openDetail(id) {
     .sort((a,b)=> (b.date||'').localeCompare(a.date||''));
 
   const favBtn = $('detail-fav');
-  favBtn.textContent = f.favorite ? '♥' : '♡';
-  favBtn.style.color = f.favorite ? '#e06090' : '';
+  favBtn.style.color=''; favBtn.innerHTML = f.favorite ? '<svg width="22" height="22" viewBox="0 0 24 24" fill="#e06090" stroke="#e06090" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>' : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c8c0dc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>';
+  
   favBtn.onclick = () => toggleFav(id);
 
   // 編集ボタン
@@ -1856,25 +1869,42 @@ function initAddUsage() {
   $('usage-font-search').value = '';
   $('usage-font-results').innerHTML = '';
   selectedUsageFontId = null;
+  usageCatFilter = '';
+  // フィルターチップをリセット
+  document.querySelectorAll('[data-ucat]').forEach(b => b.classList.toggle('active', b.dataset.ucat === ''));
   const today = new Date().toISOString().split('T')[0];
   $('au-date').value = today;
   $('au-place').value = '';
   auPhotoFiles = [null,null,null,null,null];
   auPhotoMemos = ['','','','',''];
   buildPhotoSlots('au-photos','au-photo-memos-wrap',auPhotoFiles,auPhotoMemos);
+  renderUsageFontList();
 }
 
-$('usage-font-search').addEventListener('input', e => {
-  const q = e.target.value.toLowerCase();
-  const results = fonts.filter(f => (f.name||'').toLowerCase().includes(q));
+function renderUsageFontList() {
+  const q = ($('usage-font-search').value||'').toLowerCase();
   const wrap = $('usage-font-results');
-  if (!q) { wrap.innerHTML=''; return; }
-  if (!results.length) { wrap.innerHTML='<div style="color:var(--c-text-sub);font-size: 15px;padding:8px 0;">見つかりません</div>'; return; }
-  wrap.innerHTML = results.map(f=>`
+  let list = [...fonts];
+  if (q) list = list.filter(f => (f.name||'').toLowerCase().includes(q) || (f.maker||'').toLowerCase().includes(q));
+  if (usageCatFilter === '__fav__') list = list.filter(f => f.favorite);
+  else if (usageCatFilter) list = list.filter(f => f.category === usageCatFilter);
+  if (!list.length) {
+    wrap.innerHTML = `<div style="color:var(--c-text-sub);font-size:15px;padding:12px 0;text-align:center;">見つかりません</div>`;
+    return;
+  }
+  wrap.innerHTML = list.map(f=>`
     <div class="font-card" data-id="${f.id}" style="cursor:pointer;">
-      <div class="font-thumb">${f.photos&&f.photos[0]?`<img src="${f.photos[0].url}">`:`<svg width="28" height="28" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="32" y1="8" x2="8" y2="56" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="32" y1="8" x2="56" y2="56" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="18" y1="38" x2="46" y2="38" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`}</div>
-      <div class="font-info"><div class="font-name">${f.name}</div><div class="font-maker">${f.maker||''}</div></div>
-      <span style="color:var(--c-text-sub);font-size: 20px;">›</span>
+      <div class="font-thumb">${f.photos&&f.photos[0]
+        ?`<img src="${f.photos[0].url}">`
+        :`<svg width="28" height="28" viewBox="0 0 64 64" fill="none"><line x1="32" y1="8" x2="8" y2="56" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="32" y1="8" x2="56" y2="56" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="18" y1="38" x2="46" y2="38" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`}
+      </div>
+      <div class="font-info">
+        <div class="font-name">${f.name}</div>
+        <div class="font-maker">${f.maker||''}</div>
+        <div><span class="font-cat-badge">${f.category||''}</span></div>
+      </div>
+      ${f.favorite ? '<span style="color:#e06090;display:flex;align-items:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="#e06090" stroke="#e06090" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></span>' : ''}
+      <span style="color:var(--c-text-sub);font-size:20px;">›</span>
     </div>
   `).join('');
   wrap.querySelectorAll('.font-card').forEach(el => {
@@ -1886,6 +1916,18 @@ $('usage-font-search').addEventListener('input', e => {
       $('usage-step2').style.display='block';
       buildPhotoSlots('au-photos','au-photo-memos-wrap',auPhotoFiles,auPhotoMemos);
     });
+  });
+}
+
+$('usage-font-search').addEventListener('input', () => renderUsageFontList());
+
+// 用例採集のカテゴリーフィルター
+document.querySelectorAll('[data-ucat]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-ucat]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    usageCatFilter = btn.dataset.ucat;
+    renderUsageFontList();
   });
 });
 
@@ -2048,19 +2090,26 @@ async function assignUsageToFont(unassignedId, fontId, u) {
 
 $('unassigned-detail-back').addEventListener('click', () => showScreen('screen-home'));
 
-// ── Upload photos ──────────────────────────
+// ── Upload photos（並列処理・最適化）──────
 async function uploadPhotos(pathPrefix, filesArr, memosArr) {
-  const results = [];
-  for (let i=0;i<filesArr.length;i++) {
+  const tasks = [];
+  for (let i = 0; i < filesArr.length; i++) {
     if (!filesArr[i]) continue;
     const file = filesArr[i];
-    const compressed = await compressImage(file, 1200, 0.82);
-    const storageRef = ref(storage, `${pathPrefix}/${Date.now()}_${i}_${file.name}`);
-    await uploadBytes(storageRef, compressed);
-    const url = await getDownloadURL(storageRef);
-    results.push({ url, memo: memosArr[i]||'' });
+    const memo = memosArr[i] || '';
+    const idx = i;
+    tasks.push(
+      compressImage(file, 900, 0.75).then(async compressed => {
+        const storageRef = ref(storage, `${pathPrefix}/${Date.now()}_${idx}_${file.name}`);
+        await uploadBytes(storageRef, compressed);
+        const url = await getDownloadURL(storageRef);
+        return { idx, url, memo };
+      })
+    );
   }
-  return results;
+  const results = await Promise.all(tasks);
+  // インデックス順に並び替え
+  return results.sort((a, b) => a.idx - b.idx).map(r => ({ url: r.url, memo: r.memo }));
 }
 
 // ── Image compress ─────────────────────────
