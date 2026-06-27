@@ -115,7 +115,7 @@
   /* ヘッダー分のpadding-topをscreenに追加 */
   .screen { padding-top: var(--header-h); }
   .app-header h1 {
-    font-size: 24px;
+    font-size: 27px;
     font-weight: 800;
     letter-spacing: 0.02em;
     background: linear-gradient(135deg, #9b7fe8, #5aaae8);
@@ -688,6 +688,7 @@
       <button class="cat-chip" data-cat="明朝">明朝</button>
       <button class="cat-chip" data-cat="セリフ">セリフ</button>
       <button class="cat-chip" data-cat="サンセリフ">サンセリフ</button>
+      <button class="cat-chip" data-cat="UD">UD</button>
       <button class="cat-chip" data-cat="その他">その他</button>
     </div>
 
@@ -769,6 +770,7 @@
           <label class="radio-label"><input type="radio" name="af-cat" value="明朝"> 明朝</label>
           <label class="radio-label"><input type="radio" name="af-cat" value="セリフ"> セリフ</label>
           <label class="radio-label"><input type="radio" name="af-cat" value="サンセリフ"> サンセリフ</label>
+          <label class="radio-label"><input type="radio" name="af-cat" value="UD"> UD</label>
           <label class="radio-label"><input type="radio" name="af-cat" value="その他"> その他</label>
         </div>
       </div>
@@ -808,6 +810,7 @@
           <button class="cat-chip" data-ucat="明朝">明朝</button>
           <button class="cat-chip" data-ucat="セリフ">セリフ</button>
           <button class="cat-chip" data-ucat="サンセリフ">サンセリフ</button>
+          <button class="cat-chip" data-ucat="UD">UD</button>
           <button class="cat-chip" data-ucat="その他">その他</button>
           <button class="cat-chip" data-ucat="__fav__">♡ お気に入り</button>
         </div>
@@ -894,6 +897,7 @@
           <label class="radio-label"><input type="radio" name="ef-cat" value="明朝"> 明朝</label>
           <label class="radio-label"><input type="radio" name="ef-cat" value="セリフ"> セリフ</label>
           <label class="radio-label"><input type="radio" name="ef-cat" value="サンセリフ"> サンセリフ</label>
+          <label class="radio-label"><input type="radio" name="ef-cat" value="UD"> UD</label>
           <label class="radio-label"><input type="radio" name="ef-cat" value="その他"> その他</label>
         </div>
       </div>
@@ -1450,7 +1454,7 @@ async function openDetail(id) {
     ${photos.length > 0 ? `
     <div class="detail-hero" id="detail-hero-wrap" style="position:relative;cursor:pointer;">
       <img id="detail-cover-img" src="${photos[0].url}" alt="${f.name}" style="width:100%;height:100%;object-fit:cover;">
-      ${photos.length > 1 ? `<div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.45);color:white;font-size:12px;padding:4px 12px;border-radius:20px;pointer-events:none;">長押しで写真を変更</div>` : ''}
+      ${photos.length > 1 ? `<div style="position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,0.45);color:white;font-size:12px;padding:4px 12px;border-radius:20px;pointer-events:none;">変更</div>` : ''}
     </div>` : ''}
     <div class="detail-body">
       <div class="detail-title">${f.name}</div>
@@ -1484,7 +1488,7 @@ async function openDetail(id) {
             </div>
           `).join('')}
         </div>
-        ${photos.length > 1 ? '<p style="font-size:12px;color:var(--c-text-sub);margin-top:8px;">写真を長押しするとメニューが表示されます</p>' : ''}
+
       </div>`:''}
 
       <div class="divider"></div>
@@ -1666,7 +1670,7 @@ function openUsageDetail(fontId, usageId, usages) {
     ${photos.length > 0 ? `
     <div class="detail-hero" id="usage-hero-wrap" style="position:relative;cursor:pointer;">
       <img id="usage-cover-img" src="${photos[0].url}" alt="用例写真" style="width:100%;height:100%;object-fit:cover;">
-      ${photos.length > 1 ? `<div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.45);color:white;font-size:12px;padding:4px 12px;border-radius:20px;pointer-events:none;">長押しで写真を変更</div>` : ''}
+      ${photos.length > 1 ? `<div style="position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,0.45);color:white;font-size:12px;padding:4px 12px;border-radius:20px;pointer-events:none;">変更</div>` : ''}
     </div>` : ''}
     <div class="detail-body">
       <div style="font-size: 15px;color:var(--c-text-sub);">登録日：${u.date||'-'}</div>
