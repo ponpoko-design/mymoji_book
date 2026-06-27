@@ -80,7 +80,7 @@
     padding-bottom: calc(var(--nav-h) + 16px);
   }
   .screen.active { display: block; }
-  #screen-login { padding-bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+  #screen-login { padding-bottom: 0; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
   #screen-login.active { display: flex; }
 
   /* ── Header ── */
@@ -592,7 +592,7 @@
       <span>ホーム</span>
     </button>
     <button class="nav-btn" id="nav-add-font" data-screen="add-font">
-      <span class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg></span>
+      <span class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>
       <span>フォント追加</span>
     </button>
     <button class="nav-btn" id="nav-add-usage" data-screen="add-usage">
@@ -674,7 +674,6 @@ const showScreen = id => {
 
 // ── Auth ───────────────────────────────────
 onAuthStateChanged(auth, user => {
-  console.log('onAuthStateChanged:', user ? user.email : 'ログインなし');
   hideLoading();
   if (user) {
     showScreen('screen-home');
@@ -688,18 +687,11 @@ $('login-btn').addEventListener('click', async () => {
   const email = $('login-email').value.trim();
   const pw = $('login-password').value;
   $('login-error').textContent = '';
-  console.log('ログイン試行:', email);
   try {
-    const result = await signInWithEmailAndPassword(auth, email, pw);
-    console.log('ログイン成功:', result.user.email);
+    await signInWithEmailAndPassword(auth, email, pw);
   } catch(e) {
-    console.error('ログインエラー:', e.code, e.message);
-    $('login-error').textContent = `エラー: ${e.code}`;
+    $('login-error').textContent = 'メールアドレスまたはパスワードが違います';
   }
-});
-
-onAuthStateChanged(auth, user => {
-  console.log('Auth状態変化:', user ? user.email : 'null');
 });
 
 $('login-email').addEventListener('keydown', e => { if(e.key==='Enter') $('login-btn').click(); });
