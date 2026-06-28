@@ -2318,7 +2318,13 @@ async function openDetail(id) {
 
       <div class="detail-section">
         <h3>MEMO</h3>
-        <div id="detail-memo-display" style="font-size:16px;line-height:1.8;color:var(--c-text);min-height:32px;cursor:pointer;padding:4px 0;" onclick="document.getElementById('detail-memo-area').style.display='block';document.getElementById('detail-memo-display').style.display='none';document.getElementById('detail-memo-area').focus();">${f.memo ? f.memo.replace(/\n/g,'<br>') : '<span style="color:var(--c-text-sub);font-size:15px;">タップして入力…</span>'}</div>
+        <div id="detail-memo-display"
+          style="background:rgba(255,255,255,0.82);border:1px solid var(--c-border);border-radius:16px;padding:14px 16px;min-height:48px;cursor:pointer;backdrop-filter:blur(8px);"
+          onclick="document.getElementById('detail-memo-area').style.display='block';document.getElementById('detail-memo-display').style.display='none';document.getElementById('detail-memo-area').focus();">
+          ${f.memo
+            ? f.memo.split('\n').filter(l=>l.trim()).map(l=>`<div style="display:flex;align-items:baseline;gap:8px;padding:4px 0;"><span style="color:#9b7fe8;font-size:11px;flex-shrink:0;position:relative;top:-1px;">◆</span><span style="font-size:16px;line-height:1.7;color:var(--c-text);">${l}</span></div>`).join('')
+            : '<span style="color:var(--c-text-sub);font-size:15px;">タップして入力…</span>'}
+        </div>
         <textarea id="detail-memo-area" placeholder="このフォントについてメモ…" style="display:none;width:100%;min-height:100px;padding:12px 14px;border:1.5px solid var(--c-border);border-radius:16px;font-size:16px;color:var(--c-text);background:rgba(255,255,255,0.9);font-family:inherit;resize:vertical;outline:none;line-height:1.7;">${f.memo||''}</textarea>
         <div id="detail-memo-status" style="font-size:13px;color:var(--c-text-sub);margin-top:4px;text-align:right;height:18px;"></div>
       </div>
@@ -2829,7 +2835,9 @@ async function openDetail(id) {
   memoArea.addEventListener('blur', () => {
     // 表示モードに戻す
     const val = memoArea.value;
-    memoDisplay.innerHTML = val ? val.replace(/\n/g,'<br>') : '<span style="color:var(--c-text-sub);font-size:15px;">タップして入力…</span>';
+    memoDisplay.innerHTML = val
+      ? val.split('\n').filter(l=>l.trim()).map(l=>`<div style="display:flex;align-items:baseline;gap:8px;padding:4px 0;"><span style="color:#9b7fe8;font-size:11px;flex-shrink:0;position:relative;top:-1px;">◆</span><span style="font-size:16px;line-height:1.7;color:var(--c-text);">${l}</span></div>`).join('')
+      : '<span style="color:var(--c-text-sub);font-size:15px;">タップして入力…</span>';
     memoArea.style.display = 'none';
     memoDisplay.style.display = 'block';
   });
