@@ -2583,10 +2583,22 @@ async function openDetail(id) {
         </div>`).join('');
       checkSearchResults.querySelectorAll('.check-search-item').forEach(el => {
         el.addEventListener('click', async () => {
-          const newChecks = [...(f.checks||[]), el.dataset.id];
+          const targetId = el.dataset.id;
+          // 自分側に追加
+          const newChecks = [...(f.checks||[]), targetId];
           await updateDoc(doc(db,'fonts',id), { checks: newChecks });
           f.checks = newChecks;
-          showToast('追加しました');
+          // 相手側にも自動追加（双方向リンク）
+          const targetFont = fonts.find(x=>x.id===targetId);
+          if (targetFont) {
+            const targetChecks = targetFont.checks || [];
+            if (!targetChecks.includes(id)) {
+              const newTargetChecks = [...targetChecks, id];
+              await updateDoc(doc(db,'fonts',targetId), { checks: newTargetChecks });
+              targetFont.checks = newTargetChecks;
+            }
+          }
+          showToast('追加しました（相互リンク）');
           checkSearchWrap.style.display = 'none';
           openDetail(id);
         });
@@ -2599,11 +2611,18 @@ async function openDetail(id) {
     chip.addEventListener('click', async e => {
       const removeSpan = e.target.closest('.check-remove');
       if (removeSpan) {
-        // 削除
+        // 削除（双方向）
         const removeId = removeSpan.dataset.id;
         const newChecks = (f.checks||[]).filter(x => x !== removeId);
         await updateDoc(doc(db,'fonts',id), { checks: newChecks });
         f.checks = newChecks;
+        // 相手側からも削除
+        const targetFont = fonts.find(x=>x.id===removeId);
+        if (targetFont) {
+          const newTargetChecks = (targetFont.checks||[]).filter(x => x !== id);
+          await updateDoc(doc(db,'fonts',removeId), { checks: newTargetChecks });
+          targetFont.checks = newTargetChecks;
+        }
         openDetail(id);
         return;
       }
