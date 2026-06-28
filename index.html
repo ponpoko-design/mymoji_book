@@ -785,7 +785,9 @@
   <div id="screen-home" class="screen">
     <div class="app-header">
       <h1>MyMoji Book</h1>
-      <button class="header-btn" id="logout-btn" title="ログアウト"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+      <button class="header-btn" id="menu-btn" title="メニュー">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
     </div>
 
     <!-- Carousel -->
@@ -1194,6 +1196,32 @@
       <button class="editor-btn" id="pe-revert" style="display:none;">元に戻す</button>
       <button class="editor-btn editor-btn-primary" id="pe-apply">完了</button>
     </div>
+  </div>
+</div>
+
+<!-- メニュードロワー -->
+<div id="menu-overlay" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.3);"></div>
+<div id="menu-drawer" style="display:none;position:fixed;top:0;right:0;bottom:0;width:280px;z-index:201;background:rgba(255,255,255,0.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:-4px 0 24px rgba(0,0,0,0.12);flex-direction:column;padding:0;">
+  <div style="padding:20px 20px 16px;border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;">
+    <span style="font-size:17px;font-weight:700;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">MyMoji Book</span>
+    <button id="menu-close" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--c-text-sub);touch-action:manipulation;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <!-- バックアップセクション -->
+  <div style="padding:20px;border-bottom:1px solid var(--c-border);">
+    <div style="font-size:12px;font-weight:700;color:var(--c-text-sub);letter-spacing:0.08em;margin-bottom:12px;">BACKUP</div>
+    <div id="menu-backup-status" style="font-size:14px;color:var(--c-text-sub);margin-bottom:12px;">☁️ 最終BU: -</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button id="menu-backup-now" style="padding:10px 16px;border-radius:50px;border:1.5px solid var(--c-border);background:none;font-size:14px;color:var(--c-text);cursor:pointer;font-family:inherit;touch-action:manipulation;text-align:left;">今すぐバックアップ</button>
+      <button id="menu-dropbox-toggle" style="padding:10px 16px;border-radius:50px;border:1.5px solid var(--c-border);background:none;font-size:14px;color:var(--c-text);cursor:pointer;font-family:inherit;touch-action:manipulation;text-align:left;">Dropbox連携する</button>
+      <div style="font-size:11px;color:var(--c-text-sub);line-height:1.6;padding:4px 4px 0;">⚠️ 端末を返却・譲渡する際は、必ず「Dropbox連携を解除」してください。解除するとこの端末からDropboxへのアクセス情報が削除されます。</div>
+    </div>
+  </div>
+  <!-- アカウントセクション -->
+  <div style="padding:20px;">
+    <div style="font-size:12px;font-weight:700;color:var(--c-text-sub);letter-spacing:0.08em;margin-bottom:12px;">ACCOUNT</div>
+    <button id="menu-logout" style="padding:10px 16px;border-radius:50px;border:1.5px solid var(--c-border);background:none;font-size:14px;color:#e05c7a;cursor:pointer;font-family:inherit;touch-action:manipulation;text-align:left;width:100%;">ログアウト</button>
   </div>
 </div>
 
@@ -1960,8 +1988,58 @@ $('login-btn').addEventListener('click', async () => {
 $('login-email').addEventListener('keydown', e => { if(e.key==='Enter') $('login-btn').click(); });
 $('login-password').addEventListener('keydown', e => { if(e.key==='Enter') $('login-btn').click(); });
 
-$('logout-btn').addEventListener('click', async () => {
+// ── メニュードロワー ──────────────────────────
+function openMenu() {
+  const token = getDropboxToken();
+  const history = getBackupHistory();
+  // バックアップ状態を更新
+  const statusEl = $('menu-backup-status');
+  if (statusEl) statusEl.textContent = `☁️ 最終BU: ${history[0] || 'なし'}`;
+  // Dropboxボタンのテキストを更新
+  const dbxBtn = $('menu-dropbox-toggle');
+  if (dbxBtn) {
+    if (token) {
+      dbxBtn.textContent = 'Dropbox連携を解除';
+      dbxBtn.style.color = '#e05c7a';
+    } else {
+      dbxBtn.textContent = 'Dropboxと連携する';
+      dbxBtn.style.color = 'var(--c-text)';
+    }
+  }
+  $('menu-drawer').style.display = 'flex';
+  $('menu-overlay').style.display = 'block';
+}
+function closeMenu() {
+  $('menu-drawer').style.display = 'none';
+  $('menu-overlay').style.display = 'none';
+}
+
+$('menu-btn').addEventListener('click', openMenu);
+$('menu-close').addEventListener('click', closeMenu);
+$('menu-overlay').addEventListener('click', closeMenu);
+
+$('menu-logout').addEventListener('click', async () => {
+  closeMenu();
   await signOut(auth);
+});
+
+$('menu-backup-now').addEventListener('click', async () => {
+  closeMenu();
+  await runBackup(false);
+  renderBackupStatus();
+});
+
+$('menu-dropbox-toggle').addEventListener('click', () => {
+  const token = getDropboxToken();
+  if (token) {
+    localStorage.removeItem(DROPBOX_TOKEN_KEY);
+    showToast('Dropbox連携を解除しました');
+    closeMenu();
+    renderBackupStatus();
+  } else {
+    closeMenu();
+    dropboxAuth();
+  }
 });
 
 // ── Load fonts ─────────────────────────────
@@ -4317,34 +4395,16 @@ async function backupPhotos(allUrls, silent) {
   }
 }
 
-// ホーム画面にバックアップステータスを表示
+// ホーム画面バックアップステータス（メニュー内に移行したので最小限に）
 function renderBackupStatus() {
-  const history = getBackupHistory();
-  const token = getDropboxToken();
   const existing = document.getElementById('backup-status-bar');
   if (existing) existing.remove();
-
-  const bar = document.createElement('div');
-  bar.id = 'backup-status-bar';
-  bar.style.cssText = 'padding:6px 16px;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--c-text-sub);';
-
-  if (!token) {
-    bar.innerHTML = `
-      <span>☁️ Dropboxバックアップ未設定</span>
-      <button id="backup-connect-btn" style="background:linear-gradient(135deg,#b8a0f0,#7ab8f5);border:none;border-radius:50px;color:white;padding:4px 12px;font-size:12px;cursor:pointer;font-family:inherit;">連携する</button>`;
-  } else {
-    const lastDate = history[0] || 'なし';
-    bar.innerHTML = `
-      <span>☁️ 最終BU: ${lastDate}（直近${history.length}回分）</span>
-      <button id="backup-now-btn" style="background:none;border:1px solid var(--c-border);border-radius:50px;color:var(--c-text-sub);padding:4px 12px;font-size:12px;cursor:pointer;font-family:inherit;">今すぐBU</button>`;
+  // メニューが開いていれば更新
+  const statusEl = $('menu-backup-status');
+  if (statusEl) {
+    const history = getBackupHistory();
+    statusEl.textContent = `☁️ 最終BU: ${history[0] || 'なし'}`;
   }
-
-  const homeScreen = $('screen-home');
-  const carousel = homeScreen.querySelector('.carousel-wrap');
-  homeScreen.insertBefore(bar, carousel);
-
-  document.getElementById('backup-connect-btn')?.addEventListener('click', dropboxAuth);
-  document.getElementById('backup-now-btn')?.addEventListener('click', () => runBackup(false));
 }
 
 // 起動時処理
