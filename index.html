@@ -649,6 +649,60 @@
     touch-action: manipulation; z-index: 10;
   }
   #lightbox-edit-btn.visible { display: flex; }
+  #lightbox-compare-btn {
+    position: absolute; bottom: 24px; left: 20px;
+    color: white; background: rgba(0,0,0,0.5);
+    border: none; border-radius: 50%;
+    width: 44px; height: 44px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    touch-action: manipulation; z-index: 10;
+    transition: background 0.2s;
+  }
+  #lightbox-compare-btn.active { background: rgba(155,127,232,0.85); }
+  /* フローティング比較ボタン */
+  #compare-float-btn {
+    position: fixed; bottom: calc(var(--nav-h) + 16px); right: 16px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: linear-gradient(135deg, #b8a0f0, #7ab8f5);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 150;
+    box-shadow: 0 4px 16px rgba(155,127,232,0.5);
+    touch-action: manipulation;
+  }
+  #compare-count-badge {
+    position: absolute; top: -4px; right: -4px;
+    background: #e06090; color: white;
+    border-radius: 50%; width: 20px; height: 20px;
+    font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  /* 比較画面 */
+  #compare-screen.active { display: flex !important; }
+  .compare-panel {
+    position: relative; overflow: hidden;
+    flex: 1; background: #111;
+    border: 0.5px solid rgba(255,255,255,0.1);
+  }
+  .compare-panel img {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    max-width: none; max-height: none;
+    touch-action: none; user-select: none;
+  }
+  .compare-panel-close {
+    position: absolute; bottom: 12px; right: 12px;
+    background: rgba(0,0,0,0.6); border: none; color: white;
+    border-radius: 50%; width: 36px; height: 36px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    z-index: 10; touch-action: manipulation;
+  }
+  .compare-panel-back {
+    position: absolute; bottom: 12px; left: 12px;
+    background: rgba(0,0,0,0.6); border: none; color: white;
+    border-radius: 50%; width: 36px; height: 36px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    z-index: 10; touch-action: manipulation;
+  }
 
   /* ── Toast ── */
   #toast {
@@ -1163,8 +1217,22 @@
 <div id="lightbox">
   <button id="lightbox-close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
   <button id="lightbox-edit-btn" title="編集"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+  <button id="lightbox-compare-btn" title="比較に追加">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+  </button>
   <img id="lightbox-img" src="" alt="">
   <div id="lightbox-memo"></div>
+</div>
+
+<!-- 比較フローティングボタン -->
+<div id="compare-float-btn" style="display:none;">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+  <span id="compare-count-badge">0</span>
+</div>
+
+<!-- 比較画面 -->
+<div id="compare-screen" style="display:none;position:fixed;inset:0;z-index:600;background:#111;flex-direction:column;">
+  <div id="compare-panels" style="flex:1;display:flex;flex-direction:column;overflow:hidden;"></div>
 </div>
 
 <!-- Toast -->
@@ -2890,16 +2958,19 @@ function buildEditPhotoSlots(containerId, memoWrapId, existingArr, filesArr, mem
 }
 
 // ── Lightbox ──────────────────────────────
-let lightboxOnEdit = null; // 編集コールバック
+let lightboxOnEdit = null;
+let lightboxCurrentUrl = '';
 
 function openLightbox(url, memo, onEdit) {
   $('lightbox-img').src = url;
   $('lightbox-memo').textContent = memo||'';
+  lightboxCurrentUrl = url;
   lightboxOnEdit = onEdit || null;
-  // 編集ボタン表示制御
   const editBtn = $('lightbox-edit-btn');
   if (onEdit) editBtn.classList.add('visible');
   else editBtn.classList.remove('visible');
+  // 比較ボタンの状態を反映
+  $('lightbox-compare-btn').classList.toggle('active', compareList.some(c => c.url === url));
   $('lightbox').classList.add('active');
 }
 $('lightbox-close').addEventListener('click', () => $('lightbox').classList.remove('active'));
@@ -2909,6 +2980,143 @@ $('lightbox-edit-btn').addEventListener('click', () => {
   $('lightbox').classList.remove('active');
   lightboxOnEdit();
 });
+
+// ── 比較機能 ───────────────────────────────
+let compareList = []; // [{url, memo}]
+
+function updateCompareFloat() {
+  const btn = $('compare-float-btn');
+  $('compare-count-badge').textContent = compareList.length;
+  btn.style.display = compareList.length >= 2 ? 'flex' : 'none';
+}
+
+$('lightbox-compare-btn').addEventListener('click', () => {
+  const url = lightboxCurrentUrl;
+  const memo = $('lightbox-memo').textContent;
+  const idx = compareList.findIndex(c => c.url === url);
+  if (idx >= 0) {
+    compareList.splice(idx, 1);
+    $('lightbox-compare-btn').classList.remove('active');
+    showToast('比較から除外しました');
+  } else {
+    if (compareList.length >= 4) { showToast('最大4枚まで選択できます'); return; }
+    compareList.push({ url, memo });
+    $('lightbox-compare-btn').classList.add('active');
+    showToast(`比較に追加 (${compareList.length}/4)`);
+  }
+  updateCompareFloat();
+});
+
+$('compare-float-btn').addEventListener('click', () => {
+  renderCompareScreen();
+  $('compare-screen').classList.add('active');
+});
+
+function renderCompareScreen() {
+  const panels = $('compare-panels');
+  const count = compareList.length;
+  panels.innerHTML = '';
+
+  if (count <= 3) {
+    panels.style.cssText = 'flex:1;display:flex;flex-direction:column;overflow:hidden;';
+    compareList.forEach((item, i) => panels.appendChild(makeComparePanel(item, i)));
+  } else {
+    // 4枚: 2x2
+    panels.style.cssText = 'flex:1;display:flex;flex-direction:column;overflow:hidden;';
+    const top = document.createElement('div');
+    top.style.cssText = 'flex:1;display:flex;flex-direction:row;overflow:hidden;';
+    const bot = document.createElement('div');
+    bot.style.cssText = 'flex:1;display:flex;flex-direction:row;overflow:hidden;';
+    panels.appendChild(top); panels.appendChild(bot);
+    compareList.forEach((item, i) => {
+      (i < 2 ? top : bot).appendChild(makeComparePanel(item, i));
+    });
+  }
+}
+
+function makeComparePanel(item, idx) {
+  const panel = document.createElement('div');
+  panel.className = 'compare-panel';
+  panel.dataset.url = item.url;
+
+  const img = document.createElement('img');
+  img.src = item.url;
+  img.draggable = false;
+  panel.appendChild(img);
+
+  // 戻るボタン（左下）
+  const backBtn = document.createElement('button');
+  backBtn.className = 'compare-panel-back';
+  backBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>`;
+  backBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    $('compare-screen').classList.remove('active');
+    openLightbox(item.url, item.memo);
+  });
+  panel.appendChild(backBtn);
+
+  // ×ボタン（右下）
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'compare-panel-close';
+  closeBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+  closeBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    compareList = compareList.filter(c => c.url !== item.url);
+    updateCompareFloat();
+    if (compareList.length === 0) {
+      $('compare-screen').classList.remove('active');
+    } else {
+      renderCompareScreen();
+    }
+  });
+  panel.appendChild(closeBtn);
+
+  // ピンチ＋ドラッグ
+  let tx = 0, ty = 0, scale = 1;
+  const activePtrs = new Map();
+  let lastPinchDist = null, lastSinglePos = null;
+
+  function applyT() {
+    img.style.transform = `translate(-50%,-50%) translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${scale.toFixed(3)})`;
+  }
+  img.onload = () => {
+    const pw = panel.offsetWidth || window.innerWidth / 2;
+    const ph = panel.offsetHeight || window.innerHeight / Math.min(compareList.length, 2);
+    if (img.naturalWidth && img.naturalHeight) {
+      scale = Math.min(pw / img.naturalWidth, ph / img.naturalHeight);
+      applyT();
+    }
+  };
+  if (img.complete && img.naturalWidth) img.onload();
+
+  function dist(p) { const v=[...p.values()]; return Math.hypot(v[0].x-v[1].x,v[0].y-v[1].y); }
+  panel.addEventListener('pointerdown', e => {
+    if (closeBtn.contains(e.target)||backBtn.contains(e.target)) return;
+    e.preventDefault(); panel.setPointerCapture(e.pointerId);
+    activePtrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if (activePtrs.size===1) lastSinglePos={x:e.clientX,y:e.clientY};
+    else if (activePtrs.size===2){lastPinchDist=dist(activePtrs);lastSinglePos=null;}
+  });
+  panel.addEventListener('pointermove', e => {
+    if (!activePtrs.has(e.pointerId)) return;
+    e.preventDefault(); activePtrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if (activePtrs.size===1&&lastSinglePos){
+      tx+=e.clientX-lastSinglePos.x; ty+=e.clientY-lastSinglePos.y;
+      lastSinglePos={x:e.clientX,y:e.clientY}; applyT();
+    } else if (activePtrs.size===2){
+      const nd=dist(activePtrs);
+      if (lastPinchDist){scale=Math.max(0.1,Math.min(10,scale*nd/lastPinchDist));applyT();}
+      lastPinchDist=nd;
+    }
+  });
+  panel.addEventListener('pointerup', e => {
+    activePtrs.delete(e.pointerId); lastPinchDist=null;
+    if (activePtrs.size===1) lastSinglePos={...[...activePtrs.values()][0]};
+    else if (activePtrs.size===0) lastSinglePos=null;
+  });
+  panel.addEventListener('pointercancel', e => { activePtrs.delete(e.pointerId); lastPinchDist=null; lastSinglePos=null; });
+  return panel;
+}
 
 // ── Photo slots (reusable) ─────────────────
 function buildPhotoSlots(containerId, memoWrapId, filesArr, memosArr) {
