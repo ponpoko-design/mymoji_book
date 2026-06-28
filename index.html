@@ -3594,7 +3594,7 @@ function peSetupCrop() {
     frame.onpointerup = () => { frame.onpointermove = null; frame.onpointerup = null; };
   };
 
-  peCropRect = cropRect;
+  peCropRect = { x1: cropRect.x, y1: cropRect.y, x2: cropRect.x2, y2: cropRect.y2 };
 }
 
 function updateCropUI() {
@@ -3621,10 +3621,11 @@ function updateCropUI() {
   $('pe-crop-dark-left').style.cssText  = `position:absolute;left:0;width:${x}px;top:${y}px;height:${h}px;background:rgba(0,0,0,0.55);pointer-events:none;`;
   $('pe-crop-dark-right').style.cssText = `position:absolute;right:0;width:${previewRect.width - x2}px;top:${y}px;height:${h}px;background:rgba(0,0,0,0.55);pointer-events:none;`;
 
-  peCropRect = { ...cropRect };
+  peCropRect = { x1: cropRect.x, y1: cropRect.y, x2: cropRect.x2, y2: cropRect.y2 };
 }
 
 $('pe-crop-apply').addEventListener('click', () => {
+  peCropRect = { x1: cropRect.x, y1: cropRect.y, x2: cropRect.x2, y2: cropRect.y2 };
   showToast('クロップ範囲を確定しました');
   peSetTab('adjust');
 });
