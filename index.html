@@ -2215,6 +2215,25 @@ async function openDetail(id) {
 
       </div>`:''}
 
+      <div class="detail-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <h3 style="margin-bottom:0;">CHECK</h3>
+          <button id="detail-check-add-btn" style="background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;color:var(--c-text-sub);touch-action:manipulation;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          </button>
+        </div>
+        <div id="detail-check-list" style="display:flex;flex-wrap:wrap;gap:8px;min-height:24px;">
+          ${(f.checks||[]).map(cid=>{const cf=fonts.find(x=>x.id===cid);return cf?`<button class="check-font-chip" data-id="${cid}" style="background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border:none;border-radius:50px;padding:6px 14px;font-size:13px;font-weight:600;color:#5a4a8a;cursor:pointer;font-family:inherit;touch-action:manipulation;display:flex;align-items:center;gap:6px;">${cf.name}<span class="check-remove" data-id="${cid}" style="opacity:0.6;font-size:11px;margin-left:2px;">✕</span></button>`:''}).join('')}
+        </div>
+        <div id="detail-check-search-wrap" style="display:none;margin-top:10px;">
+          <div class="search-box" style="margin-bottom:8px;">
+            <span class="search-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
+            <input type="text" id="detail-check-search-input" placeholder="フォント名で検索" autocomplete="off" style="border:none;background:none;outline:none;font-size:15px;color:var(--c-text);flex:1;font-family:inherit;">
+          </div>
+          <div id="detail-check-search-results" style="max-height:200px;overflow-y:auto;"></div>
+        </div>
+      </div>
+
       <div class="divider"></div>
 
       <div class="detail-section">
@@ -2535,6 +2554,64 @@ async function openDetail(id) {
   // crownボタン
   const crownBtn = $('detail-crown');
   if (crownBtn) crownBtn.addEventListener('click', () => toggleBasic(crownBtn.dataset.id));
+
+  // ── CHECKセクション ──────────────────────────
+  const checkAddBtn = $('detail-content').querySelector('#detail-check-add-btn');
+  const checkSearchWrap = $('detail-content').querySelector('#detail-check-search-wrap');
+  const checkSearchInput = $('detail-content').querySelector('#detail-check-search-input');
+  const checkSearchResults = $('detail-content').querySelector('#detail-check-search-results');
+
+  if (checkAddBtn) {
+    checkAddBtn.addEventListener('click', () => {
+      const isOpen = checkSearchWrap.style.display !== 'none';
+      checkSearchWrap.style.display = isOpen ? 'none' : 'block';
+      if (!isOpen) { checkSearchInput.value = ''; checkSearchResults.innerHTML = ''; checkSearchInput.focus(); }
+    });
+  }
+
+  if (checkSearchInput) {
+    checkSearchInput.addEventListener('input', () => {
+      const q = checkSearchInput.value.toLowerCase().trim();
+      if (!q) { checkSearchResults.innerHTML = ''; return; }
+      const existing = f.checks || [];
+      const results = fonts.filter(x => x.id !== id && !existing.includes(x.id) && (x.name||'').toLowerCase().includes(q)).slice(0, 6);
+      checkSearchResults.innerHTML = results.map(x => `
+        <div class="check-search-item" data-id="${x.id}" style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:8px;touch-action:manipulation;">
+          <span class="font-cat-badge" style="margin-top:0;flex-shrink:0;">${x.category||''}</span>
+          <span style="font-size:15px;font-weight:600;">${x.name}</span>
+          <span style="font-size:12px;color:var(--c-text-sub);">${x.maker||''}</span>
+        </div>`).join('');
+      checkSearchResults.querySelectorAll('.check-search-item').forEach(el => {
+        el.addEventListener('click', async () => {
+          const newChecks = [...(f.checks||[]), el.dataset.id];
+          await updateDoc(doc(db,'fonts',id), { checks: newChecks });
+          f.checks = newChecks;
+          showToast('追加しました');
+          checkSearchWrap.style.display = 'none';
+          openDetail(id);
+        });
+      });
+    });
+  }
+
+  // CHECKチップのタップ（フォントに飛ぶ）と✕（削除）
+  $('detail-content').querySelectorAll('.check-font-chip').forEach(chip => {
+    chip.addEventListener('click', async e => {
+      const removeSpan = e.target.closest('.check-remove');
+      if (removeSpan) {
+        // 削除
+        const removeId = removeSpan.dataset.id;
+        const newChecks = (f.checks||[]).filter(x => x !== removeId);
+        await updateDoc(doc(db,'fonts',id), { checks: newChecks });
+        f.checks = newChecks;
+        openDetail(id);
+        return;
+      }
+      // フォントに飛ぶ
+      const targetId = chip.dataset.id;
+      if (fonts.find(x=>x.id===targetId)) openDetail(targetId);
+    });
+  });
 
   // 自動保存メモ
   let memoTimer = null;
