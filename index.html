@@ -2201,10 +2201,15 @@ async function openDetail(id) {
         <div id="detail-memo-status" style="font-size:13px;color:var(--c-text-sub);margin-top:4px;text-align:right;height:18px;"></div>
       </div>
 
-      ${photos.length?`
+
       <div class="detail-section">
-        <h3>PHOTOS</h3>
-        <div class="photos-grid">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <h3 style="margin-bottom:0;">PHOTOS</h3>
+          <button id="detail-photo-add-btn" style="background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;color:var(--c-text-sub);touch-action:manipulation;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          </button>
+        </div>
+        <div class="photos-grid" id="detail-photos-grid">
           ${photos.map((p,i)=>`
             <div class="photo-thumb" data-url="${p.url}" data-memo="${p.memo||''}" data-original-url="${p.originalUrl||''}" data-idx="${i}">
               <img src="${p.url}" loading="lazy">
@@ -2212,8 +2217,8 @@ async function openDetail(id) {
             </div>
           `).join('')}
         </div>
-
-      </div>`:''}
+        ${photos.length === 0 ? `<div style="color:var(--c-text-sub);font-size:14px;padding:8px 0;">＋ボタンから写真を追加できます</div>` : ''}
+      </div>
 
       <div class="detail-section">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -2554,6 +2559,40 @@ async function openDetail(id) {
   // crownボタン
   const crownBtn = $('detail-crown');
   if (crownBtn) crownBtn.addEventListener('click', () => toggleBasic(crownBtn.dataset.id));
+
+  // ── PHOTOS ＋ボタン ──────────────────────────
+  const photoAddBtn = $('detail-content').querySelector('#detail-photo-add-btn');
+  if (photoAddBtn) {
+    photoAddBtn.addEventListener('click', () => {
+      const f2 = fonts.find(x=>x.id===id);
+      if (!f2) return;
+      if ((f2.photos||[]).length >= 5) { showToast('写真は最大5枚です'); return; }
+      const input = document.createElement('input');
+      input.type = 'file'; input.accept = 'image/*';
+      input.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
+      document.body.appendChild(input);
+      input.addEventListener('change', async e2 => {
+        const file = e2.target.files[0];
+        if (!file) { document.body.removeChild(input); return; }
+        photoAddBtn.style.opacity = '0.4';
+        try {
+          const compressed = await compressImage(file, 900, 0.75);
+          const storageRef = ref(storage, `fonts/${Date.now()}_${file.name}`);
+          await uploadBytes(storageRef, compressed);
+          const url = await getDownloadURL(storageRef);
+          const newPhotos = [...(f2.photos||[]), { url, memo: '' }];
+          await updateDoc(doc(db,'fonts',id), { photos: newPhotos });
+          f2.photos = newPhotos;
+          showToast('写真を追加しました');
+          openDetail(id);
+        } catch(err) { showToast('アップロードに失敗しました'); }
+        photoAddBtn.style.opacity = '1';
+        document.body.removeChild(input);
+      });
+      input.addEventListener('cancel', () => document.body.removeChild(input));
+      input.click();
+    });
+  }
 
   // ── CHECKセクション ──────────────────────────
   const checkAddBtn = $('detail-content').querySelector('#detail-check-add-btn');
