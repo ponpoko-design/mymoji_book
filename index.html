@@ -3247,22 +3247,34 @@ function openPhotoEditor(src, onApply, onClose) {
   peSetTab('adjust');
   $('photo-editor').classList.add('active');
 
-  // XHRでblobを取得→ObjectURLに変換してimgにセット
-  // これによりcanvasへの描画がtaintされない
+  // 完了・保存ボタンをロード中にdisabled
+  const applyBtn = $('pe-apply');
+  applyBtn.disabled = true;
+  applyBtn.textContent = '読み込み中…';
+
   const xhr = new XMLHttpRequest();
   xhr.open('GET', src, true);
   xhr.responseType = 'blob';
   xhr.onload = () => {
     if (xhr.status === 200) {
       const blobUrl = URL.createObjectURL(xhr.response);
-      img.onload = () => { peOriginalSrc = blobUrl; };
+      img.onload = () => {
+        peOriginalSrc = blobUrl;
+        applyBtn.disabled = false;
+        applyBtn.textContent = '完了・保存';
+      };
       img.src = blobUrl;
     } else {
-      // XHR失敗時はそのままsrcをセット（プレビューのみ）
       img.src = src;
+      applyBtn.disabled = false;
+      applyBtn.textContent = '完了・保存';
     }
   };
-  xhr.onerror = () => { img.src = src; };
+  xhr.onerror = () => {
+    img.src = src;
+    applyBtn.disabled = false;
+    applyBtn.textContent = '完了・保存';
+  };
   xhr.send();
 }
 
@@ -3442,9 +3454,9 @@ $('pe-apply').addEventListener('click', async () => {
   } catch(err) {
     console.error('pe-apply error:', err);
     if (err.message === 'CORS_TAINT') {
-      showToast('画像の読み込みが完了していません。少し待ってから再度お試しください');
+      showToast('もう少し待ってから再度お試しください');
     } else {
-      showToast('処理に失敗しました: ' + (err.message || ''));
+      showToast('保存に失敗しました');
     }
     $('pe-apply').disabled = false;
     $('pe-apply').textContent = '完了・保存';
