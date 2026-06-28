@@ -2115,7 +2115,7 @@ async function openDetail(id) {
         <h3>PHOTOS</h3>
         <div class="photos-grid">
           ${photos.map((p,i)=>`
-            <div class="photo-thumb" data-url="${p.url}" data-memo="${p.memo||''}" data-idx="${i}">
+            <div class="photo-thumb" data-url="${p.url}" data-memo="${p.memo||''}" data-original-url="${p.originalUrl||''}" data-idx="${i}">
               <img src="${p.url}" loading="lazy">
               ${i===0 ? '<div style="position:absolute;bottom:4px;left:4px;background:rgba(155,127,232,0.85);color:white;font-size:10px;padding:2px 6px;border-radius:6px;pointer-events:none;">カバー</div>' : ''}
             </div>
@@ -2216,7 +2216,8 @@ async function openDetail(id) {
             const f2 = fonts.find(x => x.id === id);
             if (f2?.photos) {
               const idx = photoIdx >= 0 ? photoIdx : 0;
-              f2.photos[idx] = { ...f2.photos[idx], url };
+              const orig = f2.photos[idx].originalUrl || f2.photos[idx].url;
+              f2.photos[idx] = { ...f2.photos[idx], url, originalUrl: orig };
               await updateDoc(doc(db,'fonts',id), { photos: f2.photos });
               showToast('保存しました');
               openDetail(id);
@@ -2266,14 +2267,16 @@ async function openDetail(id) {
 
     el.addEventListener('pointerdown', e => {
       pressTimer = setTimeout(async () => {
+        const f2 = fonts.find(x=>x.id===id);
+        const hasOriginal = el.dataset.originalUrl && el.dataset.originalUrl !== '';
         const items = [
           { action: 'view', icon: '🔍', label: '拡大して見る' },
           ...(idx > 0 ? [{ action: 'cover', icon: '⭐', label: 'カバーに設定' }] : []),
+          ...(hasOriginal ? [{ action: 'revert', icon: '↩️', label: '元の写真に戻す' }] : []),
         ];
         const action = await showContextMenu(e.clientX, e.clientY, items);
         if (action === 'view') openLightbox(el.dataset.url, el.dataset.memo);
         if (action === 'cover') {
-          const f2 = fonts.find(x=>x.id===id);
           if (!f2?.photos) return;
           const newPhotos = [...f2.photos];
           const [selected] = newPhotos.splice(idx, 1);
@@ -2282,6 +2285,16 @@ async function openDetail(id) {
             await updateDoc(doc(db,'fonts',id), { photos: newPhotos });
             f2.photos = newPhotos;
             showToast('カバー写真を変更しました');
+            openDetail(id);
+          } catch(e2) { showToast('エラーが発生しました'); }
+        }
+        if (action === 'revert') {
+          if (!f2?.photos?.[idx]?.originalUrl) return;
+          const origUrl = f2.photos[idx].originalUrl;
+          f2.photos[idx] = { ...f2.photos[idx], url: origUrl, originalUrl: null };
+          try {
+            await updateDoc(doc(db,'fonts',id), { photos: f2.photos });
+            showToast('元の写真に戻しました');
             openDetail(id);
           } catch(e2) { showToast('エラーが発生しました'); }
         }
@@ -2306,7 +2319,10 @@ async function openDetail(id) {
             const f2 = fonts.find(x => x.id === id);
             if (f2?.photos) {
               const pi = f2.photos.findIndex(p => p.url === url);
-              if (pi >= 0) { f2.photos[pi] = { ...f2.photos[pi], url: noCacheUrl }; }
+              if (pi >= 0) {
+                const orig = f2.photos[pi].originalUrl || f2.photos[pi].url;
+                f2.photos[pi] = { ...f2.photos[pi], url: noCacheUrl, originalUrl: orig };
+              }
               await updateDoc(doc(db,'fonts',id), { photos: f2.photos });
               showToast('保存しました');
               openDetail(id);
@@ -2384,8 +2400,8 @@ function openUsageDetail(fontId, usageId, usages) {
         <div class="detail-section">
           <h3>PHOTOS</h3>
           <div class="photos-grid">
-            ${photos.map(p=>`
-              <div class="photo-thumb" data-url="${p.url}" data-memo="${p.memo||''}">
+            ${photos.map((p,pi)=>`
+              <div class="photo-thumb" data-url="${p.url}" data-memo="${p.memo||''}" data-original-url="${p.originalUrl||''}" data-idx="${pi}">
                 <img src="${p.url}" loading="lazy">
               </div>
             `).join('')}
@@ -2406,7 +2422,10 @@ function openUsageDetail(fontId, usageId, usages) {
             const newUrl = rawUrl2 + '&t=' + Date.now();
             const newPhotos = [...(u.photos||[])];
             const pi = newPhotos.findIndex(p => p.url === url);
-            if (pi >= 0) newPhotos[pi] = { ...newPhotos[pi], url: newUrl };
+            if (pi >= 0) {
+              const orig = newPhotos[pi].originalUrl || newPhotos[pi].url;
+              newPhotos[pi] = { ...newPhotos[pi], url: newUrl, originalUrl: orig };
+            }
             await updateDoc(doc(db,'fonts',fontId,'usages',usageId), { photos: newPhotos });
             u.photos = newPhotos;
             showToast('保存しました');
@@ -3091,8 +3110,8 @@ function openUnassignedDetail(id) {
         <div class="detail-section">
           <h3>PHOTOS</h3>
           <div class="photos-grid">
-            ${photos.map(p=>`
-              <div class="photo-thumb" data-url="${p.url}" data-memo="${p.memo||''}">
+            ${photos.map((p,pi)=>`
+              <div class="photo-thumb" data-url="${p.url}" data-memo="${p.memo||''}" data-original-url="${p.originalUrl||''}" data-idx="${pi}">
                 <img src="${p.url}" loading="lazy">
               </div>
             `).join('')}
