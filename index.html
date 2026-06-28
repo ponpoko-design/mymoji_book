@@ -484,61 +484,85 @@
   /* ── Photo editor modal ── */
   #photo-editor {
     display: none; position: fixed; inset: 0; z-index: 250;
-    background: rgba(0,0,0,0.95);
-    flex-direction: column; align-items: center; justify-content: center;
-    gap: 12px;
+    background: #000;
+    flex-direction: column; align-items: stretch;
   }
   #photo-editor.active { display: flex; }
+
+  /* 写真プレビューエリア */
+  #pe-preview-area {
+    flex: 1; position: relative;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; background: #111;
+  }
   #photo-editor-img {
-    max-width: 88vw; max-height: 52vh;
-    border-radius: 12px; object-fit: contain;
+    max-width: 100%; max-height: 100%;
+    object-fit: contain; display: block;
   }
-  #pe-crop-wrap {
-    position: relative; display: inline-block;
-    max-width: 88vw; max-height: 52vh;
-    display: none;
-  }
-  #pe-crop-wrap img { max-width: 88vw; max-height: 52vh; border-radius: 12px; display: block; }
+  /* クロップ用オーバーレイ（写真の上に重ねる） */
   #pe-crop-overlay {
-    position: absolute; inset: 0; cursor: crosshair;
-    border-radius: 12px;
+    position: absolute; inset: 0;
+    cursor: crosshair; display: none;
   }
+  #pe-crop-overlay.active { display: block; }
   #pe-crop-rect {
     position: absolute; border: 2px solid white;
-    box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
-    display: none;
+    box-shadow: 0 0 0 9999px rgba(0,0,0,0.55);
+    pointer-events: none; display: none;
   }
-  .photo-editor-tools {
-    display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+
+  /* コントロールエリア（下部固定） */
+  #pe-controls {
+    flex-shrink: 0;
+    background: rgba(20,20,20,0.97);
+    padding: 12px 16px 20px;
+    display: flex; flex-direction: column; gap: 10px;
   }
-  .pe-sliders { display: none; flex-direction: column; gap: 10px; width: 88vw; max-width: 360px; }
-  .pe-sliders.active { display: flex; }
-  .pe-slider-row { display: flex; align-items: center; gap: 10px; }
-  .pe-slider-row label { color: white; font-size: 13px; width: 64px; flex-shrink: 0; }
-  .pe-slider-row input[type=range] { flex: 1; accent-color: #b8a0f0; }
-  .pe-slider-row span { color: white; font-size: 12px; width: 30px; text-align: right; }
-  .pe-tab-row { display: flex; gap: 8px; }
+  .pe-tab-row { display: flex; gap: 8px; justify-content: center; }
   .pe-tab {
-    padding: 7px 16px; border-radius: 50px; border: 1.5px solid rgba(255,255,255,0.3);
-    background: rgba(255,255,255,0.1); color: white; font-size: 13px; font-weight: 600;
+    padding: 7px 18px; border-radius: 50px;
+    border: 1.5px solid rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.08); color: white;
+    font-size: 13px; font-weight: 600;
     cursor: pointer; font-family: inherit; touch-action: manipulation;
   }
   .pe-tab.active { background: linear-gradient(135deg, #b8a0f0, #7ab8f5); border-color: transparent; }
+
+  .pe-panel { display: none; flex-direction: column; gap: 10px; }
+  .pe-panel.active { display: flex; }
+
+  .pe-slider-row { display: flex; align-items: center; gap: 10px; }
+  .pe-slider-row label { color: white; font-size: 12px; width: 56px; flex-shrink: 0; }
+  .pe-slider-row input[type=range] { flex: 1; accent-color: #b8a0f0; height: 28px; }
+  .pe-slider-row span { color: rgba(255,255,255,0.7); font-size: 12px; width: 28px; text-align: right; }
+
+  .pe-btn-row { display: flex; gap: 10px; justify-content: center; }
   .editor-btn {
-    background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.25);
     border-radius: 50px; color: white; padding: 10px 20px;
     font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 6px;
     font-family: inherit; font-weight: 600;
-    transition: background 0.15s; touch-action: manipulation;
+    transition: background 0.15s; touch-action: manipulation; flex: 1; justify-content: center;
   }
   .editor-btn:active { background: rgba(255,255,255,0.3); }
   .editor-btn-primary {
     background: linear-gradient(135deg, #b8a0f0, #7ab8f5);
     border-color: transparent;
   }
+
+  /* 上部ボタン（×と編集アイコン） */
+  #pe-header {
+    position: absolute; top: 0; left: 0; right: 0;
+    display: flex; justify-content: flex-end; align-items: center;
+    padding: 12px 14px; gap: 8px; z-index: 10;
+    pointer-events: none;
+  }
+  #pe-header button { pointer-events: all; }
   #photo-editor-close {
-    position: absolute; top: 20px; right: 20px;
-    background: none; border: none; color: white; cursor: pointer;
+    background: rgba(0,0,0,0.5); border: none; color: white;
+    border-radius: 50%; width: 36px; height: 36px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    touch-action: manipulation;
   }
   .weight-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
   .weight-chip {
@@ -612,19 +636,27 @@
     flex-direction: column;
   }
   #lightbox.active { display: flex; }
-  #lightbox img { max-width: 94vw; max-height: 72vh; border-radius: 12px; object-fit: contain; }
-  #lightbox-memo { color: white; font-size: 15px; margin-top: 14px; max-width: 80vw; text-align: center; }
-  #lightbox-actions {
-    display: flex; gap: 10px; margin-top: 16px;
-  }
+  #lightbox img { max-width: 94vw; max-height: 78vh; border-radius: 12px; object-fit: contain; }
+  #lightbox-memo { color: white; font-size: 15px; margin-top: 10px; max-width: 80vw; text-align: center; }
+  #lightbox-actions { display: none; }
+  /* ×ボタンと編集ボタンを右上に並べる */
   #lightbox-close {
-    position: absolute; bottom: 32px; right: 24px;
-    color: white; background: rgba(255,255,255,0.15);
-    border: 1.5px solid rgba(255,255,255,0.4);
-    border-radius: 50%;
-    width: 48px; height: 48px;
+    position: absolute; top: 16px; right: 16px;
+    color: white; background: rgba(0,0,0,0.5);
+    border: none; border-radius: 50%;
+    width: 40px; height: 40px;
     cursor: pointer; display: flex; align-items: center; justify-content: center;
+    touch-action: manipulation; z-index: 10;
   }
+  #lightbox-edit-btn {
+    position: absolute; top: 16px; right: 64px;
+    color: white; background: rgba(0,0,0,0.5);
+    border: none; border-radius: 50%;
+    width: 40px; height: 40px;
+    cursor: pointer; display: none; align-items: center; justify-content: center;
+    touch-action: manipulation; z-index: 10;
+  }
+  #lightbox-edit-btn.visible { display: flex; }
 
   /* ── Toast ── */
   #toast {
@@ -1030,68 +1062,65 @@
 
 <!-- Photo Editor -->
 <div id="photo-editor">
-  <button id="photo-editor-close"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-  <canvas id="photo-editor-canvas" style="display:none;"></canvas>
-
-  <!-- 通常プレビュー -->
-  <img id="photo-editor-img" src="" alt="">
-
-  <!-- クロップ用エリア -->
-  <div id="pe-crop-wrap">
-    <img id="pe-crop-img" src="" alt="">
+  <!-- 写真プレビューエリア（上部いっぱい） -->
+  <div id="pe-preview-area">
+    <img id="photo-editor-img" src="" alt="">
     <div id="pe-crop-overlay"></div>
     <div id="pe-crop-rect"></div>
-  </div>
-
-  <!-- タブ切り替え -->
-  <div class="pe-tab-row">
-    <button class="pe-tab active" id="pe-tab-adjust">明るさ・補正</button>
-    <button class="pe-tab" id="pe-tab-rotate">回転</button>
-    <button class="pe-tab" id="pe-tab-crop">クロップ</button>
-  </div>
-
-  <!-- 明るさ・補正パネル -->
-  <div class="pe-sliders active" id="pe-panel-adjust">
-    <div class="pe-slider-row">
-      <label>明るさ</label>
-      <input type="range" id="pe-brightness" min="-100" max="100" value="0" step="1">
-      <span id="pe-brightness-val">0</span>
-    </div>
-    <div class="pe-slider-row">
-      <label>コントラスト</label>
-      <input type="range" id="pe-contrast" min="-100" max="100" value="0" step="1">
-      <span id="pe-contrast-val">0</span>
-    </div>
-    <div class="pe-slider-row">
-      <label>彩度</label>
-      <input type="range" id="pe-saturation" min="-100" max="100" value="0" step="1">
-      <span id="pe-saturation-val">0</span>
-    </div>
-  </div>
-
-  <!-- 回転パネル -->
-  <div class="pe-sliders" id="pe-panel-rotate">
-    <div class="photo-editor-tools">
-      <button class="editor-btn" id="pe-rotate-left">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2.5 2v6h6M2.66 15.57a10 10 0 1 0 .57-8.38"/></svg>
-        左90°
-      </button>
-      <button class="editor-btn" id="pe-rotate-right">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38"/></svg>
-        右90°
+    <div id="pe-header">
+      <button id="photo-editor-close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
   </div>
+  <canvas id="photo-editor-canvas" style="display:none;"></canvas>
 
-  <!-- クロップパネル -->
-  <div class="pe-sliders" id="pe-panel-crop">
-    <div style="color:white;font-size:13px;text-align:center;opacity:0.7;">画像をドラッグして範囲を選択</div>
-    <button class="editor-btn" id="pe-crop-apply">クロップを適用</button>
-  </div>
+  <!-- コントロールエリア（下部） -->
+  <div id="pe-controls">
+    <div class="pe-tab-row">
+      <button class="pe-tab active" id="pe-tab-adjust">明るさ・補正</button>
+      <button class="pe-tab" id="pe-tab-rotate">回転</button>
+      <button class="pe-tab" id="pe-tab-crop">クロップ</button>
+    </div>
 
-  <div class="photo-editor-tools">
-    <button class="editor-btn" id="pe-reset">リセット</button>
-    <button class="editor-btn editor-btn-primary" id="pe-apply">完了・保存</button>
+    <div class="pe-panel active" id="pe-panel-adjust">
+      <div class="pe-slider-row">
+        <label>明るさ</label>
+        <input type="range" id="pe-brightness" min="-100" max="100" value="0" step="1">
+        <span id="pe-brightness-val">0</span>
+      </div>
+      <div class="pe-slider-row">
+        <label>コントラスト</label>
+        <input type="range" id="pe-contrast" min="-100" max="100" value="0" step="1">
+        <span id="pe-contrast-val">0</span>
+      </div>
+      <div class="pe-slider-row">
+        <label>彩度</label>
+        <input type="range" id="pe-saturation" min="-100" max="100" value="0" step="1">
+        <span id="pe-saturation-val">0</span>
+      </div>
+    </div>
+
+    <div class="pe-panel" id="pe-panel-rotate">
+      <div class="pe-btn-row">
+        <button class="editor-btn" id="pe-rotate-left">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2.5 2v6h6M2.66 15.57a10 10 0 1 0 .57-8.38"/></svg>左90°
+        </button>
+        <button class="editor-btn" id="pe-rotate-right">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38"/></svg>右90°
+        </button>
+      </div>
+    </div>
+
+    <div class="pe-panel" id="pe-panel-crop">
+      <div style="color:rgba(255,255,255,0.6);font-size:13px;text-align:center;">写真の上をドラッグして範囲を選択</div>
+      <button class="editor-btn editor-btn-primary" id="pe-crop-apply">クロップを適用</button>
+    </div>
+
+    <div class="pe-btn-row">
+      <button class="editor-btn" id="pe-reset">リセット</button>
+      <button class="editor-btn editor-btn-primary" id="pe-apply">完了・保存</button>
+    </div>
   </div>
 </div>
 
@@ -1113,15 +1142,10 @@
 
 <!-- Lightbox -->
 <div id="lightbox">
-  <button id="lightbox-close"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  <button id="lightbox-close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  <button id="lightbox-edit-btn" title="編集"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
   <img id="lightbox-img" src="" alt="">
   <div id="lightbox-memo"></div>
-  <div id="lightbox-actions">
-    <button id="lightbox-edit-btn" class="editor-btn" style="display:none;">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-      編集
-    </button>
-  </div>
 </div>
 
 <!-- Toast -->
@@ -2711,7 +2735,9 @@ function openLightbox(url, memo, onEdit) {
   $('lightbox-memo').textContent = memo||'';
   lightboxOnEdit = onEdit || null;
   // 編集ボタン表示制御
-  $('lightbox-edit-btn').style.display = onEdit ? 'flex' : 'none';
+  const editBtn = $('lightbox-edit-btn');
+  if (onEdit) editBtn.classList.add('visible');
+  else editBtn.classList.remove('visible');
   $('lightbox').classList.add('active');
 }
 $('lightbox-close').addEventListener('click', () => $('lightbox').classList.remove('active'));
@@ -3235,10 +3261,9 @@ function peSetTab(tab) {
     $(`pe-tab-${t}`).classList.toggle('active', t === tab);
     $(`pe-panel-${t}`).classList.toggle('active', t === tab);
   });
-  // クロップ表示切り替え
   const isCrop = tab === 'crop';
-  $('photo-editor-img').style.display = isCrop ? 'none' : 'block';
-  $('pe-crop-wrap').style.display = isCrop ? 'inline-block' : 'none';
+  $('pe-crop-overlay').classList.toggle('active', isCrop);
+  if (!isCrop) { $('pe-crop-rect').style.display = 'none'; }
   if (isCrop) peSetupCrop();
 }
 
@@ -3306,16 +3331,15 @@ $('pe-rotate-right').addEventListener('click', () => { peRotation = (peRotation 
 
 // クロップ
 function peSetupCrop() {
-  const cropImg = $('pe-crop-img');
-  cropImg.src = peCanvas.toDataURL('image/jpeg', 0.92);
   $('pe-crop-rect').style.display = 'none';
   peCropStart = null;
 
+  const previewImg = $('photo-editor-img');
   const overlay = $('pe-crop-overlay');
   const rectEl = $('pe-crop-rect');
 
   function getPos(e) {
-    const rect = cropImg.getBoundingClientRect();
+    const rect = previewImg.getBoundingClientRect();
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
     return {
@@ -3328,19 +3352,27 @@ function peSetupCrop() {
     e.preventDefault();
     peCropStart = getPos(e);
     rectEl.style.display = 'block';
+    // rectElをpreviewImg基準で配置
+    const imgRect = previewImg.getBoundingClientRect();
+    rectEl.style.position = 'fixed';
+    rectEl.style.left = imgRect.left + 'px';
+    rectEl.style.top = imgRect.top + 'px';
+    rectEl.style.width = '0px';
+    rectEl.style.height = '0px';
   };
   overlay.onpointermove = e => {
     if (!peCropStart) return;
     e.preventDefault();
     const cur = getPos(e);
-    const x = Math.min(peCropStart.x, cur.x) * 100;
-    const y = Math.min(peCropStart.y, cur.y) * 100;
-    const w = Math.abs(cur.x - peCropStart.x) * 100;
-    const h = Math.abs(cur.y - peCropStart.y) * 100;
-    rectEl.style.left = x + '%';
-    rectEl.style.top = y + '%';
-    rectEl.style.width = w + '%';
-    rectEl.style.height = h + '%';
+    const imgRect = previewImg.getBoundingClientRect();
+    const x1 = Math.min(peCropStart.x, cur.x);
+    const y1 = Math.min(peCropStart.y, cur.y);
+    const w = Math.abs(cur.x - peCropStart.x);
+    const h = Math.abs(cur.y - peCropStart.y);
+    rectEl.style.left = (imgRect.left + x1 * imgRect.width) + 'px';
+    rectEl.style.top = (imgRect.top + y1 * imgRect.height) + 'px';
+    rectEl.style.width = (w * imgRect.width) + 'px';
+    rectEl.style.height = (h * imgRect.height) + 'px';
     const imgW = peCanvas.width, imgH = peCanvas.height;
     peCropRect = {
       x: Math.round(Math.min(peCropStart.x, cur.x) * imgW),
