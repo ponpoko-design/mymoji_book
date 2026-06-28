@@ -2096,7 +2096,7 @@ async function openDetail(id) {
 
   $('detail-content').innerHTML = `
     ${photos.length > 0 ? `
-    <div class="detail-hero" id="detail-hero-wrap" style="position:relative;cursor:pointer;background:var(--c-bg);overflow:hidden;">
+    <div class="detail-hero" id="detail-hero-wrap" style="position:relative;cursor:default;background:var(--c-bg);overflow:hidden;">
       <img id="detail-cover-img" src="${photos[0].url}" alt="${f.name}" style="position:absolute;top:50%;left:50%;transform-origin:center center;transition:none;max-width:none;max-height:none;">
       <div id="detail-hero-adjust-btn" style="position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,0.5);color:white;font-size:12px;padding:5px 12px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:5px;touch-action:manipulation;z-index:2;">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>
@@ -2220,33 +2220,6 @@ async function openDetail(id) {
     heroWrap.addEventListener('pointerup', () => { clearTimeout(heroTimer); });
     heroWrap.addEventListener('pointercancel', () => { clearTimeout(heroTimer); heroLongPressed = false; });
     heroWrap.addEventListener('pointermove', e => { if (Math.abs(e.movementX) > 6 || Math.abs(e.movementY) > 6) clearTimeout(heroTimer); });
-    heroWrap.addEventListener('click', () => {
-      if (heroLongPressed) { heroLongPressed = false; return; }
-      const currentSrc = $('detail-cover-img')?.src || photos[0].url;
-      const photoIdx = photos.findIndex(p => p.url === currentSrc);
-      openLightbox(currentSrc, '', () => {
-        openPhotoEditor(currentSrc, async blob => {
-          try {
-            const storageRef = ref(storage, `fonts/${Date.now()}_edited.jpg`);
-            await uploadBytes(storageRef, blob);
-            const rawUrl = await getDownloadURL(storageRef);
-            const url = rawUrl + '&t=' + Date.now();
-            const f2 = fonts.find(x => x.id === id);
-            if (f2?.photos) {
-              const idx = photoIdx >= 0 ? photoIdx : 0;
-              const orig = f2.photos[idx].originalUrl || f2.photos[idx].url;
-              f2.photos[idx] = { ...f2.photos[idx], url, originalUrl: orig };
-              await updateDoc(doc(db,'fonts',id), { photos: f2.photos });
-              showToast('保存しました');
-              // 即座にimgを差し替えてキャッシュ回避
-              const coverEl = $('detail-cover-img');
-              if (coverEl) coverEl.src = url;
-              openDetail(id);
-            }
-          } catch(e2) { showToast('保存に失敗しました'); }
-        }, () => openLightbox(currentSrc, ''));
-      });
-    });
   }
 
   // ── カバー画像 位置調整（transform完全制御）──────
