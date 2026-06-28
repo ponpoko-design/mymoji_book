@@ -1069,6 +1069,27 @@
       <button class="btn-primary" id="eu-submit">保存する</button>
     </div>
   </div>
+  <!-- ===== QUIZ ===== -->
+  <div id="screen-quiz" class="screen">
+    <div class="app-header">
+      <h1>クイズ</h1>
+      <div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;padding:32px 24px;text-align:center;gap:16px;">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#b8a0f0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 9H4.5a2.5 2.5 0 010-5H6"/>
+        <path d="M18 9h1.5a2.5 2.5 0 000-5H18"/>
+        <path d="M4 22h16"/>
+        <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+        <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+        <path d="M18 2H6v7a6 6 0 0012 0V2z"/>
+      </svg>
+      <div style="font-size:22px;font-weight:700;color:var(--c-text);">フォントクイズ</div>
+      <div style="font-size:15px;color:var(--c-text-sub);line-height:1.8;">登録したフォントを使った<br>クイズ機能は近日公開予定です</div>
+      <div style="font-size:13px;color:var(--c-border);margin-top:8px;">Coming Soon</div>
+    </div>
+  </div>
+
   <nav class="bottom-nav" id="bottom-nav" style="display:none;">
     <button class="nav-btn active" id="nav-home" data-screen="home">
       <span class="icon">
@@ -1103,6 +1124,28 @@
         </svg>
       </span>
       <span>用例採集</span>
+    </button>
+    <button class="nav-btn" id="nav-quiz" data-screen="quiz">
+      <span class="icon">
+        <svg class="icon-outline" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 9H4.5a2.5 2.5 0 010-5H6"/>
+          <path d="M18 9h1.5a2.5 2.5 0 000-5H18"/>
+          <path d="M4 22h16"/>
+          <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+          <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+          <path d="M18 2H6v7a6 6 0 0012 0V2z"/>
+        </svg>
+        <svg class="icon-filled" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="none">
+          <defs><linearGradient id="ng4" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#b8a0f0"/><stop offset="100%" stop-color="#7ab8f5"/></linearGradient></defs>
+          <path d="M18 2H6v7a6 6 0 0012 0V2z" fill="url(#ng4)"/>
+          <path d="M6 9H4.5a2.5 2.5 0 010-5H6" stroke="url(#ng4)" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M18 9h1.5a2.5 2.5 0 000-5H18" stroke="url(#ng4)" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M4 22h16" stroke="url(#ng4)" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" stroke="url(#ng4)" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" stroke="url(#ng4)" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span>クイズ</span>
     </button>
   </nav>
 
@@ -3182,7 +3225,6 @@ function buildEditPhotoSlots(containerId, memoWrapId, existingArr, filesArr, mem
       if (filesArr[idx]) return;
       const input = document.createElement('input');
       input.type = 'file'; input.accept = 'image/*';
-      input.capture = 'environment';
       input.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
       document.body.appendChild(input);
       input.addEventListener('change', e2 => {
@@ -3441,7 +3483,6 @@ function buildPhotoSlots(containerId, memoWrapId, filesArr, memosArr) {
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = 'image/*';
-      input.capture = 'environment';
       input.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
       document.body.appendChild(input);
       input.addEventListener('change', e2 => {
@@ -3465,6 +3506,7 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
     if (s === 'home') { showScreen('screen-home'); renderHome(); }
     else if (s === 'add-font') { initAddFont(); showScreen('screen-add-font'); }
     else if (s === 'add-usage') { initAddUsage(); showScreen('screen-add-usage'); }
+    else if (s === 'quiz') { showScreen('screen-quiz'); }
   });
 });
 
