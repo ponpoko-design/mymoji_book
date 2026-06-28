@@ -2967,7 +2967,7 @@ function openLightbox(url, memo, onEdit, fontName) {
   $('lightbox-img').src = url;
   $('lightbox-memo').textContent = memo||'';
   lightboxCurrentUrl = url;
-  lightboxCurrentFontName = fontName || '';
+  if (fontName !== undefined) lightboxCurrentFontName = fontName || '';
   lightboxOnEdit = onEdit || null;
   const editBtn = $('lightbox-edit-btn');
   if (onEdit) editBtn.classList.add('visible');
