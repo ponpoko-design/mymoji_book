@@ -3242,11 +3242,28 @@ function openPhotoEditor(src, onApply, onClose) {
   $('pe-saturation').value = 0; $('pe-saturation-val').textContent = '0';
 
   const img = $('photo-editor-img');
-  img.src = src;
   img.style.transform = '';
   img.style.filter = '';
   peSetTab('adjust');
   $('photo-editor').classList.add('active');
+
+  // XHRでblobを取得→ObjectURLに変換してimgにセット
+  // これによりcanvasへの描画がtaintされない
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', src, true);
+  xhr.responseType = 'blob';
+  xhr.onload = () => {
+    if (xhr.status === 200) {
+      const blobUrl = URL.createObjectURL(xhr.response);
+      img.onload = () => { peOriginalSrc = blobUrl; };
+      img.src = blobUrl;
+    } else {
+      // XHR失敗時はそのままsrcをセット（プレビューのみ）
+      img.src = src;
+    }
+  };
+  xhr.onerror = () => { img.src = src; };
+  xhr.send();
 }
 
 function peUpdatePreview() {
@@ -3362,15 +3379,27 @@ $('photo-editor-close').addEventListener('click', () => {
   if (peOnClose) peOnClose();
 });
 
-// 完了・保存：表示中のimgタグをcanvasに直接描画
+// 完了・保存
 $('pe-apply').addEventListener('click', async () => {
   $('pe-apply').disabled = true;
   $('pe-apply').textContent = '処理中…';
   try {
     const displayImg = $('photo-editor-img');
+
+    // imgのsrcがblobURL(XHR取得済み)かどうか確認
+    // まだロード中の場合は待つ
+    await new Promise((res, rej) => {
+      if (displayImg.complete && displayImg.naturalWidth > 0) { res(); return; }
+      displayImg.onload = res;
+      displayImg.onerror = rej;
+      setTimeout(rej, 8000); // 8秒タイムアウト
+    });
+
     const rot = peRotation % 360;
-    const sw = displayImg.naturalWidth || displayImg.width;
-    const sh = displayImg.naturalHeight || displayImg.height;
+    const sw = displayImg.naturalWidth;
+    const sh = displayImg.naturalHeight;
+    if (!sw || !sh) throw new Error('画像サイズが取得できません');
+
     const cw = (rot === 90 || rot === 270) ? sh : sw;
     const ch = (rot === 90 || rot === 270) ? sw : sh;
     peCanvas.width = cw; peCanvas.height = ch;
@@ -3384,6 +3413,12 @@ $('pe-apply').addEventListener('click', async () => {
     peCtx.drawImage(displayImg, -sw/2, -sh/2);
     peCtx.restore();
     peCtx.filter = 'none';
+
+    // taintチェック：toDataURLを試みてSecurityErrorを事前検出
+    try { peCanvas.toDataURL(); } catch(secErr) {
+      throw new Error('CORS_TAINT');
+    }
+
     let finalCanvas = peCanvas;
     if (peCropRect) {
       const cx = Math.round(peCropRect.x1 * cw);
@@ -3397,14 +3432,20 @@ $('pe-apply').addEventListener('click', async () => {
         finalCanvas = tmp;
       }
     }
+
     finalCanvas.toBlob(resultBlob => {
       if (peOnApply) peOnApply(resultBlob);
       $('photo-editor').classList.remove('active');
       if (peOnClose) peOnClose();
     }, 'image/jpeg', 0.88);
+
   } catch(err) {
-    console.error(err);
-    showToast('処理に失敗しました');
+    console.error('pe-apply error:', err);
+    if (err.message === 'CORS_TAINT') {
+      showToast('画像の読み込みが完了していません。少し待ってから再度お試しください');
+    } else {
+      showToast('処理に失敗しました: ' + (err.message || ''));
+    }
     $('pe-apply').disabled = false;
     $('pe-apply').textContent = '完了・保存';
   }
