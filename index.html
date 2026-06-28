@@ -1939,7 +1939,7 @@ onAuthStateChanged(auth, user => {
   hideLoading();
   if (user) {
     showScreen('screen-home');
-    loadFonts();
+    loadFontsWithBackup();
     loadUnassignedUsages();
   } else {
     showScreen('screen-login');
@@ -4101,6 +4101,267 @@ $('pe-apply').addEventListener('click', async () => {
     $('pe-apply').textContent = '完了';
   }
 });
+
+// ── Dropbox バックアップ ─────────────────────────────
+const DROPBOX_APP_KEY = 'v90o7o5it0qt3eh';
+const DROPBOX_TOKEN_KEY = 'dbx_token';
+const BACKUP_HISTORY_KEY = 'backup_history'; // localStorageに最大7回分の日付を保存
+const BACKUP_FOLDER = '/MyMojiBook';
+const MAX_BACKUP_COUNT = 7;
+
+function getDropboxToken() { return localStorage.getItem(DROPBOX_TOKEN_KEY); }
+function setDropboxToken(t) { localStorage.setItem(DROPBOX_TOKEN_KEY, t); }
+
+// Dropbox OAuth認証
+function dropboxAuth() {
+  const redirectUri = location.origin + location.pathname;
+  const url = `https://www.dropbox.com/oauth2/authorize?client_id=${DROPBOX_APP_KEY}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}`;
+  location.href = url;
+}
+
+// OAuthリダイレクト後のトークン取得
+function handleDropboxCallback() {
+  const hash = location.hash;
+  if (!hash.includes('access_token')) return false;
+  const params = new URLSearchParams(hash.slice(1));
+  const token = params.get('access_token');
+  if (token) {
+    setDropboxToken(token);
+    history.replaceState(null, '', location.pathname);
+    return true;
+  }
+  return false;
+}
+
+// Dropbox APIリクエスト
+async function dropboxApi(endpoint, body, isBinary = false) {
+  const token = getDropboxToken();
+  if (!token) return null;
+  const headers = {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  };
+  const res = await fetch(`https://api.dropboxapi.com/2/${endpoint}`, {
+    method: 'POST', headers,
+    body: JSON.stringify(body)
+  });
+  if (res.status === 401) {
+    localStorage.removeItem(DROPBOX_TOKEN_KEY);
+    return null;
+  }
+  return isBinary ? res : res.json();
+}
+
+// Dropboxにファイルをアップロード
+async function dropboxUpload(path, content, isText = true) {
+  const token = getDropboxToken();
+  if (!token) return false;
+  const body = isText
+    ? new TextEncoder().encode(content)
+    : content;
+  const res = await fetch('https://content.dropboxapi.com/2/files/upload', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Dropbox-API-Arg': JSON.stringify({ path, mode: 'overwrite', autorename: false }),
+      'Content-Type': 'application/octet-stream'
+    },
+    body
+  });
+  return res.ok;
+}
+
+// Dropboxからファイル存在確認
+async function dropboxFileExists(path) {
+  const token = getDropboxToken();
+  if (!token) return false;
+  const res = await fetch('https://api.dropboxapi.com/2/files/get_metadata', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path })
+  });
+  return res.ok;
+}
+
+// Dropboxからファイル削除
+async function dropboxDelete(path) {
+  return dropboxApi('files/delete_v2', { path });
+}
+
+// バックアップ履歴（直近7回分の日付）
+function getBackupHistory() {
+  try { return JSON.parse(localStorage.getItem(BACKUP_HISTORY_KEY) || '[]'); }
+  catch { return []; }
+}
+function saveBackupHistory(history) {
+  localStorage.setItem(BACKUP_HISTORY_KEY, JSON.stringify(history));
+}
+
+// メインバックアップ処理
+async function runBackup(silent = true) {
+  const token = getDropboxToken();
+  if (!token) return;
+
+  const today = new Date().toISOString().split('T')[0];
+  const history = getBackupHistory();
+
+  if (history[0] === today) {
+    if (!silent) showToast('本日のバックアップは完了済みです');
+    return;
+  }
+
+  if (!silent) showToast('バックアップ中…');
+
+  try {
+    // ① Firestoreデータをエクスポート
+    const q = await getDocs(collection(db, 'fonts'));
+    const allFonts = [];
+    const allPhotoUrls = []; // 全写真URLを収集
+
+    for (const d of q.docs) {
+      const fontData = { id: d.id, ...d.data() };
+      const usnap = await getDocs(collection(db, 'fonts', d.id, 'usages'));
+      fontData._usages = usnap.docs.map(u => ({ id: u.id, ...u.data() }));
+      allFonts.push(fontData);
+      // 写真URL収集
+      (fontData.photos||[]).forEach(p => { if (p.url) allPhotoUrls.push(p.url); });
+      fontData._usages.forEach(u => {
+        (u.photos||[]).forEach(p => { if (p.url) allPhotoUrls.push(p.url); });
+      });
+    }
+    const unsnap = await getDocs(collection(db, 'unassigned_usages'));
+    const unassigned = unsnap.docs.map(u => ({ id: u.id, ...u.data() }));
+    unassigned.forEach(u => {
+      (u.photos||[]).forEach(p => { if (p.url) allPhotoUrls.push(p.url); });
+    });
+
+    const exportData = {
+      exportedAt: new Date().toISOString(),
+      fonts: allFonts,
+      unassigned_usages: unassigned
+    };
+
+    // ② テキストデータをアップロード
+    const todayPath = `${BACKUP_FOLDER}/daily/${today}.json`;
+    const ok = await dropboxUpload(todayPath, JSON.stringify(exportData, null, 2));
+    if (!ok) { if (!silent) showToast('バックアップに失敗しました'); return; }
+    await dropboxUpload(`${BACKUP_FOLDER}/latest.json`, JSON.stringify(exportData, null, 2));
+
+    // ③ 写真の差分バックアップ
+    await backupPhotos(allPhotoUrls, silent);
+
+    // ④ 履歴を更新
+    const newHistory = [today, ...history.filter(d => d !== today)];
+    if (newHistory.length > MAX_BACKUP_COUNT) {
+      const toDelete = newHistory.splice(MAX_BACKUP_COUNT);
+      for (const date of toDelete) {
+        await dropboxDelete(`${BACKUP_FOLDER}/daily/${date}.json`);
+      }
+    }
+    saveBackupHistory(newHistory);
+    renderBackupStatus();
+    if (!silent) showToast(`バックアップ完了（${today}）`);
+
+  } catch(e) {
+    console.error('Backup error:', e);
+    if (!silent) showToast('バックアップエラー');
+  }
+}
+
+// 写真差分バックアップ
+async function backupPhotos(allUrls, silent) {
+  // バックアップ済みURLリストをDropboxから取得
+  const listPath = `${BACKUP_FOLDER}/photos/backed_up_urls.json`;
+  let backedUpUrls = [];
+  try {
+    const token = getDropboxToken();
+    const res = await fetch('https://content.dropboxapi.com/2/files/download', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Dropbox-API-Arg': JSON.stringify({ path: listPath })
+      }
+    });
+    if (res.ok) {
+      const text = await res.text();
+      backedUpUrls = JSON.parse(text);
+    }
+  } catch(e) { backedUpUrls = []; }
+
+  // 差分（未バックアップ）のURLだけ抽出
+  const newUrls = allUrls.filter(url => !backedUpUrls.includes(url));
+
+  if (newUrls.length === 0) return;
+  if (!silent) showToast(`写真 ${newUrls.length} 枚をバックアップ中…`);
+
+  let success = 0;
+  for (const url of newUrls) {
+    try {
+      // Firebase StorageのURLから画像をfetch
+      const res = await fetch(url);
+      if (!res.ok) continue;
+      const blob = await res.blob();
+      const arrayBuf = await blob.arrayBuffer();
+      // ファイル名：URLからハッシュ的な部分を取り出す
+      const fileName = url.split('%2F').pop().split('?')[0].replace(/%20/g,'_') || `photo_${Date.now()}.jpg`;
+      const dropboxPath = `${BACKUP_FOLDER}/photos/${fileName}`;
+      const uploaded = await dropboxUpload(dropboxPath, new Uint8Array(arrayBuf), false);
+      if (uploaded) { backedUpUrls.push(url); success++; }
+    } catch(e) { console.warn('Photo backup failed:', url, e); }
+  }
+
+  // 更新したURLリストを保存
+  if (success > 0) {
+    await dropboxUpload(listPath, JSON.stringify(backedUpUrls));
+    if (!silent) showToast(`写真 ${success} 枚バックアップ完了`);
+  }
+}
+
+// ホーム画面にバックアップステータスを表示
+function renderBackupStatus() {
+  const history = getBackupHistory();
+  const token = getDropboxToken();
+  const existing = document.getElementById('backup-status-bar');
+  if (existing) existing.remove();
+
+  const bar = document.createElement('div');
+  bar.id = 'backup-status-bar';
+  bar.style.cssText = 'padding:6px 16px;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--c-text-sub);';
+
+  if (!token) {
+    bar.innerHTML = `
+      <span>☁️ Dropboxバックアップ未設定</span>
+      <button id="backup-connect-btn" style="background:linear-gradient(135deg,#b8a0f0,#7ab8f5);border:none;border-radius:50px;color:white;padding:4px 12px;font-size:12px;cursor:pointer;font-family:inherit;">連携する</button>`;
+  } else {
+    const lastDate = history[0] || 'なし';
+    bar.innerHTML = `
+      <span>☁️ 最終BU: ${lastDate}（直近${history.length}回分）</span>
+      <button id="backup-now-btn" style="background:none;border:1px solid var(--c-border);border-radius:50px;color:var(--c-text-sub);padding:4px 12px;font-size:12px;cursor:pointer;font-family:inherit;">今すぐBU</button>`;
+  }
+
+  const homeScreen = $('screen-home');
+  const carousel = homeScreen.querySelector('.carousel-wrap');
+  homeScreen.insertBefore(bar, carousel);
+
+  document.getElementById('backup-connect-btn')?.addEventListener('click', dropboxAuth);
+  document.getElementById('backup-now-btn')?.addEventListener('click', () => runBackup(false));
+}
+
+// 起動時処理
+(async () => {
+  // OAuthコールバック処理
+  if (handleDropboxCallback()) {
+    showToast('Dropbox連携完了！');
+  }
+})();
+
+async function loadFontsWithBackup() {
+  await loadFonts();
+  renderBackupStatus();
+  if (getDropboxToken()) {
+    setTimeout(() => runBackup(true), 3000);
+  }
+}
 
 
 </script>
