@@ -2223,7 +2223,7 @@ async function openDetail(id) {
       <div class="detail-section">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
           <h3 style="margin-bottom:0;">CHECK</h3>
-          <button id="detail-check-add-btn" style="background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;color:var(--c-text-sub);touch-action:manipulation;">
+          <button id="detail-check-add-btn" style="background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;color:var(--c-text-sub);touch-action:manipulation;transition:transform 0.25s ease;">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
           </button>
         </div>
@@ -2604,6 +2604,8 @@ async function openDetail(id) {
     checkAddBtn.addEventListener('click', () => {
       const isOpen = checkSearchWrap.style.display !== 'none';
       checkSearchWrap.style.display = isOpen ? 'none' : 'block';
+      checkAddBtn.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(45deg)';
+      checkAddBtn.style.color = isOpen ? '' : 'var(--c-text)';
       if (!isOpen) { checkSearchInput.value = ''; checkSearchResults.innerHTML = ''; checkSearchInput.focus(); }
     });
   }
