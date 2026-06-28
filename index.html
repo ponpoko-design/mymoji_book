@@ -500,16 +500,8 @@
     object-fit: contain; display: block;
   }
   /* クロップ用オーバーレイ（写真の上に重ねる） */
-  #pe-crop-overlay {
-    position: absolute; inset: 0;
-    cursor: crosshair; display: none;
-  }
-  #pe-crop-overlay.active { display: block; }
-  #pe-crop-rect {
-    position: absolute; border: 2px solid white;
-    box-shadow: 0 0 0 9999px rgba(0,0,0,0.55);
-    pointer-events: none; display: none;
-  }
+  #pe-crop-ui { touch-action: none; }
+  .pe-crop-handle { touch-action: none; }
 
   /* コントロールエリア（下部固定） */
   #pe-controls {
@@ -1065,8 +1057,29 @@
   <!-- 写真プレビューエリア（上部いっぱい） -->
   <div id="pe-preview-area">
     <img id="photo-editor-img" src="" alt="">
-    <div id="pe-crop-overlay"></div>
-    <div id="pe-crop-rect"></div>
+    <!-- iOSスタイルクロップUI -->
+    <div id="pe-crop-ui" style="display:none;position:absolute;inset:0;touch-action:none;">
+      <div id="pe-crop-dark-top"    style="position:absolute;left:0;right:0;top:0;background:rgba(0,0,0,0.55);pointer-events:none;"></div>
+      <div id="pe-crop-dark-bottom" style="position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);pointer-events:none;"></div>
+      <div id="pe-crop-dark-left"   style="position:absolute;top:0;bottom:0;left:0;background:rgba(0,0,0,0.55);pointer-events:none;"></div>
+      <div id="pe-crop-dark-right"  style="position:absolute;top:0;bottom:0;right:0;background:rgba(0,0,0,0.55);pointer-events:none;"></div>
+      <div id="pe-crop-frame" style="position:absolute;border:2px solid white;box-sizing:border-box;">
+        <div style="position:absolute;inset:0;pointer-events:none;">
+          <div style="position:absolute;left:33.3%;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.4);"></div>
+          <div style="position:absolute;left:66.6%;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.4);"></div>
+          <div style="position:absolute;top:33.3%;left:0;right:0;height:1px;background:rgba(255,255,255,0.4);"></div>
+          <div style="position:absolute;top:66.6%;left:0;right:0;height:1px;background:rgba(255,255,255,0.4);"></div>
+        </div>
+        <div class="pe-crop-handle" data-corner="tl" style="position:absolute;top:-2px;left:-2px;width:22px;height:22px;border-top:3px solid white;border-left:3px solid white;touch-action:none;cursor:nwse-resize;"></div>
+        <div class="pe-crop-handle" data-corner="tr" style="position:absolute;top:-2px;right:-2px;width:22px;height:22px;border-top:3px solid white;border-right:3px solid white;touch-action:none;cursor:nesw-resize;"></div>
+        <div class="pe-crop-handle" data-corner="bl" style="position:absolute;bottom:-2px;left:-2px;width:22px;height:22px;border-bottom:3px solid white;border-left:3px solid white;touch-action:none;cursor:nesw-resize;"></div>
+        <div class="pe-crop-handle" data-corner="br" style="position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;border-bottom:3px solid white;border-right:3px solid white;touch-action:none;cursor:nwse-resize;"></div>
+        <div class="pe-crop-handle" data-corner="t"  style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:44px;height:22px;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:ns-resize;"><div style="width:36px;height:3px;background:white;border-radius:2px;"></div></div>
+        <div class="pe-crop-handle" data-corner="b"  style="position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);width:44px;height:22px;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:ns-resize;"><div style="width:36px;height:3px;background:white;border-radius:2px;"></div></div>
+        <div class="pe-crop-handle" data-corner="l"  style="position:absolute;left:-10px;top:50%;transform:translateY(-50%);width:22px;height:44px;display:flex;justify-content:center;align-items:center;touch-action:none;cursor:ew-resize;"><div style="height:36px;width:3px;background:white;border-radius:2px;"></div></div>
+        <div class="pe-crop-handle" data-corner="r"  style="position:absolute;right:-10px;top:50%;transform:translateY(-50%);width:22px;height:44px;display:flex;justify-content:center;align-items:center;touch-action:none;cursor:ew-resize;"><div style="height:36px;width:3px;background:white;border-radius:2px;"></div></div>
+      </div>
+    </div>
     <div id="pe-header">
       <button id="photo-editor-close">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -2224,6 +2237,9 @@ async function openDetail(id) {
               f2.photos[idx] = { ...f2.photos[idx], url, originalUrl: orig };
               await updateDoc(doc(db,'fonts',id), { photos: f2.photos });
               showToast('保存しました');
+              // 即座にimgを差し替えてキャッシュ回避
+              const coverEl = $('detail-cover-img');
+              if (coverEl) coverEl.src = url;
               openDetail(id);
             }
           } catch(e2) { showToast('保存に失敗しました'); }
@@ -2471,6 +2487,9 @@ async function openDetail(id) {
               }
               await updateDoc(doc(db,'fonts',id), { photos: f2.photos });
               showToast('保存しました');
+              // 即座に該当imgを差し替え
+              const thumbEl = document.querySelector(`.photo-thumb[data-url="${url}"] img`);
+              if (thumbEl) thumbEl.src = noCacheUrl;
               openDetail(id);
             }
           } catch(e2) { showToast('保存に失敗しました'); }
@@ -2586,6 +2605,8 @@ function openUsageDetail(fontId, usageId, usages) {
             await updateDoc(doc(db,'fonts',fontId,'usages',usageId), { photos: newPhotos });
             u.photos = newPhotos;
             showToast('保存しました');
+            const usageThumbEl = document.querySelector(`.photo-thumb[data-url="${url}"] img`);
+            if (usageThumbEl) usageThumbEl.src = newUrl;
             openUsageDetail(fontId, usageId, usages);
           } catch(e2) { showToast('保存に失敗しました'); }
         }, () => openLightbox(url, memo), origUrl);
@@ -3412,6 +3433,7 @@ let peCropRect = null;
 function openPhotoEditor(src, onApply, onClose, originalUrl) {
   peRotation = 0; peBrightness = 0; peContrast = 0; peSaturation = 0;
   peCropRect = null; peCropStart = null;
+  cropRect = { x: 0.1, y: 0.1, x2: 0.9, y2: 0.9 };
   peOriginalSrc = src;
   peOnApply = onApply;
   peOnClose = onClose || null;
@@ -3489,8 +3511,7 @@ function peSetTab(tab) {
     $('pe-panel-'+t).classList.toggle('active', t === tab);
   });
   const isCrop = tab === 'crop';
-  $('pe-crop-overlay').classList.toggle('active', isCrop);
-  if (!isCrop) $('pe-crop-rect').style.display = 'none';
+  $('pe-crop-ui').style.display = isCrop ? 'block' : 'none';
   if (isCrop) peSetupCrop();
 }
 
@@ -3515,62 +3536,103 @@ $('pe-rotate-left').addEventListener('click', () => { peRotation = (peRotation -
 $('pe-rotate-right').addEventListener('click', () => { peRotation = (peRotation + 90) % 360; peUpdatePreview(); });
 
 // クロップ
+let cropRect = { x: 0.1, y: 0.1, x2: 0.9, y2: 0.9 }; // 0-1の比率
+const MIN_CROP = 0.05;
+
 function peSetupCrop() {
-  $('pe-crop-rect').style.display = 'none';
-  peCropStart = null;
-  const overlay = $('pe-crop-overlay');
-  const rectEl = $('pe-crop-rect');
+  const img = $('photo-editor-img');
+  const imgRect = img.getBoundingClientRect();
+  if (!imgRect.width) return;
+  updateCropUI();
 
-  function getPos(e) {
-    const img = $('photo-editor-img');
-    const rect = img.getBoundingClientRect();
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    return {
-      x: Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)),
-      y: Math.max(0, Math.min(1, (clientY - rect.top) / rect.height)),
-      rect
+  // ハンドルのドラッグ
+  const frame = $('pe-crop-frame');
+  $('pe-crop-ui').querySelectorAll('.pe-crop-handle').forEach(handle => {
+    handle.onpointerdown = e => {
+      e.stopPropagation(); e.preventDefault();
+      handle.setPointerCapture(e.pointerId);
+      const corner = handle.dataset.corner;
+      const startX = e.clientX, startY = e.clientY;
+      const startRect = { ...cropRect };
+      const iRect = $('photo-editor-img').getBoundingClientRect();
+
+      handle.onpointermove = e2 => {
+        const dx = (e2.clientX - startX) / iRect.width;
+        const dy = (e2.clientY - startY) / iRect.height;
+        const r = { ...startRect };
+        if (corner.includes('l')) r.x  = Math.max(0, Math.min(r.x2 - MIN_CROP, startRect.x + dx));
+        if (corner.includes('r')) r.x2 = Math.min(1, Math.max(r.x  + MIN_CROP, startRect.x2 + dx));
+        if (corner.includes('t')) r.y  = Math.max(0, Math.min(r.y2 - MIN_CROP, startRect.y + dy));
+        if (corner.includes('b')) r.y2 = Math.min(1, Math.max(r.y  + MIN_CROP, startRect.y2 + dy));
+        cropRect = r;
+        updateCropUI();
+      };
+      handle.onpointerup = () => { handle.onpointermove = null; handle.onpointerup = null; };
     };
-  }
+  });
 
-  overlay.onpointerdown = e => {
-    e.preventDefault();
-    const p = getPos(e);
-    peCropStart = p;
-    rectEl.style.cssText = `display:block;position:fixed;border:2px solid white;box-shadow:0 0 0 9999px rgba(0,0,0,0.5);pointer-events:none;left:${p.rect.left + p.x * p.rect.width}px;top:${p.rect.top + p.y * p.rect.height}px;width:0;height:0;`;
+  // フレーム内ドラッグで全体移動
+  frame.onpointerdown = e => {
+    if (e.target !== frame && !e.target.classList.contains('pe-crop-handle') === false) return;
+    if (e.target.classList.contains('pe-crop-handle')) return;
+    e.stopPropagation(); e.preventDefault();
+    frame.setPointerCapture(e.pointerId);
+    const startX = e.clientX, startY = e.clientY;
+    const startRect = { ...cropRect };
+    const iRect = $('photo-editor-img').getBoundingClientRect();
+
+    frame.onpointermove = e2 => {
+      const dx = (e2.clientX - startX) / iRect.width;
+      const dy = (e2.clientY - startY) / iRect.height;
+      const w = startRect.x2 - startRect.x;
+      const h = startRect.y2 - startRect.y;
+      const nx = Math.max(0, Math.min(1 - w, startRect.x + dx));
+      const ny = Math.max(0, Math.min(1 - h, startRect.y + dy));
+      cropRect = { x: nx, y: ny, x2: nx + w, y2: ny + h };
+      updateCropUI();
+    };
+    frame.onpointerup = () => { frame.onpointermove = null; frame.onpointerup = null; };
   };
-  overlay.onpointermove = e => {
-    if (!peCropStart) return;
-    e.preventDefault();
-    const cur = getPos(e);
-    const imgRect = cur.rect;
-    const x1 = Math.min(peCropStart.x, cur.x);
-    const y1 = Math.min(peCropStart.y, cur.y);
-    const w = Math.abs(cur.x - peCropStart.x);
-    const h = Math.abs(cur.y - peCropStart.y);
-    rectEl.style.left = (imgRect.left + x1 * imgRect.width) + 'px';
-    rectEl.style.top  = (imgRect.top  + y1 * imgRect.height) + 'px';
-    rectEl.style.width  = (w * imgRect.width) + 'px';
-    rectEl.style.height = (h * imgRect.height) + 'px';
-    peCropRect = { x1, y1, x2: x1 + w, y2: y1 + h };
-  };
-  overlay.onpointerup = () => { peCropStart = null; };
+
+  peCropRect = cropRect;
+}
+
+function updateCropUI() {
+  const img = $('photo-editor-img');
+  const iRect = img.getBoundingClientRect();
+  const previewRect = $('pe-preview-area').getBoundingClientRect();
+
+  // imgの位置をpreview-area基準で計算
+  const offX = iRect.left - previewRect.left;
+  const offY = iRect.top  - previewRect.top;
+  const iW = iRect.width, iH = iRect.height;
+
+  const x  = offX + cropRect.x  * iW;
+  const y  = offY + cropRect.y  * iH;
+  const x2 = offX + cropRect.x2 * iW;
+  const y2 = offY + cropRect.y2 * iH;
+  const w = x2 - x, h = y2 - y;
+
+  $('pe-crop-frame').style.cssText = `position:absolute;border:2px solid white;box-sizing:border-box;left:${x}px;top:${y}px;width:${w}px;height:${h}px;cursor:move;`;
+
+  // 暗幕
+  $('pe-crop-dark-top').style.height    = y + 'px';
+  $('pe-crop-dark-bottom').style.height = (previewRect.height - y2) + 'px';
+  $('pe-crop-dark-left').style.cssText  = `position:absolute;left:0;width:${x}px;top:${y}px;height:${h}px;background:rgba(0,0,0,0.55);pointer-events:none;`;
+  $('pe-crop-dark-right').style.cssText = `position:absolute;right:0;width:${previewRect.width - x2}px;top:${y}px;height:${h}px;background:rgba(0,0,0,0.55);pointer-events:none;`;
+
+  peCropRect = { ...cropRect };
 }
 
 $('pe-crop-apply').addEventListener('click', () => {
-  if (!peCropRect || (peCropRect.x2 - peCropRect.x1) < 0.01) {
-    showToast('範囲を選択してください');
-    return;
-  }
-  // クロップ情報を保存してプレビュー更新
-  showToast('クロップ範囲を設定しました（保存時に適用）');
-  $('pe-crop-rect').style.boxShadow = '0 0 0 9999px rgba(0,120,255,0.25)';
+  showToast('クロップ範囲を確定しました');
   peSetTab('adjust');
 });
 
 // リセット
 $('pe-reset').addEventListener('click', () => {
   peRotation = 0; peBrightness = 0; peContrast = 0; peSaturation = 0; peCropRect = null;
+  cropRect = { x: 0.1, y: 0.1, x2: 0.9, y2: 0.9 };
   $('pe-brightness').value = 0; $('pe-brightness-val').textContent = '0';
   $('pe-contrast').value = 0;   $('pe-contrast-val').textContent = '0';
   $('pe-saturation').value = 0; $('pe-saturation-val').textContent = '0';
