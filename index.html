@@ -665,7 +665,7 @@
     width: 52px; height: 52px; border-radius: 50%;
     background: linear-gradient(135deg, #b8a0f0, #7ab8f5);
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer; z-index: 150;
+    cursor: pointer; z-index: 9999;
     box-shadow: 0 4px 16px rgba(155,127,232,0.5);
     touch-action: manipulation;
   }
@@ -1371,45 +1371,45 @@ const BASIC_FONT_NAMES = new Set([
 // ── Font Database ──────────────────────────
 const FONT_DB = {
   ja: [
-    { name: '新ゴ', maker: 'モリサワ', category: 'ゴシック' },
-    { name: '中ゴシックBBB', maker: 'モリサワ', category: 'ゴシック' },
-    { name: '太ゴB101', maker: 'モリサワ', category: 'ゴシック' },
-    { name: 'ゴシックMB101', maker: 'モリサワ', category: 'ゴシック' },
-    { name: 'A1ゴシック', maker: 'モリサワ', category: 'ゴシック' },
-    { name: '黎ミン', maker: 'モリサワ', category: '明朝' },
-    { name: '明朝オールドBBB', maker: 'モリサワ', category: '明朝' },
-    { name: '小塚明朝', maker: 'モリサワ', category: '明朝' },
-    { name: '小塚ゴシック', maker: 'モリサワ', category: 'ゴシック' },
-    { name: 'リュウミン', maker: 'モリサワ', category: '明朝' },
-    { name: 'じゅん', maker: 'モリサワ', category: 'ゴシック' },
-    { name: 'UD新ゴ', maker: 'モリサワ', category: 'ゴシック' },
-    { name: 'UD黎ミン', maker: 'モリサワ', category: '明朝' },
-    { name: 'フォーク', maker: 'モリサワ', category: 'ゴシック' },
-    { name: 'キャパス', maker: 'モリサワ', category: 'ゴシック' },
-    { name: 'ニューシネマA', maker: 'モリサワ', category: '明朝' },
-    { name: 'ぶらっしゅ', maker: 'モリサワ', category: 'その他' },
-    { name: 'マティス', maker: 'フォントワークス', category: '明朝' },
-    { name: 'ロダン', maker: 'フォントワークス', category: 'ゴシック' },
-    { name: 'スキップ', maker: 'フォントワークス', category: 'ゴシック' },
-    { name: 'ナウ', maker: 'フォントワークス', category: 'ゴシック' },
-    { name: 'クレー', maker: 'フォントワークス', category: 'その他' },
-    { name: 'ゴールド', maker: 'フォントワークス', category: '明朝' },
-    { name: 'ネクスト', maker: 'フォントワークス', category: 'ゴシック' },
-    { name: 'マティスPr6N', maker: 'フォントワークス', category: '明朝' },
-    { name: 'ロダンPr6N', maker: 'フォントワークス', category: 'ゴシック' },
-    { name: '筑紫A丸ゴシック', maker: 'フォントワークス', category: 'ゴシック' },
-    { name: '筑紫B丸ゴシック', maker: 'フォントワークス', category: 'ゴシック' },
-    { name: '筑紫アンティークL明朝', maker: 'フォントワークス', category: '明朝' },
-    { name: '筑紫アンティークS明朝', maker: 'フォントワークス', category: '明朝' },
-    { name: '筑紫明朝', maker: 'フォントワークス', category: '明朝' },
-    { name: '筑紫ゴシック', maker: 'フォントワークス', category: 'ゴシック' },
-    { name: '筑紫オールドゴシック', maker: 'フォントワークス', category: 'ゴシック' },
-    { name: 'はるひ学園', maker: 'フォントワークス', category: 'その他' },
-    { name: 'セザンヌ', maker: 'フォントワークス', category: 'その他' },
-    { name: 'らんぱく', maker: 'フォントワークス', category: 'その他' },
-    { name: 'ニコモジ', maker: 'フォントワークス', category: 'ゴシック' },
-    { name: '源ノ角ゴシック', maker: 'Adobe', category: 'ゴシック' },
-    { name: '源ノ明朝', maker: 'Adobe', category: '明朝' },
+    { name: '新ゴ', maker: 'モリサワ', category: 'ゴシック', reading: 'しんご' },
+    { name: '中ゴシックBBB', maker: 'モリサワ', category: 'ゴシック', reading: 'なかごしっくびーびーびー' },
+    { name: '太ゴB101', maker: 'モリサワ', category: 'ゴシック', reading: 'ふとごびーいちまるいち' },
+    { name: 'ゴシックMB101', maker: 'モリサワ', category: 'ゴシック', reading: 'ごしっくえむびーいちまるいち' },
+    { name: 'A1ゴシック', maker: 'モリサワ', category: 'ゴシック', reading: 'えーわんごしっく' },
+    { name: '黎ミン', maker: 'モリサワ', category: '明朝', reading: 'れいみん' },
+    { name: '明朝オールドBBB', maker: 'モリサワ', category: '明朝', reading: 'みんちょうおーるどびーびーびー' },
+    { name: '小塚明朝', maker: 'モリサワ', category: '明朝', reading: 'こづかみんちょう' },
+    { name: '小塚ゴシック', maker: 'モリサワ', category: 'ゴシック', reading: 'こづかごしっく' },
+    { name: 'リュウミン', maker: 'モリサワ', category: '明朝', reading: 'りゅうみん' },
+    { name: 'じゅん', maker: 'モリサワ', category: 'ゴシック', reading: 'じゅん' },
+    { name: 'UD新ゴ', maker: 'モリサワ', category: 'ゴシック', reading: 'ゆーでぃーしんご' },
+    { name: 'UD黎ミン', maker: 'モリサワ', category: '明朝', reading: 'ゆーでぃーれいみん' },
+    { name: 'フォーク', maker: 'モリサワ', category: 'ゴシック', reading: 'ふぉーく' },
+    { name: 'キャパス', maker: 'モリサワ', category: 'ゴシック', reading: 'きゃぱす' },
+    { name: 'ニューシネマA', maker: 'モリサワ', category: '明朝', reading: 'にゅーしねまえー' },
+    { name: 'ぶらっしゅ', maker: 'モリサワ', category: 'その他', reading: 'ぶらっしゅ' },
+    { name: 'マティス', maker: 'フォントワークス', category: '明朝', reading: 'まてぃす' },
+    { name: 'ロダン', maker: 'フォントワークス', category: 'ゴシック', reading: 'ろだん' },
+    { name: 'スキップ', maker: 'フォントワークス', category: 'ゴシック', reading: 'すきっぷ' },
+    { name: 'ナウ', maker: 'フォントワークス', category: 'ゴシック', reading: 'なう' },
+    { name: 'クレー', maker: 'フォントワークス', category: 'その他', reading: 'くれー' },
+    { name: 'ゴールド', maker: 'フォントワークス', category: '明朝', reading: 'ごーるど' },
+    { name: 'ネクスト', maker: 'フォントワークス', category: 'ゴシック', reading: 'ねくすと' },
+    { name: 'マティスPr6N', maker: 'フォントワークス', category: '明朝', reading: 'まてぃすぴーあーるろくえぬ' },
+    { name: 'ロダンPr6N', maker: 'フォントワークス', category: 'ゴシック', reading: 'ろだんぴーあーるろくえぬ' },
+    { name: '筑紫A丸ゴシック', maker: 'フォントワークス', category: 'ゴシック', reading: 'つくしえーまるごしっく' },
+    { name: '筑紫B丸ゴシック', maker: 'フォントワークス', category: 'ゴシック', reading: 'つくしびーまるごしっく' },
+    { name: '筑紫アンティークL明朝', maker: 'フォントワークス', category: '明朝', reading: 'つくしあんてぃーくえるみんちょう' },
+    { name: '筑紫アンティークS明朝', maker: 'フォントワークス', category: '明朝', reading: 'つくしあんてぃーくえすみんちょう' },
+    { name: '筑紫明朝', maker: 'フォントワークス', category: '明朝', reading: 'つくしみんちょう' },
+    { name: '筑紫ゴシック', maker: 'フォントワークス', category: 'ゴシック', reading: 'つくしごしっく' },
+    { name: '筑紫オールドゴシック', maker: 'フォントワークス', category: 'ゴシック', reading: 'つくしおーるどごしっく' },
+    { name: 'はるひ学園', maker: 'フォントワークス', category: 'その他', reading: 'はるひがくえん' },
+    { name: 'セザンヌ', maker: 'フォントワークス', category: 'その他', reading: 'せざんぬ' },
+    { name: 'らんぱく', maker: 'フォントワークス', category: 'その他', reading: 'らんぱく' },
+    { name: 'ニコモジ', maker: 'フォントワークス', category: 'ゴシック', reading: 'にこもじ' },
+    { name: '源ノ角ゴシック', maker: 'Adobe', category: 'ゴシック', reading: 'げんのかくごしっく' },
+    { name: '源ノ明朝', maker: 'Adobe', category: '明朝', reading: 'げんのみんちょう' },
     { name: 'Noto Sans JP', maker: 'Google', category: 'ゴシック' },
     { name: 'Noto Serif JP', maker: 'Google', category: '明朝' },
     { name: 'M PLUS 1p', maker: 'Google', category: 'ゴシック' },
@@ -1426,286 +1426,286 @@ const FONT_DB = {
     { name: 'Sawarabi Mincho', maker: 'Google', category: '明朝' },
     { name: 'Dela Gothic One', maker: 'Google', category: 'ゴシック' },
     { name: 'Yuji Syuku', maker: 'Google', category: '明朝' },
-    { name: '游ゴシック', maker: '字游工房', category: 'ゴシック' },
-    { name: '游明朝', maker: '字游工房', category: '明朝' },
-    { name: 'ヒラギノ角ゴシック', maker: '字游工房', category: 'ゴシック' },
-    { name: 'ヒラギノ明朝', maker: '字游工房', category: '明朝' },
-    { name: 'ヒラギノ丸ゴ', maker: '字游工房', category: 'ゴシック' },
-    { name: 'DFP平成ゴシック', maker: 'ダイナコムウェア', category: 'ゴシック' },
-    { name: 'DFP平成明朝', maker: 'ダイナコムウェア', category: '明朝' },
+    { name: '游ゴシック', maker: '字游工房', category: 'ゴシック', reading: 'ゆうごしっく' },
+    { name: '游明朝', maker: '字游工房', category: '明朝', reading: 'ゆうみんちょう' },
+    { name: 'ヒラギノ角ゴシック', maker: '字游工房', category: 'ゴシック', reading: 'ひらぎのかくごしっく' },
+    { name: 'ヒラギノ明朝', maker: '字游工房', category: '明朝', reading: 'ひらぎのみんちょう' },
+    { name: 'ヒラギノ丸ゴ', maker: '字游工房', category: 'ゴシック', reading: 'ひらぎのまるご' },
+    { name: 'DFP平成ゴシック', maker: 'ダイナコムウェア', category: 'ゴシック', reading: 'でぃーえふぴーへいせいごしっく' },
+    { name: 'DFP平成明朝', maker: 'ダイナコムウェア', category: '明朝', reading: 'でぃーえふぴーへいせいみんちょう' },
     // 大日本印刷（DNP）秀英体
-    { name: '秀英明朝', maker: 'DNP', category: '明朝' },
-    { name: '秀英角ゴシック', maker: 'DNP', category: 'ゴシック' },
-    { name: '秀英丸ゴシック', maker: 'DNP', category: 'ゴシック' },
-    { name: '秀英初号明朝', maker: 'DNP', category: '明朝' },
-    { name: '秀英横太明朝', maker: 'DNP', category: '明朝' },
-    { name: '秀英細明朝', maker: 'DNP', category: '明朝' },
-    { name: '秀英アンチック', maker: 'DNP', category: 'その他' },
-    { name: '秀英にじみ明朝', maker: 'DNP', category: '明朝' },
-    { name: '秀英にじみ角ゴシック', maker: 'DNP', category: 'ゴシック' },
+    { name: '秀英明朝', maker: 'DNP', category: '明朝', reading: 'しゅうえいみんちょう' },
+    { name: '秀英角ゴシック', maker: 'DNP', category: 'ゴシック', reading: 'しゅうえいかくごしっく' },
+    { name: '秀英丸ゴシック', maker: 'DNP', category: 'ゴシック', reading: 'しゅうえいまるごしっく' },
+    { name: '秀英初号明朝', maker: 'DNP', category: '明朝', reading: 'しゅうえいしょごうみんちょう' },
+    { name: '秀英横太明朝', maker: 'DNP', category: '明朝', reading: 'しゅうえいよこふとみんちょう' },
+    { name: '秀英細明朝', maker: 'DNP', category: '明朝', reading: 'しゅうえいほそみんちょう' },
+    { name: '秀英アンチック', maker: 'DNP', category: 'その他', reading: 'しゅうえいあんちっく' },
+    { name: '秀英にじみ明朝', maker: 'DNP', category: '明朝', reading: 'しゅうえいにじみみんちょう' },
+    { name: '秀英にじみ角ゴシック', maker: 'DNP', category: 'ゴシック', reading: 'しゅうえいにじみかくごしっく' },
     // タイプバンク
-    { name: 'TBゴシック', maker: 'タイプバンク', category: 'ゴシック' },
-    { name: 'TB丸ゴシック', maker: 'タイプバンク', category: 'ゴシック' },
-    { name: 'TB明朝', maker: 'タイプバンク', category: '明朝' },
-    { name: 'TB横太明朝', maker: 'タイプバンク', category: '明朝' },
-    { name: 'TB新聞明朝', maker: 'タイプバンク', category: '明朝' },
-    { name: 'TB新聞ゴシック', maker: 'タイプバンク', category: 'ゴシック' },
-    { name: 'TBちび丸ゴシック', maker: 'タイプバンク', category: 'ゴシック' },
-    { name: 'TBシネマ丸ゴシック', maker: 'タイプバンク', category: 'ゴシック' },
-    { name: 'TBカリグラゴシック', maker: 'タイプバンク', category: 'ゴシック' },
-    { name: 'TBUD明朝', maker: 'タイプバンク', category: 'UD' },
-    { name: 'TBUDゴシック', maker: 'タイプバンク', category: 'UD' },
-    { name: 'TBUD丸ゴシック', maker: 'タイプバンク', category: 'UD' },
-    { name: '漢字タイポス', maker: 'タイプバンク', category: 'ゴシック' },
-    // ヒラギノフォント（大日本スクリーン/SCREENグラフィックソリューションズ）
-    { name: 'ヒラギノ角ゴ', maker: 'SCREENグラフィックソリューションズ', category: 'ゴシック' },
-    { name: 'ヒラギノ丸ゴ', maker: 'SCREENグラフィックソリューションズ', category: 'ゴシック' },
-    { name: 'ヒラギノ明朝', maker: 'SCREENグラフィックソリューションズ', category: '明朝' },
-    { name: 'ヒラギノUD角ゴ', maker: 'SCREENグラフィックソリューションズ', category: 'UD' },
-    { name: 'ヒラギノUD丸ゴ', maker: 'SCREENグラフィックソリューションズ', category: 'UD' },
-    { name: 'ヒラギノ明朝ProN', maker: 'SCREENグラフィックソリューションズ', category: '明朝' },
-    { name: 'ヒラギノ角ゴProN', maker: 'SCREENグラフィックソリューションズ', category: 'ゴシック' },
-    { name: 'ヒラギノ丸ゴProN', maker: 'SCREENグラフィックソリューションズ', category: 'ゴシック' },
+    { name: 'TBゴシック', maker: 'タイプバンク', category: 'ゴシック', reading: 'てぃーびーごしっく' },
+    { name: 'TB丸ゴシック', maker: 'タイプバンク', category: 'ゴシック', reading: 'てぃーびーまるごしっく' },
+    { name: 'TB明朝', maker: 'タイプバンク', category: '明朝', reading: 'てぃーびーみんちょう' },
+    { name: 'TB横太明朝', maker: 'タイプバンク', category: '明朝', reading: 'てぃーびーよこふとみんちょう' },
+    { name: 'TB新聞明朝', maker: 'タイプバンク', category: '明朝', reading: 'てぃーびーしんぶんみんちょう' },
+    { name: 'TB新聞ゴシック', maker: 'タイプバンク', category: 'ゴシック', reading: 'てぃーびーしんぶんごしっく' },
+    { name: 'TBちび丸ゴシック', maker: 'タイプバンク', category: 'ゴシック', reading: 'てぃーびーちびまるごしっく' },
+    { name: 'TBシネマ丸ゴシック', maker: 'タイプバンク', category: 'ゴシック', reading: 'てぃーびーしねままるごしっく' },
+    { name: 'TBカリグラゴシック', maker: 'タイプバンク', category: 'ゴシック', reading: 'てぃーびーかりぐらごしっく' },
+    { name: 'TBUD明朝', maker: 'タイプバンク', category: 'UD', reading: 'てぃーびーゆーでぃーみんちょう' },
+    { name: 'TBUDゴシック', maker: 'タイプバンク', category: 'UD', reading: 'てぃーびーゆーでぃーごしっく' },
+    { name: 'TBUD丸ゴシック', maker: 'タイプバンク', category: 'UD', reading: 'てぃーびーゆーでぃーまるごしっく' },
+    { name: '漢字タイポス', maker: 'タイプバンク', category: 'ゴシック', reading: 'かんじたいぽす' },
+    // ヒラギノフォント
+    { name: 'ヒラギノ角ゴ', maker: 'SCREENグラフィックソリューションズ', category: 'ゴシック', reading: 'ひらぎのかくご' },
+    { name: 'ヒラギノ丸ゴ', maker: 'SCREENグラフィックソリューションズ', category: 'ゴシック', reading: 'ひらぎのまるご' },
+    { name: 'ヒラギノ明朝', maker: 'SCREENグラフィックソリューションズ', category: '明朝', reading: 'ひらぎのみんちょう' },
+    { name: 'ヒラギノUD角ゴ', maker: 'SCREENグラフィックソリューションズ', category: 'UD', reading: 'ひらぎのゆーでぃーかくご' },
+    { name: 'ヒラギノUD丸ゴ', maker: 'SCREENグラフィックソリューションズ', category: 'UD', reading: 'ひらぎのゆーでぃーまるご' },
+    { name: 'ヒラギノ明朝ProN', maker: 'SCREENグラフィックソリューションズ', category: '明朝', reading: 'ひらぎのみんちょうぷろえぬ' },
+    { name: 'ヒラギノ角ゴProN', maker: 'SCREENグラフィックソリューションズ', category: 'ゴシック', reading: 'ひらぎのかくごぷろえぬ' },
+    { name: 'ヒラギノ丸ゴProN', maker: 'SCREENグラフィックソリューションズ', category: 'ゴシック', reading: 'ひらぎのまるごぷろえぬ' },
     // 視覚デザイン研究所（VDL）
-    { name: 'VDL京千社', maker: '視覚デザイン研究所', category: 'ゴシック' },
-    { name: 'VDLメガ丸', maker: '視覚デザイン研究所', category: 'ゴシック' },
-    { name: 'VDLロゴJr', maker: '視覚デザイン研究所', category: 'ゴシック' },
-    { name: 'VDLペンじたて', maker: '視覚デザイン研究所', category: 'その他' },
-    { name: 'VDLV7明朝', maker: '視覚デザイン研究所', category: '明朝' },
-    { name: 'VDLV7ゴシック', maker: '視覚デザイン研究所', category: 'ゴシック' },
-    { name: 'VDL勘亭流', maker: '視覚デザイン研究所', category: 'その他' },
-    { name: 'VDLギガ丸', maker: '視覚デザイン研究所', category: 'ゴシック' },
+    { name: 'VDL京千社', maker: '視覚デザイン研究所', category: 'ゴシック', reading: 'ぶいでぃーえるきょうせんしゃ' },
+    { name: 'VDLメガ丸', maker: '視覚デザイン研究所', category: 'ゴシック', reading: 'ぶいでぃーえるめがまる' },
+    { name: 'VDLロゴJr', maker: '視覚デザイン研究所', category: 'ゴシック', reading: 'ぶいでぃーえるろごじゅにあ' },
+    { name: 'VDLペンじたて', maker: '視覚デザイン研究所', category: 'その他', reading: 'ぶいでぃーえるぺんじたて' },
+    { name: 'VDLV7明朝', maker: '視覚デザイン研究所', category: '明朝', reading: 'ぶいでぃーえるぶいせぶんみんちょう' },
+    { name: 'VDLV7ゴシック', maker: '視覚デザイン研究所', category: 'ゴシック', reading: 'ぶいでぃーえるぶいせぶんごしっく' },
+    { name: 'VDL勘亭流', maker: '視覚デザイン研究所', category: 'その他', reading: 'ぶいでぃーえるかんていりゅう' },
+    { name: 'VDLギガ丸', maker: '視覚デザイン研究所', category: 'ゴシック', reading: 'ぶいでぃーえるぎがまる' },
     // イワタ
-    { name: 'イワタ明朝', maker: 'イワタ', category: '明朝' },
-    { name: 'イワタゴシック', maker: 'イワタ', category: 'ゴシック' },
-    { name: 'イワタ丸ゴシック', maker: 'イワタ', category: 'ゴシック' },
-    { name: 'イワタ太明朝', maker: 'イワタ', category: '明朝' },
-    { name: 'イワタ細明朝', maker: 'イワタ', category: '明朝' },
-    { name: 'イワタ新聞明朝', maker: 'イワタ', category: '明朝' },
-    { name: 'イワタ新聞ゴシック', maker: 'イワタ', category: 'ゴシック' },
-    { name: 'イワタUDゴシック', maker: 'イワタ', category: 'UD' },
-    { name: 'イワタUD明朝', maker: 'イワタ', category: 'UD' },
-    { name: 'イワタ学参明朝', maker: 'イワタ', category: 'その他' },
+    { name: 'イワタ明朝', maker: 'イワタ', category: '明朝', reading: 'いわたみんちょう' },
+    { name: 'イワタゴシック', maker: 'イワタ', category: 'ゴシック', reading: 'いわたごしっく' },
+    { name: 'イワタ丸ゴシック', maker: 'イワタ', category: 'ゴシック', reading: 'いわたまるごしっく' },
+    { name: 'イワタ太明朝', maker: 'イワタ', category: '明朝', reading: 'いわたふとみんちょう' },
+    { name: 'イワタ細明朝', maker: 'イワタ', category: '明朝', reading: 'いわたほそみんちょう' },
+    { name: 'イワタ新聞明朝', maker: 'イワタ', category: '明朝', reading: 'いわたしんぶんみんちょう' },
+    { name: 'イワタ新聞ゴシック', maker: 'イワタ', category: 'ゴシック', reading: 'いわたしんぶんごしっく' },
+    { name: 'イワタUDゴシック', maker: 'イワタ', category: 'UD', reading: 'いわたゆーでぃーごしっく' },
+    { name: 'イワタUD明朝', maker: 'イワタ', category: 'UD', reading: 'いわたゆーでぃーみんちょう' },
+    { name: 'イワタ学参明朝', maker: 'イワタ', category: 'その他', reading: 'いわたがくさんみんちょう' },
     // モトヤ
-    { name: 'モトヤアポロ', maker: 'モトヤ', category: 'ゴシック' },
-    { name: 'モトヤシーダ', maker: 'モトヤ', category: 'ゴシック' },
-    { name: 'モトヤマルベリ', maker: 'モトヤ', category: 'ゴシック' },
-    { name: 'モトヤ明朝', maker: 'モトヤ', category: '明朝' },
-    { name: 'モトヤ丸ゴシック', maker: 'モトヤ', category: 'ゴシック' },
-    { name: 'モトヤソング', maker: 'モトヤ', category: '明朝' },
-    { name: 'モトヤLシーダ', maker: 'モトヤ', category: 'ゴシック' },
+    { name: 'モトヤアポロ', maker: 'モトヤ', category: 'ゴシック', reading: 'もとやあぽろ' },
+    { name: 'モトヤシーダ', maker: 'モトヤ', category: 'ゴシック', reading: 'もとやしーだ' },
+    { name: 'モトヤマルベリ', maker: 'モトヤ', category: 'ゴシック', reading: 'もとやまるべり' },
+    { name: 'モトヤ明朝', maker: 'モトヤ', category: '明朝', reading: 'もとやみんちょう' },
+    { name: 'モトヤ丸ゴシック', maker: 'モトヤ', category: 'ゴシック', reading: 'もとやまるごしっく' },
+    { name: 'モトヤソング', maker: 'モトヤ', category: '明朝', reading: 'もとやそんぐ' },
+    { name: 'モトヤLシーダ', maker: 'モトヤ', category: 'ゴシック', reading: 'もとやえるしーだ' },
     // 砧書体制作所
-    { name: '丸明オールド', maker: '砧書体制作所', category: '明朝' },
-    { name: '丸明朝体', maker: '砧書体制作所', category: '明朝' },
+    { name: '丸明オールド', maker: '砧書体制作所', category: '明朝', reading: 'まるみんおーるど' },
+    { name: '丸明朝体', maker: '砧書体制作所', category: '明朝', reading: 'まるみんちょうたい' },
     { name: 'iroha gothic', maker: '砧書体制作所', category: 'ゴシック' },
-    { name: '丸丸ゴシック', maker: '砧書体制作所', category: 'ゴシック' },
-    { name: '砧明朝体', maker: '砧書体制作所', category: '明朝' },
-    { name: '佑字', maker: '砧書体制作所', category: 'その他' },
-    { name: '山本庵', maker: '砧書体制作所', category: 'その他' },
-    { name: '芯', maker: '砧書体制作所', category: 'その他' },
-    { name: 'どんぐり', maker: '砧書体制作所', category: 'その他' },
+    { name: '丸丸ゴシック', maker: '砧書体制作所', category: 'ゴシック', reading: 'まるまるごしっく' },
+    { name: '砧明朝体', maker: '砧書体制作所', category: '明朝', reading: 'きぬたみんちょうたい' },
+    { name: '佑字', maker: '砧書体制作所', category: 'その他', reading: 'ゆうじ' },
+    { name: '山本庵', maker: '砧書体制作所', category: 'その他', reading: 'やまもとあん' },
+    { name: '芯', maker: '砧書体制作所', category: 'その他', reading: 'しん' },
+    { name: 'どんぐり', maker: '砧書体制作所', category: 'その他', reading: 'どんぐり' },
     // モリサワ 追加書体
-    { name: 'すずむし', maker: 'モリサワ', category: 'その他' },
-    { name: 'みちくさ', maker: 'モリサワ', category: 'その他' },
-    { name: 'プフ', maker: 'モリサワ', category: 'ゴシック' },
-    { name: '瓦ゴシック', maker: 'モリサワ', category: 'ゴシック' },
-    { name: '平成明朝体', maker: 'モリサワ', category: '明朝' },
-    { name: '平成角ゴシック体', maker: 'モリサワ', category: 'ゴシック' },
-    { name: '平成丸ゴシック体', maker: 'モリサワ', category: 'ゴシック' },
-    { name: 'UD黎ミングラデーション', maker: 'モリサワ', category: 'UD' },
-    { name: 'UD新ゴNT', maker: 'モリサワ', category: 'UD' },
-    { name: '太ミンA101', maker: 'モリサワ', category: '明朝' },
-    { name: '見出ミンMA31', maker: 'モリサワ', category: '明朝' },
-    { name: '見出ゴMB31', maker: 'モリサワ', category: 'ゴシック' },
-    { name: '丸フォーク', maker: 'モリサワ', category: 'ゴシック' },
-    { name: 'はれやか', maker: 'モリサワ', category: 'その他' },
-    { name: 'ニシン', maker: 'モリサワ', category: 'その他' },
-    { name: '凸版文久明朝', maker: 'モリサワ', category: '明朝' },
-    { name: '凸版文久見出し明朝', maker: 'モリサワ', category: '明朝' },
-    { name: '凸版文久ゴシック', maker: 'モリサワ', category: 'ゴシック' },
-    { name: '凸版文久見出しゴシック', maker: 'モリサワ', category: 'ゴシック' },
+    { name: 'すずむし', maker: 'モリサワ', category: 'その他', reading: 'すずむし' },
+    { name: 'みちくさ', maker: 'モリサワ', category: 'その他', reading: 'みちくさ' },
+    { name: 'プフ', maker: 'モリサワ', category: 'ゴシック', reading: 'ぷふ' },
+    { name: '瓦ゴシック', maker: 'モリサワ', category: 'ゴシック', reading: 'かわらごしっく' },
+    { name: '平成明朝体', maker: 'モリサワ', category: '明朝', reading: 'へいせいみんちょうたい' },
+    { name: '平成角ゴシック体', maker: 'モリサワ', category: 'ゴシック', reading: 'へいせいかくごしっくたい' },
+    { name: '平成丸ゴシック体', maker: 'モリサワ', category: 'ゴシック', reading: 'へいせいまるごしっくたい' },
+    { name: 'UD黎ミングラデーション', maker: 'モリサワ', category: 'UD', reading: 'ゆーでぃーれいみんぐらでーしょん' },
+    { name: 'UD新ゴNT', maker: 'モリサワ', category: 'UD', reading: 'ゆーでぃーしんごえぬてぃー' },
+    { name: '太ミンA101', maker: 'モリサワ', category: '明朝', reading: 'ふとみんえーいちまるいち' },
+    { name: '見出ミンMA31', maker: 'モリサワ', category: '明朝', reading: 'みだしみんえむえーさんいち' },
+    { name: '見出ゴMB31', maker: 'モリサワ', category: 'ゴシック', reading: 'みだしごえむびーさんいち' },
+    { name: '丸フォーク', maker: 'モリサワ', category: 'ゴシック', reading: 'まるふぉーく' },
+    { name: 'はれやか', maker: 'モリサワ', category: 'その他', reading: 'はれやか' },
+    { name: 'ニシン', maker: 'モリサワ', category: 'その他', reading: 'にしん' },
+    { name: '凸版文久明朝', maker: 'モリサワ', category: '明朝', reading: 'とっぱんぶんきゅうみんちょう' },
+    { name: '凸版文久見出し明朝', maker: 'モリサワ', category: '明朝', reading: 'とっぱんぶんきゅうみだしみんちょう' },
+    { name: '凸版文久ゴシック', maker: 'モリサワ', category: 'ゴシック', reading: 'とっぱんぶんきゅうごしっく' },
+    { name: '凸版文久見出しゴシック', maker: 'モリサワ', category: 'ゴシック', reading: 'とっぱんぶんきゅうみだしごしっく' },
     // フォントワークス 追加書体
-    { name: 'ニューロダン', maker: 'フォントワークス', category: 'ゴシック' },
-    { name: 'スーラ', maker: 'フォントワークス', category: 'ゴシック' },
-    { name: 'セザンヌ', maker: 'フォントワークス', category: 'ゴシック' },
-    { name: 'ニューセザンヌ', maker: 'フォントワークス', category: 'ゴシック' },
-    { name: 'グレコ', maker: 'フォントワークス', category: '明朝' },
-    { name: 'ユトリロ', maker: 'フォントワークス', category: '明朝' },
-    { name: 'キアロ', maker: 'フォントワークス', category: 'その他' },
-    { name: 'ロダンひまわり', maker: 'フォントワークス', category: 'ゴシック' },
-    { name: 'ロダンカトレア', maker: 'フォントワークス', category: 'ゴシック' },
-    { name: 'ロダンローズ', maker: 'フォントワークス', category: 'ゴシック' },
-    { name: 'ロダンNTLG', maker: 'フォントワークス', category: 'ゴシック' },
-    { name: 'ロダンわんぱく', maker: 'フォントワークス', category: 'ゴシック' },
-    { name: 'ロダンハッピー', maker: 'フォントワークス', category: 'ゴシック' },
-    { name: 'ロダン墨東', maker: 'フォントワークス', category: 'ゴシック' },
-    { name: 'マティスえれがんと', maker: 'フォントワークス', category: '明朝' },
-    { name: 'マティスはつひやまと', maker: 'フォントワークス', category: '明朝' },
-    { name: 'マティスわかばやまと', maker: 'フォントワークス', category: '明朝' },
-    { name: 'マティスみのりやまと', maker: 'フォントワークス', category: '明朝' },
-    { name: 'マティスV', maker: 'フォントワークス', category: '明朝' },
-    { name: 'セザンヌ墨東', maker: 'フォントワークス', category: 'ゴシック' },
-    { name: 'スーラキャピー', maker: 'フォントワークス', category: 'ゴシック' },
-    { name: '筑紫Aオールド明朝', maker: 'フォントワークス', category: '明朝' },
-    { name: '筑紫B見出ミン', maker: 'フォントワークス', category: '明朝' },
-    { name: '筑紫C見出ミン', maker: 'フォントワークス', category: '明朝' },
-    { name: '筑紫アンティークSゴシック', maker: 'フォントワークス', category: 'ゴシック' },
-    { name: '筑紫アンティークLゴシック', maker: 'フォントワークス', category: 'ゴシック' },
-    { name: '筑紫新聞明朝', maker: 'フォントワークス', category: '明朝' },
-    { name: '筑紫Q明朝', maker: 'フォントワークス', category: '明朝' },
-    { name: '筑紫アンティークL明朝', maker: 'フォントワークス', category: '明朝' },
-    { name: '筑紫アンティークS明朝', maker: 'フォントワークス', category: '明朝' },
-    { name: 'UD丸ゴ_ラージ', maker: 'フォントワークス', category: 'UD' },
-    { name: 'UD角ゴ_ラージ', maker: 'フォントワークス', category: 'UD' },
+    { name: 'ニューロダン', maker: 'フォントワークス', category: 'ゴシック', reading: 'にゅーろだん' },
+    { name: 'スーラ', maker: 'フォントワークス', category: 'ゴシック', reading: 'すーら' },
+    { name: 'セザンヌ', maker: 'フォントワークス', category: 'ゴシック', reading: 'せざんぬ' },
+    { name: 'ニューセザンヌ', maker: 'フォントワークス', category: 'ゴシック', reading: 'にゅーせざんぬ' },
+    { name: 'グレコ', maker: 'フォントワークス', category: '明朝', reading: 'ぐれこ' },
+    { name: 'ユトリロ', maker: 'フォントワークス', category: '明朝', reading: 'ゆとりろ' },
+    { name: 'キアロ', maker: 'フォントワークス', category: 'その他', reading: 'きあろ' },
+    { name: 'ロダンひまわり', maker: 'フォントワークス', category: 'ゴシック', reading: 'ろだんひまわり' },
+    { name: 'ロダンカトレア', maker: 'フォントワークス', category: 'ゴシック', reading: 'ろだんかとれあ' },
+    { name: 'ロダンローズ', maker: 'フォントワークス', category: 'ゴシック', reading: 'ろだんろーず' },
+    { name: 'ロダンNTLG', maker: 'フォントワークス', category: 'ゴシック', reading: 'ろだんえぬてぃーえるじー' },
+    { name: 'ロダンわんぱく', maker: 'フォントワークス', category: 'ゴシック', reading: 'ろだんわんぱく' },
+    { name: 'ロダンハッピー', maker: 'フォントワークス', category: 'ゴシック', reading: 'ろだんはっぴー' },
+    { name: 'ロダン墨東', maker: 'フォントワークス', category: 'ゴシック', reading: 'ろだんすみひがし' },
+    { name: 'マティスえれがんと', maker: 'フォントワークス', category: '明朝', reading: 'まてぃすえれがんと' },
+    { name: 'マティスはつひやまと', maker: 'フォントワークス', category: '明朝', reading: 'まてぃすはつひやまと' },
+    { name: 'マティスわかばやまと', maker: 'フォントワークス', category: '明朝', reading: 'まてぃすわかばやまと' },
+    { name: 'マティスみのりやまと', maker: 'フォントワークス', category: '明朝', reading: 'まてぃすみのりやまと' },
+    { name: 'マティスV', maker: 'フォントワークス', category: '明朝', reading: 'まてぃすぶい' },
+    { name: 'セザンヌ墨東', maker: 'フォントワークス', category: 'ゴシック', reading: 'せざんぬすみひがし' },
+    { name: 'スーラキャピー', maker: 'フォントワークス', category: 'ゴシック', reading: 'すーらきゃぴー' },
+    { name: '筑紫Aオールド明朝', maker: 'フォントワークス', category: '明朝', reading: 'つくしえーおーるどみんちょう' },
+    { name: '筑紫B見出ミン', maker: 'フォントワークス', category: '明朝', reading: 'つくしびーみだしみん' },
+    { name: '筑紫C見出ミン', maker: 'フォントワークス', category: '明朝', reading: 'つくししーみだしみん' },
+    { name: '筑紫アンティークSゴシック', maker: 'フォントワークス', category: 'ゴシック', reading: 'つくしあんてぃーくえすごしっく' },
+    { name: '筑紫アンティークLゴシック', maker: 'フォントワークス', category: 'ゴシック', reading: 'つくしあんてぃーくえるごしっく' },
+    { name: '筑紫新聞明朝', maker: 'フォントワークス', category: '明朝', reading: 'つくししんぶんみんちょう' },
+    { name: '筑紫Q明朝', maker: 'フォントワークス', category: '明朝', reading: 'つくしきゅーみんちょう' },
+    { name: '筑紫アンティークL明朝', maker: 'フォントワークス', category: '明朝', reading: 'つくしあんてぃーくえるみんちょう' },
+    { name: '筑紫アンティークS明朝', maker: 'フォントワークス', category: '明朝', reading: 'つくしあんてぃーくえすみんちょう' },
+    { name: 'UD丸ゴ_ラージ', maker: 'フォントワークス', category: 'UD', reading: 'ゆーでぃーまるごらーじ' },
+    { name: 'UD角ゴ_ラージ', maker: 'フォントワークス', category: 'UD', reading: 'ゆーでぃーかくごらーじ' },
     // タイプバンク 追加書体
-    { name: 'TB初代明朝', maker: 'タイプバンク', category: '明朝' },
-    { name: 'TB太ゴシック', maker: 'タイプバンク', category: 'ゴシック' },
-    { name: 'TB極太ゴシック', maker: 'タイプバンク', category: 'ゴシック' },
-    { name: 'TBアンチック', maker: 'タイプバンク', category: 'その他' },
-    { name: 'TB楷書', maker: 'タイプバンク', category: 'その他' },
-    { name: 'TB勘亭流', maker: 'タイプバンク', category: 'その他' },
-    { name: 'TBUD教科書体', maker: 'タイプバンク', category: 'UD' },
-    { name: 'TBUD学参明朝', maker: 'タイプバンク', category: 'UD' },
-    { name: 'TBオールドゴシック', maker: 'タイプバンク', category: 'ゴシック' },
-    { name: 'TBゴシックE', maker: 'タイプバンク', category: 'ゴシック' },
-    { name: 'TBレタリングゴシック', maker: 'タイプバンク', category: 'ゴシック' },
-    { name: 'TBFZ流飄行書', maker: 'タイプバンク', category: 'その他' },
+    { name: 'TB初代明朝', maker: 'タイプバンク', category: '明朝', reading: 'てぃーびーしょだいみんちょう' },
+    { name: 'TB太ゴシック', maker: 'タイプバンク', category: 'ゴシック', reading: 'てぃーびーふとごしっく' },
+    { name: 'TB極太ゴシック', maker: 'タイプバンク', category: 'ゴシック', reading: 'てぃーびーごくふとごしっく' },
+    { name: 'TBアンチック', maker: 'タイプバンク', category: 'その他', reading: 'てぃーびーあんちっく' },
+    { name: 'TB楷書', maker: 'タイプバンク', category: 'その他', reading: 'てぃーびーかいしょ' },
+    { name: 'TB勘亭流', maker: 'タイプバンク', category: 'その他', reading: 'てぃーびーかんていりゅう' },
+    { name: 'TBUD教科書体', maker: 'タイプバンク', category: 'UD', reading: 'てぃーびーゆーでぃーきょうかしょたい' },
+    { name: 'TBUD学参明朝', maker: 'タイプバンク', category: 'UD', reading: 'てぃーびーゆーでぃーがくさんみんちょう' },
+    { name: 'TBオールドゴシック', maker: 'タイプバンク', category: 'ゴシック', reading: 'てぃーびーおーるどごしっく' },
+    { name: 'TBゴシックE', maker: 'タイプバンク', category: 'ゴシック', reading: 'てぃーびーごしっくいー' },
+    { name: 'TBレタリングゴシック', maker: 'タイプバンク', category: 'ゴシック', reading: 'てぃーびーれたりんぐごしっく' },
+    { name: 'TBFZ流飄行書', maker: 'タイプバンク', category: 'その他', reading: 'てぃーびーえふぜっとりゅうひょうぎょうしょ' },
     // DNP 秀英体 追加
-    { name: '秀英初号細明朝', maker: 'DNP', category: '明朝' },
-    { name: '秀英中ゴシック', maker: 'DNP', category: 'ゴシック' },
-    { name: '秀英太ゴシック', maker: 'DNP', category: 'ゴシック' },
+    { name: '秀英初号細明朝', maker: 'DNP', category: '明朝', reading: 'しゅうえいしょごうほそみんちょう' },
+    { name: '秀英中ゴシック', maker: 'DNP', category: 'ゴシック', reading: 'しゅうえいなかごしっく' },
+    { name: '秀英太ゴシック', maker: 'DNP', category: 'ゴシック', reading: 'しゅうえいふとごしっく' },
     // ヒラギノ 追加書体（ウェイト別）
-    { name: 'ヒラギノ角ゴW1', maker: 'SCREENグラフィックソリューションズ', category: 'ゴシック' },
-    { name: 'ヒラギノ角ゴW2', maker: 'SCREENグラフィックソリューションズ', category: 'ゴシック' },
-    { name: 'ヒラギノ角ゴW3', maker: 'SCREENグラフィックソリューションズ', category: 'ゴシック' },
-    { name: 'ヒラギノ角ゴW6', maker: 'SCREENグラフィックソリューションズ', category: 'ゴシック' },
-    { name: 'ヒラギノ角ゴW8', maker: 'SCREENグラフィックソリューションズ', category: 'ゴシック' },
-    { name: 'ヒラギノ角ゴW9', maker: 'SCREENグラフィックソリューションズ', category: 'ゴシック' },
-    { name: 'ヒラギノ明朝W2', maker: 'SCREENグラフィックソリューションズ', category: '明朝' },
-    { name: 'ヒラギノ明朝W3', maker: 'SCREENグラフィックソリューションズ', category: '明朝' },
-    { name: 'ヒラギノ明朝W6', maker: 'SCREENグラフィックソリューションズ', category: '明朝' },
-    { name: 'ヒラギノ明朝W7', maker: 'SCREENグラフィックソリューションズ', category: '明朝' },
-    { name: 'ヒラギノ丸ゴW4', maker: 'SCREENグラフィックソリューションズ', category: 'ゴシック' },
+    { name: 'ヒラギノ角ゴW1', maker: 'SCREENグラフィックソリューションズ', category: 'ゴシック', reading: 'ひらぎのかくごだぶりゅーわん' },
+    { name: 'ヒラギノ角ゴW2', maker: 'SCREENグラフィックソリューションズ', category: 'ゴシック', reading: 'ひらぎのかくごだぶりゅーに' },
+    { name: 'ヒラギノ角ゴW3', maker: 'SCREENグラフィックソリューションズ', category: 'ゴシック', reading: 'ひらぎのかくごだぶりゅーさん' },
+    { name: 'ヒラギノ角ゴW6', maker: 'SCREENグラフィックソリューションズ', category: 'ゴシック', reading: 'ひらぎのかくごだぶりゅーろく' },
+    { name: 'ヒラギノ角ゴW8', maker: 'SCREENグラフィックソリューションズ', category: 'ゴシック', reading: 'ひらぎのかくごだぶりゅーはち' },
+    { name: 'ヒラギノ角ゴW9', maker: 'SCREENグラフィックソリューションズ', category: 'ゴシック', reading: 'ひらぎのかくごだぶりゅーきゅう' },
+    { name: 'ヒラギノ明朝W2', maker: 'SCREENグラフィックソリューションズ', category: '明朝', reading: 'ひらぎのみんちょうだぶりゅーに' },
+    { name: 'ヒラギノ明朝W3', maker: 'SCREENグラフィックソリューションズ', category: '明朝', reading: 'ひらぎのみんちょうだぶりゅーさん' },
+    { name: 'ヒラギノ明朝W6', maker: 'SCREENグラフィックソリューションズ', category: '明朝', reading: 'ひらぎのみんちょうだぶりゅーろく' },
+    { name: 'ヒラギノ明朝W7', maker: 'SCREENグラフィックソリューションズ', category: '明朝', reading: 'ひらぎのみんちょうだぶりゅーなな' },
+    { name: 'ヒラギノ丸ゴW4', maker: 'SCREENグラフィックソリューションズ', category: 'ゴシック', reading: 'ひらぎのまるごだぶりゅーよん' },
     // Adobe 日本語フォント追加
-    { name: '小塚明朝Pro', maker: 'Adobe', category: '明朝' },
-    { name: '小塚ゴシックPro', maker: 'Adobe', category: 'ゴシック' },
-    { name: '貂明朝', maker: 'Adobe', category: '明朝' },
-    { name: '貂明朝テキスト', maker: 'Adobe', category: '明朝' },
-    { name: 'ちぐさ', maker: 'Adobe', category: 'その他' },
+    { name: '小塚明朝Pro', maker: 'Adobe', category: '明朝', reading: 'こづかみんちょうぷろ' },
+    { name: '小塚ゴシックPro', maker: 'Adobe', category: 'ゴシック', reading: 'こづかごしっくぷろ' },
+    { name: '貂明朝', maker: 'Adobe', category: '明朝', reading: 'てんみんちょう' },
+    { name: '貂明朝テキスト', maker: 'Adobe', category: '明朝', reading: 'てんみんちょうてきすと' },
+    { name: 'ちぐさ', maker: 'Adobe', category: 'その他', reading: 'ちぐさ' },
     // 視覚デザイン研究所（VDL）追加
-    { name: 'VDLロゴG', maker: '視覚デザイン研究所', category: 'ゴシック' },
-    { name: 'VDLロゴJrブラック', maker: '視覚デザイン研究所', category: 'ゴシック' },
-    { name: 'VDL中丸ゴシック', maker: '視覚デザイン研究所', category: 'ゴシック' },
-    { name: 'VDLペンふで', maker: '視覚デザイン研究所', category: 'その他' },
-    { name: 'VDLV7丸ゴシック', maker: '視覚デザイン研究所', category: 'ゴシック' },
-    { name: 'VDL新丸ゴ', maker: '視覚デザイン研究所', category: 'ゴシック' },
-    { name: 'VDLエポック明朝', maker: '視覚デザイン研究所', category: '明朝' },
-    { name: 'VDLメガ明朝', maker: '視覚デザイン研究所', category: '明朝' },
-    { name: 'VDL京千社明朝', maker: '視覚デザイン研究所', category: '明朝' },
+    { name: 'VDLロゴG', maker: '視覚デザイン研究所', category: 'ゴシック', reading: 'ぶいでぃーえるろごじー' },
+    { name: 'VDLロゴJrブラック', maker: '視覚デザイン研究所', category: 'ゴシック', reading: 'ぶいでぃーえるろごじゅにあぶらっく' },
+    { name: 'VDL中丸ゴシック', maker: '視覚デザイン研究所', category: 'ゴシック', reading: 'ぶいでぃーえるなかまるごしっく' },
+    { name: 'VDLペンふで', maker: '視覚デザイン研究所', category: 'その他', reading: 'ぶいでぃーえるぺんふで' },
+    { name: 'VDLV7丸ゴシック', maker: '視覚デザイン研究所', category: 'ゴシック', reading: 'ぶいでぃーえるぶいせぶんまるごしっく' },
+    { name: 'VDL新丸ゴ', maker: '視覚デザイン研究所', category: 'ゴシック', reading: 'ぶいでぃーえるしんまるご' },
+    { name: 'VDLエポック明朝', maker: '視覚デザイン研究所', category: '明朝', reading: 'ぶいでぃーえるえぽっくみんちょう' },
+    { name: 'VDLメガ明朝', maker: '視覚デザイン研究所', category: '明朝', reading: 'ぶいでぃーえるめがみんちょう' },
+    { name: 'VDL京千社明朝', maker: '視覚デザイン研究所', category: '明朝', reading: 'ぶいでぃーえるきょうせんしゃみんちょう' },
     // 游書体ライブラリー 追加
-    { name: '游明朝体36ポかな', maker: '字游工房', category: '明朝' },
-    { name: '游明朝体+36ポかな', maker: '字游工房', category: '明朝' },
-    { name: '游楷書体', maker: '字游工房', category: 'その他' },
-    { name: '游築見出し明朝体', maker: '字游工房', category: '明朝' },
-    { name: '游築初号かな', maker: '字游工房', category: '明朝' },
-    { name: '游築五号かな', maker: '字游工房', category: '明朝' },
-    { name: '游築36ポかな', maker: '字游工房', category: '明朝' },
+    { name: '游明朝体36ポかな', maker: '字游工房', category: '明朝', reading: 'ゆうみんちょうたいさんじゅうろくぽかな' },
+    { name: '游明朝体+36ポかな', maker: '字游工房', category: '明朝', reading: 'ゆうみんちょうたいぷらすさんじゅうろくぽかな' },
+    { name: '游楷書体', maker: '字游工房', category: 'その他', reading: 'ゆうかいしょたい' },
+    { name: '游築見出し明朝体', maker: '字游工房', category: '明朝', reading: 'ゆうつきみだしみんちょうたい' },
+    { name: '游築初号かな', maker: '字游工房', category: '明朝', reading: 'ゆうつきしょごうかな' },
+    { name: '游築五号かな', maker: '字游工房', category: '明朝', reading: 'ゆうつきごごうかな' },
+    { name: '游築36ポかな', maker: '字游工房', category: '明朝', reading: 'ゆうつきさんじゅうろくぽかな' },
     // イワタ 追加書体
-    { name: 'イワタ特太明朝', maker: 'イワタ', category: '明朝' },
-    { name: 'イワタ太ゴシック', maker: 'イワタ', category: 'ゴシック' },
-    { name: 'イワタ中明朝体オールド', maker: 'イワタ', category: '明朝' },
-    { name: 'イワタ太明朝体オールド', maker: 'イワタ', category: '明朝' },
-    { name: 'イワタ新聞太明朝', maker: 'イワタ', category: '明朝' },
-    { name: 'イワタ極太明朝', maker: 'イワタ', category: '明朝' },
-    { name: 'イワタアンチック', maker: 'イワタ', category: 'その他' },
-    { name: 'イワタ行書体', maker: 'イワタ', category: 'その他' },
-    { name: 'イワタ楷書体', maker: 'イワタ', category: 'その他' },
+    { name: 'イワタ特太明朝', maker: 'イワタ', category: '明朝', reading: 'いわたとくふとみんちょう' },
+    { name: 'イワタ太ゴシック', maker: 'イワタ', category: 'ゴシック', reading: 'いわたふとごしっく' },
+    { name: 'イワタ中明朝体オールド', maker: 'イワタ', category: '明朝', reading: 'いわたなかみんちょうたいおーるど' },
+    { name: 'イワタ太明朝体オールド', maker: 'イワタ', category: '明朝', reading: 'いわたふとみんちょうたいおーるど' },
+    { name: 'イワタ新聞太明朝', maker: 'イワタ', category: '明朝', reading: 'いわたしんぶんふとみんちょう' },
+    { name: 'イワタ極太明朝', maker: 'イワタ', category: '明朝', reading: 'いわたごくふとみんちょう' },
+    { name: 'イワタアンチック', maker: 'イワタ', category: 'その他', reading: 'いわたあんちっく' },
+    { name: 'イワタ行書体', maker: 'イワタ', category: 'その他', reading: 'いわたぎょうしょたい' },
+    { name: 'イワタ楷書体', maker: 'イワタ', category: 'その他', reading: 'いわたかいしょたい' },
     // モトヤ 追加書体
-    { name: 'モトヤSシーダ', maker: 'モトヤ', category: 'ゴシック' },
-    { name: 'モトヤシーダ2', maker: 'モトヤ', category: 'ゴシック' },
-    { name: 'モトヤLシーダ3', maker: 'モトヤ', category: 'ゴシック' },
-    { name: 'モトヤ横太明朝', maker: 'モトヤ', category: '明朝' },
-    { name: 'モトヤ太明朝', maker: 'モトヤ', category: '明朝' },
-    { name: 'モトヤ細明朝', maker: 'モトヤ', category: '明朝' },
-    { name: 'モトヤ細ゴシック', maker: 'モトヤ', category: 'ゴシック' },
-    { name: 'モトヤ太ゴシック', maker: 'モトヤ', category: 'ゴシック' },
+    { name: 'モトヤSシーダ', maker: 'モトヤ', category: 'ゴシック', reading: 'もとやえすしーだ' },
+    { name: 'モトヤシーダ2', maker: 'モトヤ', category: 'ゴシック', reading: 'もとやしーだに' },
+    { name: 'モトヤLシーダ3', maker: 'モトヤ', category: 'ゴシック', reading: 'もとやえるしーださん' },
+    { name: 'モトヤ横太明朝', maker: 'モトヤ', category: '明朝', reading: 'もとやよこふとみんちょう' },
+    { name: 'モトヤ太明朝', maker: 'モトヤ', category: '明朝', reading: 'もとやふとみんちょう' },
+    { name: 'モトヤ細明朝', maker: 'モトヤ', category: '明朝', reading: 'もとやほそみんちょう' },
+    { name: 'モトヤ細ゴシック', maker: 'モトヤ', category: 'ゴシック', reading: 'もとやほそごしっく' },
+    { name: 'モトヤ太ゴシック', maker: 'モトヤ', category: 'ゴシック', reading: 'もとやふとごしっく' },
     // フロップデザイン
-    { name: 'ヨハク', maker: 'フロップデザイン', category: 'ゴシック' },
-    { name: 'かなたとひなた', maker: 'フロップデザイン', category: 'ゴシック' },
-    { name: 'うたとキャロル', maker: 'フロップデザイン', category: 'ゴシック' },
-    { name: '姫明朝しらゆき', maker: 'フロップデザイン', category: '明朝' },
-    { name: '姫明朝ともえごぜん', maker: 'フロップデザイン', category: '明朝' },
-    { name: 'あさご本丸ゴシック', maker: 'フロップデザイン', category: 'ゴシック' },
-    { name: 'くまもと本丸ゴシック', maker: 'フロップデザイン', category: 'ゴシック' },
-    { name: '本丸ゴシック', maker: 'フロップデザイン', category: 'ゴシック' },
-    { name: 'モガ', maker: 'フロップデザイン', category: 'ゴシック' },
-    { name: 'ビースト明朝', maker: 'フロップデザイン', category: '明朝' },
-    { name: 'フツーツパーラー', maker: 'フロップデザイン', category: 'ゴシック' },
-    { name: 'ノンキ', maker: 'フロップデザイン', category: 'ゴシック' },
-    { name: 'ぺんぎんたうん', maker: 'フロップデザイン', category: 'ゴシック' },
-    { name: 'プロメテウス', maker: 'フロップデザイン', category: 'ゴシック' },
-    { name: 'みんとキッス', maker: 'フロップデザイン', category: 'ゴシック' },
-    { name: 'こはくとう', maker: 'フロップデザイン', category: '明朝' },
-    { name: 'うれしいたのしいダイスキ', maker: 'フロップデザイン', category: 'ゴシック' },
-    { name: 'ねこかぶり', maker: 'フロップデザイン', category: 'ゴシック' },
-    { name: 'カフカヘン', maker: 'フロップデザイン', category: 'ゴシック' },
-    { name: 'フロップデザインフォント', maker: 'フロップデザイン', category: 'ゴシック' },
+    { name: 'ヨハク', maker: 'フロップデザイン', category: 'ゴシック', reading: 'よはく' },
+    { name: 'かなたとひなた', maker: 'フロップデザイン', category: 'ゴシック', reading: 'かなたとひなた' },
+    { name: 'うたとキャロル', maker: 'フロップデザイン', category: 'ゴシック', reading: 'うたときゃろる' },
+    { name: '姫明朝しらゆき', maker: 'フロップデザイン', category: '明朝', reading: 'ひめみんちょうしらゆき' },
+    { name: '姫明朝ともえごぜん', maker: 'フロップデザイン', category: '明朝', reading: 'ひめみんちょうともえごぜん' },
+    { name: 'あさご本丸ゴシック', maker: 'フロップデザイン', category: 'ゴシック', reading: 'あさごほんまるごしっく' },
+    { name: 'くまもと本丸ゴシック', maker: 'フロップデザイン', category: 'ゴシック', reading: 'くまもとほんまるごしっく' },
+    { name: '本丸ゴシック', maker: 'フロップデザイン', category: 'ゴシック', reading: 'ほんまるごしっく' },
+    { name: 'モガ', maker: 'フロップデザイン', category: 'ゴシック', reading: 'もが' },
+    { name: 'ビースト明朝', maker: 'フロップデザイン', category: '明朝', reading: 'びーすとみんちょう' },
+    { name: 'フツーツパーラー', maker: 'フロップデザイン', category: 'ゴシック', reading: 'ふつーつぱーらー' },
+    { name: 'ノンキ', maker: 'フロップデザイン', category: 'ゴシック', reading: 'のんき' },
+    { name: 'ぺんぎんたうん', maker: 'フロップデザイン', category: 'ゴシック', reading: 'ぺんぎんたうん' },
+    { name: 'プロメテウス', maker: 'フロップデザイン', category: 'ゴシック', reading: 'ぷろめてうす' },
+    { name: 'みんとキッス', maker: 'フロップデザイン', category: 'ゴシック', reading: 'みんときっす' },
+    { name: 'こはくとう', maker: 'フロップデザイン', category: '明朝', reading: 'こはくとう' },
+    { name: 'うれしいたのしいダイスキ', maker: 'フロップデザイン', category: 'ゴシック', reading: 'うれしいたのしいだいすき' },
+    { name: 'ねこかぶり', maker: 'フロップデザイン', category: 'ゴシック', reading: 'ねこかぶり' },
+    { name: 'カフカヘン', maker: 'フロップデザイン', category: 'ゴシック', reading: 'かふかへん' },
+    { name: 'フロップデザインフォント', maker: 'フロップデザイン', category: 'ゴシック', reading: 'ふろっぷでざいんふぉんと' },
     // フロップデザイン 追加書体
-    { name: 'うつくし明朝体', maker: 'フロップデザイン', category: '明朝' },
-    { name: 'パンダベーカリー', maker: '鈴木メモ', category: 'その他' },
-    { name: '花とちょうちょ', maker: '鈴木メモ', category: 'その他' },
-    { name: '波とかもめ', maker: '鈴木メモ', category: 'その他' },
-    { name: '空とひこうき', maker: '鈴木メモ', category: 'その他' },
-    { name: 'まるがめ本丸ゴシック', maker: 'フロップデザイン', category: 'ゴシック' },
-    { name: 'かなざわ本丸ゴシック', maker: 'フロップデザイン', category: 'ゴシック' },
-    { name: 'うずまさ本丸ゴシック', maker: 'フロップデザイン', category: 'ゴシック' },
-    { name: 'しらさぎ本丸ゴシック', maker: 'フロップデザイン', category: 'ゴシック' },
-    { name: 'ひこね本丸ゴシック', maker: 'フロップデザイン', category: 'ゴシック' },
+    { name: 'うつくし明朝体', maker: 'フロップデザイン', category: '明朝', reading: 'うつくしみんちょうたい' },
+    { name: 'パンダベーカリー', maker: '鈴木メモ', category: 'その他', reading: 'ぱんだべーかりー' },
+    { name: '花とちょうちょ', maker: '鈴木メモ', category: 'その他', reading: 'はなとちょうちょ' },
+    { name: '波とかもめ', maker: '鈴木メモ', category: 'その他', reading: 'なみとかもめ' },
+    { name: '空とひこうき', maker: '鈴木メモ', category: 'その他', reading: 'そらとひこうき' },
+    { name: 'まるがめ本丸ゴシック', maker: 'フロップデザイン', category: 'ゴシック', reading: 'まるがめほんまるごしっく' },
+    { name: 'かなざわ本丸ゴシック', maker: 'フロップデザイン', category: 'ゴシック', reading: 'かなざわほんまるごしっく' },
+    { name: 'うずまさ本丸ゴシック', maker: 'フロップデザイン', category: 'ゴシック', reading: 'うずまさほんまるごしっく' },
+    { name: 'しらさぎ本丸ゴシック', maker: 'フロップデザイン', category: 'ゴシック', reading: 'しらさぎほんまるごしっく' },
+    { name: 'ひこね本丸ゴシック', maker: 'フロップデザイン', category: 'ゴシック', reading: 'ひこねほんまるごしっく' },
     // 白舟書体
-    { name: '白舟楷書', maker: '白舟書体', category: 'その他' },
-    { name: '白舟行書', maker: '白舟書体', category: 'その他' },
-    { name: '白舟草書', maker: '白舟書体', category: 'その他' },
-    { name: '白舟隷書', maker: '白舟書体', category: 'その他' },
-    { name: '白舟古印体', maker: '白舟書体', category: 'その他' },
-    { name: '白舟篆書', maker: '白舟書体', category: 'その他' },
-    { name: '白舟角崩', maker: '白舟書体', category: 'その他' },
-    { name: '白舟髭隷', maker: '白舟書体', category: 'その他' },
-    { name: '白舟甲骨', maker: '白舟書体', category: 'その他' },
-    { name: '大髭', maker: '白舟書体', category: 'その他' },
-    { name: '忍者', maker: '白舟書体', category: 'その他' },
-    { name: '京円', maker: '白舟書体', category: 'その他' },
-    { name: '極2', maker: '白舟書体', category: 'その他' },
+    { name: '白舟楷書', maker: '白舟書体', category: 'その他', reading: 'はくしゅうかいしょ' },
+    { name: '白舟行書', maker: '白舟書体', category: 'その他', reading: 'はくしゅうぎょうしょ' },
+    { name: '白舟草書', maker: '白舟書体', category: 'その他', reading: 'はくしゅうそうしょ' },
+    { name: '白舟隷書', maker: '白舟書体', category: 'その他', reading: 'はくしゅうれいしょ' },
+    { name: '白舟古印体', maker: '白舟書体', category: 'その他', reading: 'はくしゅうこいんたい' },
+    { name: '白舟篆書', maker: '白舟書体', category: 'その他', reading: 'はくしゅうてんしょ' },
+    { name: '白舟角崩', maker: '白舟書体', category: 'その他', reading: 'はくしゅうかくくずし' },
+    { name: '白舟髭隷', maker: '白舟書体', category: 'その他', reading: 'はくしゅうひげれい' },
+    { name: '白舟甲骨', maker: '白舟書体', category: 'その他', reading: 'はくしゅうこうこつ' },
+    { name: '大髭', maker: '白舟書体', category: 'その他', reading: 'おおひげ' },
+    { name: '忍者', maker: '白舟書体', category: 'その他', reading: 'にんじゃ' },
+    { name: '京円', maker: '白舟書体', category: 'その他', reading: 'きょうえん' },
+    { name: '極2', maker: '白舟書体', category: 'その他', reading: 'きわみに' },
     // ダイナコムウェア 追加書体
-    { name: 'DFP平成明朝', maker: 'ダイナコムウェア', category: '明朝' },
-    { name: 'DFP明朝', maker: 'ダイナコムウェア', category: '明朝' },
-    { name: 'DFP楷書', maker: 'ダイナコムウェア', category: 'その他' },
-    { name: 'DFP行書', maker: 'ダイナコムウェア', category: 'その他' },
-    { name: 'DFP隷書', maker: 'ダイナコムウェア', category: 'その他' },
-    { name: 'DFP勘亭流', maker: 'ダイナコムウェア', category: 'その他' },
-    { name: 'DFP顔真卿', maker: 'ダイナコムウェア', category: 'その他' },
-    { name: 'DFP北魏楷書', maker: 'ダイナコムウェア', category: 'その他' },
-    { name: 'DF古今江戸', maker: 'ダイナコムウェア', category: 'その他' },
-    { name: 'DF古今髭', maker: 'ダイナコムウェア', category: 'その他' },
-    { name: 'DFPポップ体', maker: 'ダイナコムウェア', category: 'その他' },
-    { name: 'DFP綜藝体', maker: 'ダイナコムウェア', category: 'ゴシック' },
-    { name: 'DFP特太ゴシック', maker: 'ダイナコムウェア', category: 'ゴシック' },
-    { name: 'DFP太丸ゴシック', maker: 'ダイナコムウェア', category: 'ゴシック' },
-    { name: 'DFクラフト童', maker: 'ダイナコムウェア', category: 'その他' },
+    { name: 'DFP平成明朝', maker: 'ダイナコムウェア', category: '明朝', reading: 'でぃーえふぴーへいせいみんちょう' },
+    { name: 'DFP明朝', maker: 'ダイナコムウェア', category: '明朝', reading: 'でぃーえふぴーみんちょう' },
+    { name: 'DFP楷書', maker: 'ダイナコムウェア', category: 'その他', reading: 'でぃーえふぴーかいしょ' },
+    { name: 'DFP行書', maker: 'ダイナコムウェア', category: 'その他', reading: 'でぃーえふぴーぎょうしょ' },
+    { name: 'DFP隷書', maker: 'ダイナコムウェア', category: 'その他', reading: 'でぃーえふぴーれいしょ' },
+    { name: 'DFP勘亭流', maker: 'ダイナコムウェア', category: 'その他', reading: 'でぃーえふぴーかんていりゅう' },
+    { name: 'DFP顔真卿', maker: 'ダイナコムウェア', category: 'その他', reading: 'でぃーえふぴーがんしんけい' },
+    { name: 'DFP北魏楷書', maker: 'ダイナコムウェア', category: 'その他', reading: 'でぃーえふぴーほくぎかいしょ' },
+    { name: 'DF古今江戸', maker: 'ダイナコムウェア', category: 'その他', reading: 'でぃーえふここんえど' },
+    { name: 'DF古今髭', maker: 'ダイナコムウェア', category: 'その他', reading: 'でぃーえふここんひげ' },
+    { name: 'DFPポップ体', maker: 'ダイナコムウェア', category: 'その他', reading: 'でぃーえふぴーぽっぷたい' },
+    { name: 'DFP綜藝体', maker: 'ダイナコムウェア', category: 'ゴシック', reading: 'でぃーえふぴーそうげいたい' },
+    { name: 'DFP特太ゴシック', maker: 'ダイナコムウェア', category: 'ゴシック', reading: 'でぃーえふぴーとくふとごしっく' },
+    { name: 'DFP太丸ゴシック', maker: 'ダイナコムウェア', category: 'ゴシック', reading: 'でぃーえふぴーふとまるごしっく' },
+    { name: 'DFクラフト童', maker: 'ダイナコムウェア', category: 'その他', reading: 'でぃーえふくらふとわらべ' },
     // 写研（モリサワ 写研クラシックス）
-    { name: 'ゴナ', maker: '写研', category: 'ゴシック' },
-    { name: 'ナール', maker: '写研', category: 'ゴシック' },
-    { name: '石井明朝', maker: '写研', category: '明朝' },
-    { name: '石井明朝オールドスタイル', maker: '写研', category: '明朝' },
-    { name: '石井ゴシック', maker: '写研', category: 'ゴシック' },
-    { name: '石井中教科書体', maker: '写研', category: 'その他' },
-    { name: 'スーボ', maker: '写研', category: 'ゴシック' },
-    { name: '大蘭明朝', maker: '写研', category: '明朝' },
-    { name: 'イダシェ', maker: '写研', category: 'ゴシック' },
-    { name: 'ファン蘭', maker: '写研', category: '明朝' },
-    { name: '田行書', maker: '写研', category: 'その他' },
-    { name: 'アキフリー', maker: '写研', category: 'その他' },
-    { name: 'カービィ', maker: '写研', category: 'ゴシック' },
-    { name: '岩蔭行書', maker: '写研', category: 'その他' },
+    { name: 'ゴナ', maker: '写研', category: 'ゴシック', reading: 'ごな' },
+    { name: 'ナール', maker: '写研', category: 'ゴシック', reading: 'なーる' },
+    { name: '石井明朝', maker: '写研', category: '明朝', reading: 'いしいみんちょう' },
+    { name: '石井明朝オールドスタイル', maker: '写研', category: '明朝', reading: 'いしいみんちょうおーるどすたいる' },
+    { name: '石井ゴシック', maker: '写研', category: 'ゴシック', reading: 'いしいごしっく' },
+    { name: '石井中教科書体', maker: '写研', category: 'その他', reading: 'いしいちゅうきょうかしょたい' },
+    { name: 'スーボ', maker: '写研', category: 'ゴシック', reading: 'すーぼ' },
+    { name: '大蘭明朝', maker: '写研', category: '明朝', reading: 'だいらんみんちょう' },
+    { name: 'イダシェ', maker: '写研', category: 'ゴシック', reading: 'いだしぇ' },
+    { name: 'ファン蘭', maker: '写研', category: '明朝', reading: 'ふぁんらん' },
+    { name: '田行書', maker: '写研', category: 'その他', reading: 'でんぎょうしょ' },
+    { name: 'アキフリー', maker: '写研', category: 'その他', reading: 'あきふりー' },
+    { name: 'カービィ', maker: '写研', category: 'ゴシック', reading: 'かーびぃ' },
+    { name: '岩蔭行書', maker: '写研', category: 'その他', reading: 'いわかげぎょうしょ' },
   ],
   en: [
     { name: 'Proxima Nova', maker: 'Adobe', category: 'サンセリフ' },
@@ -3356,7 +3356,7 @@ function makeComparePanel(item, idx) {
   if (item.fontName) {
     const nameLabel = document.createElement('div');
     nameLabel.textContent = item.fontName;
-    nameLabel.style.cssText = 'background:rgba(0,0,0,0.6);color:white;font-size:11px;padding:3px 8px;border-radius:10px;max-width:120px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-family:inherit;';
+    nameLabel.style.cssText = 'background:rgba(0,0,0,0.6);color:white;font-size:11px;padding:3px 8px;border-radius:10px;white-space:nowrap;font-family:inherit;';
     bottomRight.appendChild(nameLabel);
   }
 
@@ -3540,7 +3540,7 @@ $('af-name').addEventListener('input', () => {
   if (!results.length) { box.classList.remove('open'); return; }
   box.innerHTML = results.map(f => `
     <div class="suggestion-item"
-      data-name="${f.name}" data-maker="${f.maker}" data-cat="${f.category}">
+      data-name="${f.name}" data-maker="${f.maker}" data-cat="${f.category}" data-reading="${f.reading||''}">
       <div class="suggestion-name">${highlightMatch(f.name, q)}</div>
       <div class="suggestion-meta">${f.maker} · ${f.category}</div>
     </div>
@@ -3553,6 +3553,10 @@ $('af-name').addEventListener('input', () => {
       const cat = el.dataset.cat;
       const radio = document.querySelector(`input[name="af-cat"][value="${cat}"]`);
       if (radio) radio.checked = true;
+      // 読み方が未入力の場合のみ自動補完
+      if (el.dataset.reading && !$('af-reading').value.trim()) {
+        $('af-reading').value = el.dataset.reading;
+      }
       box.classList.remove('open');
     });
   });
@@ -4234,9 +4238,10 @@ $('pe-apply').addEventListener('click', async () => {
 // ── Dropbox バックアップ ─────────────────────────────
 const DROPBOX_APP_KEY = 'v90o7o5it0qt3eh';
 const DROPBOX_TOKEN_KEY = 'dbx_token';
-const BACKUP_HISTORY_KEY = 'backup_history'; // localStorageに最大7回分の日付を保存
+const BACKUP_HISTORY_KEY = 'backup_history'; // localStorageに保存 { hourly: [...], daily: [...] }
 const BACKUP_FOLDER = '/MyMojiBook';
-const MAX_BACKUP_COUNT = 7;
+const MAX_DAILY_COUNT = 7;   // 日次は直近7日分
+const MAX_HOURLY_COUNT = 24; // 時間別は最大24件（念のため上限）
 
 function getDropboxToken() { return localStorage.getItem(DROPBOX_TOKEN_KEY); }
 function setDropboxToken(t) { localStorage.setItem(DROPBOX_TOKEN_KEY, t); }
@@ -4317,10 +4322,15 @@ async function dropboxDelete(path) {
   return dropboxApi('files/delete_v2', { path });
 }
 
-// バックアップ履歴（直近7回分の日付）
+// バックアップ履歴（hourly: 直近24h分、daily: 日次7日分）
 function getBackupHistory() {
-  try { return JSON.parse(localStorage.getItem(BACKUP_HISTORY_KEY) || '[]'); }
-  catch { return []; }
+  try {
+    const raw = JSON.parse(localStorage.getItem(BACKUP_HISTORY_KEY) || '{}');
+    return {
+      hourly: Array.isArray(raw.hourly) ? raw.hourly : [],
+      daily:  Array.isArray(raw.daily)  ? raw.daily  : []
+    };
+  } catch { return { hourly: [], daily: [] }; }
 }
 function saveBackupHistory(history) {
   localStorage.setItem(BACKUP_HISTORY_KEY, JSON.stringify(history));
@@ -4331,11 +4341,17 @@ async function runBackup(silent = true) {
   const token = getDropboxToken();
   if (!token) return;
 
-  const today = new Date().toISOString().split('T')[0];
+  const now = new Date();
+  // hourlyキー: "YYYY-MM-DD_HH"（1時間単位）
+  const pad = n => String(n).padStart(2, '0');
+  const hourlyKey = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}`;
+  // dailyキー: "YYYY-MM-DD"
+  const today = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+
   const history = getBackupHistory();
 
-  if (history[0] === today) {
-    if (!silent) showToast('本日のバックアップは完了済みです');
+  // 今のhourlyKeyで既にバックアップ済みならスキップ（手動は強制実行）
+  if (silent && history.hourly[0] === hourlyKey) {
     return;
   }
 
@@ -4345,14 +4361,13 @@ async function runBackup(silent = true) {
     // ① Firestoreデータをエクスポート
     const q = await getDocs(collection(db, 'fonts'));
     const allFonts = [];
-    const allPhotoUrls = []; // 全写真URLを収集
+    const allPhotoUrls = [];
 
     for (const d of q.docs) {
       const fontData = { id: d.id, ...d.data() };
       const usnap = await getDocs(collection(db, 'fonts', d.id, 'usages'));
       fontData._usages = usnap.docs.map(u => ({ id: u.id, ...u.data() }));
       allFonts.push(fontData);
-      // 写真URL収集
       (fontData.photos||[]).forEach(p => { if (p.url) allPhotoUrls.push(p.url); });
       fontData._usages.forEach(u => {
         (u.photos||[]).forEach(p => { if (p.url) allPhotoUrls.push(p.url); });
@@ -4365,31 +4380,58 @@ async function runBackup(silent = true) {
     });
 
     const exportData = {
-      exportedAt: new Date().toISOString(),
+      exportedAt: now.toISOString(),
       fonts: allFonts,
       unassigned_usages: unassigned
     };
 
-    // ② テキストデータをアップロード
-    const todayPath = `${BACKUP_FOLDER}/daily/${today}.json`;
-    const ok = await dropboxUpload(todayPath, JSON.stringify(exportData, null, 2));
+    // ② 時間別ファイルを保存（直近24時間）
+    const hourlyPath = `${BACKUP_FOLDER}/hourly/${hourlyKey}.json`;
+    const ok = await dropboxUpload(hourlyPath, JSON.stringify(exportData, null, 2));
     if (!ok) { if (!silent) showToast('バックアップに失敗しました'); return; }
+
+    // ③ latest.jsonを常に更新
     await dropboxUpload(`${BACKUP_FOLDER}/latest.json`, JSON.stringify(exportData, null, 2));
 
-    // ③ 写真の差分バックアップ
+    // ④ 日次ファイルを保存（1日1回だけ更新）
+    const dailyPath = `${BACKUP_FOLDER}/daily/${today}.json`;
+    if (history.daily[0] !== today) {
+      await dropboxUpload(dailyPath, JSON.stringify(exportData, null, 2));
+    }
+
+    // ⑤ 写真の差分バックアップ
     await backupPhotos(allPhotoUrls, silent);
 
-    // ④ 履歴を更新
-    const newHistory = [today, ...history.filter(d => d !== today)];
-    if (newHistory.length > MAX_BACKUP_COUNT) {
-      const toDelete = newHistory.splice(MAX_BACKUP_COUNT);
-      for (const date of toDelete) {
+    // ⑥ hourly履歴を更新（直近24時間分を保持）
+    const nowMs = now.getTime();
+    const cutoffMs = nowMs - 24 * 60 * 60 * 1000; // 24時間前
+    const newHourly = [hourlyKey, ...history.hourly.filter(k => k !== hourlyKey)];
+
+    // 24時間より古いhourlyエントリを削除（Dropboxからも）
+    const toDeleteHourly = newHourly.filter(k => {
+      // "YYYY-MM-DD_HH" → Dateに変換
+      const [datePart, hourPart] = k.split('_');
+      const [y, mo, d] = datePart.split('-').map(Number);
+      const h = parseInt(hourPart, 10);
+      return new Date(y, mo-1, d, h).getTime() < cutoffMs;
+    });
+    const keepHourly = newHourly.filter(k => !toDeleteHourly.includes(k));
+    for (const k of toDeleteHourly) {
+      await dropboxDelete(`${BACKUP_FOLDER}/hourly/${k}.json`);
+    }
+
+    // ⑦ daily履歴を更新（直近7日分を保持）
+    const newDaily = [today, ...history.daily.filter(d => d !== today)];
+    if (newDaily.length > MAX_DAILY_COUNT) {
+      const toDeleteDaily = newDaily.splice(MAX_DAILY_COUNT);
+      for (const date of toDeleteDaily) {
         await dropboxDelete(`${BACKUP_FOLDER}/daily/${date}.json`);
       }
     }
-    saveBackupHistory(newHistory);
+
+    saveBackupHistory({ hourly: keepHourly, daily: newDaily });
     renderBackupStatus();
-    if (!silent) showToast(`バックアップ完了（${today}）`);
+    if (!silent) showToast(`バックアップ完了（${today} ${pad(now.getHours())}:00）`);
 
   } catch(e) {
     console.error('Backup error:', e);
@@ -4454,7 +4496,16 @@ function renderBackupStatus() {
   const statusEl = $('menu-backup-status');
   if (statusEl) {
     const history = getBackupHistory();
-    statusEl.textContent = `☁️ 最終BU: ${history[0] || 'なし'}`;
+    // hourlyの最新から日時を表示
+    if (history.hourly && history.hourly[0]) {
+      const k = history.hourly[0]; // "YYYY-MM-DD_HH"
+      const [datePart, hourPart] = k.split('_');
+      statusEl.textContent = `☁️ 最終BU: ${datePart} ${hourPart}:00`;
+    } else if (history.daily && history.daily[0]) {
+      statusEl.textContent = `☁️ 最終BU: ${history.daily[0]}`;
+    } else {
+      statusEl.textContent = '☁️ 最終BU: なし';
+    }
   }
 }
 
