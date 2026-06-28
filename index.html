@@ -2211,7 +2211,8 @@ async function openDetail(id) {
           try {
             const storageRef = ref(storage, `fonts/${Date.now()}_edited.jpg`);
             await uploadBytes(storageRef, blob);
-            const url = await getDownloadURL(storageRef);
+            const rawUrl = await getDownloadURL(storageRef);
+            const url = rawUrl + '&t=' + Date.now();
             const f2 = fonts.find(x => x.id === id);
             if (f2?.photos) {
               const idx = photoIdx >= 0 ? photoIdx : 0;
@@ -2301,10 +2302,11 @@ async function openDetail(id) {
             const storageRef = ref(storage, `fonts/${Date.now()}_edited.jpg`);
             await uploadBytes(storageRef, blob);
             const newUrl = await getDownloadURL(storageRef);
+            const noCacheUrl = newUrl + '&t=' + Date.now();
             const f2 = fonts.find(x => x.id === id);
             if (f2?.photos) {
               const pi = f2.photos.findIndex(p => p.url === url);
-              if (pi >= 0) { f2.photos[pi] = { ...f2.photos[pi], url: newUrl }; }
+              if (pi >= 0) { f2.photos[pi] = { ...f2.photos[pi], url: noCacheUrl }; }
               await updateDoc(doc(db,'fonts',id), { photos: f2.photos });
               showToast('保存しました');
               openDetail(id);
@@ -2400,7 +2402,8 @@ function openUsageDetail(fontId, usageId, usages) {
           try {
             const storageRef = ref(storage, `fonts/${fontId}/usages/${Date.now()}_edited.jpg`);
             await uploadBytes(storageRef, blob);
-            const newUrl = await getDownloadURL(storageRef);
+            const rawUrl2 = await getDownloadURL(storageRef);
+            const newUrl = rawUrl2 + '&t=' + Date.now();
             const newPhotos = [...(u.photos||[])];
             const pi = newPhotos.findIndex(p => p.url === url);
             if (pi >= 0) newPhotos[pi] = { ...newPhotos[pi], url: newUrl };
@@ -3418,13 +3421,32 @@ $('pe-apply').addEventListener('click', async () => {
     const b = 100 + peBrightness;
     const cont = 100 + peContrast;
     const s = 100 + peSaturation;
-    peCtx.filter = `brightness(${b}%) contrast(${cont}%) saturate(${s}%)`;
+    // まずフィルターなしで描画
     peCtx.save();
     peCtx.translate(cw/2, ch/2);
     peCtx.rotate(rot * Math.PI / 180);
     peCtx.drawImage(displayImg, -sw/2, -sh/2);
     peCtx.restore();
-    peCtx.filter = 'none';
+
+    // 明るさ・コントラスト・彩度をピクセル操作で適用（iOS Safari対応）
+    if (peBrightness !== 0 || peContrast !== 0 || peSaturation !== 0) {
+      const imgData = peCtx.getImageData(0, 0, cw, ch);
+      const d = imgData.data;
+      const bright = peBrightness * 2.55;
+      const cont = (100 + peContrast) / 100;
+      const sat = (100 + peSaturation) / 100;
+      for (let i = 0; i < d.length; i += 4) {
+        let r = d[i], g = d[i+1], b = d[i+2];
+        r += bright; g += bright; b += bright;
+        r = (r-128)*cont+128; g = (g-128)*cont+128; b = (b-128)*cont+128;
+        const gray = 0.299*r + 0.587*g + 0.114*b;
+        r = gray+(r-gray)*sat; g = gray+(g-gray)*sat; b = gray+(b-gray)*sat;
+        d[i]   = Math.max(0,Math.min(255,Math.round(r)));
+        d[i+1] = Math.max(0,Math.min(255,Math.round(g)));
+        d[i+2] = Math.max(0,Math.min(255,Math.round(b)));
+      }
+      peCtx.putImageData(imgData, 0, 0);
+    }
 
     // taintチェック：toDataURLを試みてSecurityErrorを事前検出
     try { peCanvas.toDataURL(); } catch(secErr) {
