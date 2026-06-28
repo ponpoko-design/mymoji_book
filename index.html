@@ -1120,7 +1120,7 @@
     <div class="pe-btn-row">
       <button class="editor-btn" id="pe-reset">リセット</button>
       <button class="editor-btn" id="pe-revert" style="display:none;">元に戻す</button>
-      <button class="editor-btn editor-btn-primary" id="pe-apply">完了・保存</button>
+      <button class="editor-btn editor-btn-primary" id="pe-apply">完了</button>
     </div>
   </div>
 </div>
@@ -2084,8 +2084,7 @@ async function openDetail(id) {
   $('detail-content').innerHTML = `
     ${photos.length > 0 ? `
     <div class="detail-hero" id="detail-hero-wrap" style="position:relative;cursor:pointer;">
-      <img id="detail-cover-img" src="${photos[0].url}" alt="${f.name}" style="width:100%;height:100%;object-fit:cover;object-position:${f.coverPosition||'50% 50%'};">
-      <div id="detail-hero-adjust-btn" style="position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,0.5);color:white;font-size:12px;padding:5px 12px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:5px;touch-action:manipulation;">
+      <img id="detail-cover-img" src="${photos[0].url}" alt="${f.name}" style="width:100%;height:100%;object-fit:cover;object-position:${f.coverPosition||'50% 50%'};transform-origin:center;transition:none;">      <div id="detail-hero-adjust-btn" style="position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,0.5);color:white;font-size:12px;padding:5px 12px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:5px;touch-action:manipulation;">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>
         位置を調整
       </div>
@@ -2233,74 +2232,133 @@ async function openDetail(id) {
     });
   }
 
-  // ── カバー画像 位置調整 ──────────────────────
+  // ── カバー画像 位置調整（ドラッグ＋ピンチズーム）──────
   const adjustBtn = $('detail-content').querySelector('#detail-hero-adjust-btn');
   if (adjustBtn && photos.length > 0) {
     const coverImg = $('detail-cover-img');
     let isAdjustMode = false;
-    let dragStart = null;
-    let currentPos = { x: 50, y: 50 };
 
-    // 既存のcoverPositionをパース
+    // 状態: object-position(%) + scale
+    let posX = 50, posY = 50, scale = 1;
+
+    // 既存値をパース
     if (f.coverPosition) {
-      const parts = f.coverPosition.match(/([\d.]+)%\s+([\d.]+)%/);
-      if (parts) { currentPos.x = parseFloat(parts[1]); currentPos.y = parseFloat(parts[2]); }
+      const m = f.coverPosition.match(/([\d.]+)%\s+([\d.]+)%(?:\s+scale\(([\d.]+)\))?/);
+      if (m) { posX = parseFloat(m[1]); posY = parseFloat(m[2]); scale = m[3] ? parseFloat(m[3]) : 1; }
     }
+
+    function applyTransform() {
+      // object-position で表示位置、transform: scale でズーム
+      coverImg.style.objectPosition = `${posX.toFixed(1)}% ${posY.toFixed(1)}%`;
+      coverImg.style.transform = scale !== 1 ? `scale(${scale.toFixed(2)})` : '';
+    }
+    applyTransform();
+
+    const SAVE_ICON = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>`;
+    const MOVE_ICON = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>`;
 
     adjustBtn.addEventListener('click', e => {
       e.stopPropagation();
       isAdjustMode = !isAdjustMode;
       if (isAdjustMode) {
-        adjustBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 位置を保存`;
+        adjustBtn.innerHTML = SAVE_ICON + ' 保存';
         adjustBtn.style.background = 'rgba(155,127,232,0.85)';
         coverImg.style.cursor = 'grab';
-        // ドラッグ説明オーバーレイ
+        heroWrap.style.touchAction = 'none';
         const hint = document.createElement('div');
-        hint.id = 'adjust-hint';
-        hint.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.5);color:white;font-size:13px;padding:8px 16px;border-radius:20px;pointer-events:none;white-space:nowrap;';
-        hint.textContent = '指でドラッグして位置を調整';
-        $('detail-hero-wrap').appendChild(hint);
-        setTimeout(() => hint.remove(), 2000);
+        hint.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.55);color:white;font-size:13px;padding:8px 16px;border-radius:20px;pointer-events:none;white-space:nowrap;z-index:5;';
+        hint.textContent = 'ドラッグ：移動　ピンチ：拡大縮小';
+        heroWrap.appendChild(hint);
+        setTimeout(() => hint.remove(), 2500);
       } else {
-        // 保存
-        adjustBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg> 位置を調整`;
+        adjustBtn.innerHTML = MOVE_ICON + ' 位置を調整';
         adjustBtn.style.background = 'rgba(0,0,0,0.5)';
         coverImg.style.cursor = 'pointer';
-        const posStr = `${currentPos.x.toFixed(1)}% ${currentPos.y.toFixed(1)}%`;
+        heroWrap.style.touchAction = '';
+        const posStr = `${posX.toFixed(1)}% ${posY.toFixed(1)}% scale(${scale.toFixed(2)})`;
         updateDoc(doc(db,'fonts',id), { coverPosition: posStr }).then(() => {
           const fLocal = fonts.find(x=>x.id===id);
           if (fLocal) fLocal.coverPosition = posStr;
-          showToast('位置を保存しました');
+          showToast('保存しました');
         }).catch(() => showToast('保存に失敗しました'));
       }
     });
 
-    // ドラッグで位置調整
-    let lastPointer = null;
+    // ポインター管理
+    const activePointers = new Map();
+    let lastPinchDist = null;
+
+    function getPinchDist(ptrs) {
+      const vals = [...ptrs.values()];
+      const dx = vals[0].x - vals[1].x;
+      const dy = vals[0].y - vals[1].y;
+      return Math.sqrt(dx*dx + dy*dy);
+    }
+    function getPinchCenter(ptrs) {
+      const vals = [...ptrs.values()];
+      return { x: (vals[0].x + vals[1].x) / 2, y: (vals[0].y + vals[1].y) / 2 };
+    }
+
+    let lastSinglePos = null;
+
     heroWrap.addEventListener('pointerdown', e => {
       if (!isAdjustMode) return;
-      e.stopPropagation();
-      lastPointer = { x: e.clientX, y: e.clientY };
-      coverImg.style.cursor = 'grabbing';
+      e.preventDefault(); e.stopPropagation();
+      heroWrap.setPointerCapture(e.pointerId);
+      activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (activePointers.size === 1) {
+        lastSinglePos = { x: e.clientX, y: e.clientY };
+        coverImg.style.cursor = 'grabbing';
+      } else if (activePointers.size === 2) {
+        lastPinchDist = getPinchDist(activePointers);
+        lastSinglePos = null;
+      }
     }, true);
+
     heroWrap.addEventListener('pointermove', e => {
-      if (!isAdjustMode || !lastPointer) return;
-      e.stopPropagation();
-      const dx = e.clientX - lastPointer.x;
-      const dy = e.clientY - lastPointer.y;
-      lastPointer = { x: e.clientX, y: e.clientY };
-      // 移動量をパーセントに変換（移動方向を反転して直感的に）
-      const rect = heroWrap.getBoundingClientRect();
-      currentPos.x = Math.max(0, Math.min(100, currentPos.x - dx / rect.width * 100));
-      currentPos.y = Math.max(0, Math.min(100, currentPos.y - dy / rect.height * 100));
-      coverImg.style.objectPosition = `${currentPos.x.toFixed(1)}% ${currentPos.y.toFixed(1)}%`;
+      if (!isAdjustMode || !activePointers.has(e.pointerId)) return;
+      e.preventDefault(); e.stopPropagation();
+      activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+      if (activePointers.size === 1 && lastSinglePos) {
+        // 1本指：ドラッグで移動
+        const dx = e.clientX - lastSinglePos.x;
+        const dy = e.clientY - lastSinglePos.y;
+        lastSinglePos = { x: e.clientX, y: e.clientY };
+        const rect = heroWrap.getBoundingClientRect();
+        posX = Math.max(0, Math.min(100, posX - dx / rect.width * 100));
+        posY = Math.max(0, Math.min(100, posY - dy / rect.height * 100));
+        applyTransform();
+      } else if (activePointers.size === 2) {
+        // 2本指：ピンチでズーム
+        const newDist = getPinchDist(activePointers);
+        if (lastPinchDist) {
+          const ratio = newDist / lastPinchDist;
+          scale = Math.max(0.5, Math.min(4, scale * ratio));
+          applyTransform();
+        }
+        lastPinchDist = newDist;
+      }
     }, true);
+
     heroWrap.addEventListener('pointerup', e => {
       if (!isAdjustMode) return;
-      lastPointer = null;
-      coverImg.style.cursor = 'grab';
+      e.stopPropagation();
+      activePointers.delete(e.pointerId);
+      lastPinchDist = null;
+      if (activePointers.size === 1) {
+        const remaining = [...activePointers.values()][0];
+        lastSinglePos = { x: remaining.x, y: remaining.y };
+      } else if (activePointers.size === 0) {
+        lastSinglePos = null;
+        coverImg.style.cursor = 'grab';
+      }
     }, true);
-    heroWrap.addEventListener('pointercancel', () => { lastPointer = null; }, true);
+
+    heroWrap.addEventListener('pointercancel', e => {
+      activePointers.delete(e.pointerId);
+      lastPinchDist = null; lastSinglePos = null;
+    }, true);
   }
 
   // ── コンテキストメニュー ────────────────────
@@ -3382,7 +3440,7 @@ function openPhotoEditor(src, onApply, onClose, originalUrl) {
   peSetTab('adjust');
   $('photo-editor').classList.add('active');
 
-  // 完了・保存ボタンをロード中にdisabled
+  // 完了ボタンをロード中にdisabled
   const applyBtn = $('pe-apply');
   applyBtn.disabled = true;
   applyBtn.textContent = '読み込み中…';
@@ -3396,19 +3454,19 @@ function openPhotoEditor(src, onApply, onClose, originalUrl) {
       img.onload = () => {
         peOriginalSrc = blobUrl;
         applyBtn.disabled = false;
-        applyBtn.textContent = '完了・保存';
+        applyBtn.textContent = '完了';
       };
       img.src = blobUrl;
     } else {
       img.src = src;
       applyBtn.disabled = false;
-      applyBtn.textContent = '完了・保存';
+      applyBtn.textContent = '完了';
     }
   };
   xhr.onerror = () => {
     img.src = src;
     applyBtn.disabled = false;
-    applyBtn.textContent = '完了・保存';
+    applyBtn.textContent = '完了';
   };
   xhr.send();
 }
@@ -3526,7 +3584,7 @@ $('photo-editor-close').addEventListener('click', () => {
   if (peOnClose) peOnClose();
 });
 
-// 完了・保存
+// 完了
 $('pe-apply').addEventListener('click', async () => {
   $('pe-apply').disabled = true;
   $('pe-apply').textContent = '処理中…';
@@ -3613,7 +3671,7 @@ $('pe-apply').addEventListener('click', async () => {
       showToast('保存に失敗しました');
     }
     $('pe-apply').disabled = false;
-    $('pe-apply').textContent = '完了・保存';
+    $('pe-apply').textContent = '完了';
   }
 });
 
