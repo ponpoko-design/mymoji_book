@@ -2488,6 +2488,7 @@ async function openDetail(id) {
       if (ctxMenu.classList.contains('active')) return;
       const url = el.dataset.url;
       const memo = el.dataset.memo;
+      lightboxCurrentFontName = f.name || '';
       openLightbox(url, memo, () => {
         const origUrl = el.dataset.originalUrl || '';
         openPhotoEditor(url, async (blob, revertUrl) => {
@@ -2523,7 +2524,7 @@ async function openDetail(id) {
               openDetail(id);
             }
           } catch(e2) { showToast('保存に失敗しました'); }
-        }, () => openLightbox(url, memo), origUrl);
+        }, () => openLightbox(url, memo, null, f.name), origUrl);
       });
     });
   });
@@ -2639,7 +2640,7 @@ function openUsageDetail(fontId, usageId, usages) {
             if (usageThumbEl) usageThumbEl.src = newUrl;
             openUsageDetail(fontId, usageId, usages);
           } catch(e2) { showToast('保存に失敗しました'); }
-        }, () => openLightbox(url, memo), origUrl);
+        }, () => openLightbox(url, memo, null, f ? f.name : ''), origUrl);
       });
     });
   });
@@ -2960,11 +2961,13 @@ function buildEditPhotoSlots(containerId, memoWrapId, existingArr, filesArr, mem
 // ── Lightbox ──────────────────────────────
 let lightboxOnEdit = null;
 let lightboxCurrentUrl = '';
+let lightboxCurrentFontName = '';
 
-function openLightbox(url, memo, onEdit) {
+function openLightbox(url, memo, onEdit, fontName) {
   $('lightbox-img').src = url;
   $('lightbox-memo').textContent = memo||'';
   lightboxCurrentUrl = url;
+  lightboxCurrentFontName = fontName || '';
   lightboxOnEdit = onEdit || null;
   const editBtn = $('lightbox-edit-btn');
   if (onEdit) editBtn.classList.add('visible');
@@ -3000,7 +3003,7 @@ $('lightbox-compare-btn').addEventListener('click', () => {
     showToast('比較から除外しました');
   } else {
     if (compareList.length >= 4) { showToast('最大4枚まで選択できます'); return; }
-    compareList.push({ url, memo });
+    compareList.push({ url, memo, fontName: lightboxCurrentFontName });
     $('lightbox-compare-btn').classList.add('active');
     showToast(`比較に追加 (${compareList.length}/4)`);
   }
@@ -3055,10 +3058,21 @@ function makeComparePanel(item, idx) {
   });
   panel.appendChild(backBtn);
 
-  // ×ボタン（右下）
+  // フォント名ラベル＋×ボタン（右下）
+  const bottomRight = document.createElement('div');
+  bottomRight.style.cssText = 'position:absolute;bottom:10px;right:10px;display:flex;align-items:center;gap:6px;z-index:10;';
+
+  if (item.fontName) {
+    const nameLabel = document.createElement('div');
+    nameLabel.textContent = item.fontName;
+    nameLabel.style.cssText = 'background:rgba(0,0,0,0.6);color:white;font-size:11px;padding:3px 8px;border-radius:10px;max-width:120px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-family:inherit;';
+    bottomRight.appendChild(nameLabel);
+  }
+
   const closeBtn = document.createElement('button');
   closeBtn.className = 'compare-panel-close';
-  closeBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+  closeBtn.style.cssText = 'position:relative;bottom:auto;right:auto;background:rgba(0,0,0,0.6);border:none;color:white;border-radius:50%;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;flex-shrink:0;';
+  closeBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
   closeBtn.addEventListener('click', e => {
     e.stopPropagation();
     compareList = compareList.filter(c => c.url !== item.url);
@@ -3069,7 +3083,8 @@ function makeComparePanel(item, idx) {
       renderCompareScreen();
     }
   });
-  panel.appendChild(closeBtn);
+  bottomRight.appendChild(closeBtn);
+  panel.appendChild(bottomRight);
 
   // ピンチ＋ドラッグ
   let tx = 0, ty = 0, scale = 1;
@@ -3091,7 +3106,7 @@ function makeComparePanel(item, idx) {
 
   function dist(p) { const v=[...p.values()]; return Math.hypot(v[0].x-v[1].x,v[0].y-v[1].y); }
   panel.addEventListener('pointerdown', e => {
-    if (closeBtn.contains(e.target)||backBtn.contains(e.target)) return;
+    if (bottomRight.contains(e.target)||backBtn.contains(e.target)) return;
     e.preventDefault(); panel.setPointerCapture(e.pointerId);
     activePtrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
     if (activePtrs.size===1) lastSinglePos={x:e.clientX,y:e.clientY};
