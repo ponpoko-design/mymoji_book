@@ -1119,6 +1119,7 @@
 
     <div class="pe-btn-row">
       <button class="editor-btn" id="pe-reset">リセット</button>
+      <button class="editor-btn" id="pe-revert" style="display:none;">元に戻す</button>
       <button class="editor-btn editor-btn-primary" id="pe-apply">完了・保存</button>
     </div>
   </div>
@@ -2083,7 +2084,11 @@ async function openDetail(id) {
   $('detail-content').innerHTML = `
     ${photos.length > 0 ? `
     <div class="detail-hero" id="detail-hero-wrap" style="position:relative;cursor:pointer;">
-      <img id="detail-cover-img" src="${photos[0].url}" alt="${f.name}" style="width:100%;height:100%;object-fit:cover;">
+      <img id="detail-cover-img" src="${photos[0].url}" alt="${f.name}" style="width:100%;height:100%;object-fit:cover;object-position:${f.coverPosition||'50% 50%'};">
+      <div id="detail-hero-adjust-btn" style="position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,0.5);color:white;font-size:12px;padding:5px 12px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:5px;touch-action:manipulation;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>
+        位置を調整
+      </div>
       ${photos.length > 1 ? `<div style="position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,0.45);color:white;font-size:12px;padding:4px 12px;border-radius:20px;pointer-events:none;">変更</div>` : ''}
     </div>` : ''}
     <div class="detail-body">
@@ -2228,6 +2233,76 @@ async function openDetail(id) {
     });
   }
 
+  // ── カバー画像 位置調整 ──────────────────────
+  const adjustBtn = $('detail-content').querySelector('#detail-hero-adjust-btn');
+  if (adjustBtn && photos.length > 0) {
+    const coverImg = $('detail-cover-img');
+    let isAdjustMode = false;
+    let dragStart = null;
+    let currentPos = { x: 50, y: 50 };
+
+    // 既存のcoverPositionをパース
+    if (f.coverPosition) {
+      const parts = f.coverPosition.match(/([\d.]+)%\s+([\d.]+)%/);
+      if (parts) { currentPos.x = parseFloat(parts[1]); currentPos.y = parseFloat(parts[2]); }
+    }
+
+    adjustBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      isAdjustMode = !isAdjustMode;
+      if (isAdjustMode) {
+        adjustBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 位置を保存`;
+        adjustBtn.style.background = 'rgba(155,127,232,0.85)';
+        coverImg.style.cursor = 'grab';
+        // ドラッグ説明オーバーレイ
+        const hint = document.createElement('div');
+        hint.id = 'adjust-hint';
+        hint.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.5);color:white;font-size:13px;padding:8px 16px;border-radius:20px;pointer-events:none;white-space:nowrap;';
+        hint.textContent = '指でドラッグして位置を調整';
+        $('detail-hero-wrap').appendChild(hint);
+        setTimeout(() => hint.remove(), 2000);
+      } else {
+        // 保存
+        adjustBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg> 位置を調整`;
+        adjustBtn.style.background = 'rgba(0,0,0,0.5)';
+        coverImg.style.cursor = 'pointer';
+        const posStr = `${currentPos.x.toFixed(1)}% ${currentPos.y.toFixed(1)}%`;
+        updateDoc(doc(db,'fonts',id), { coverPosition: posStr }).then(() => {
+          const fLocal = fonts.find(x=>x.id===id);
+          if (fLocal) fLocal.coverPosition = posStr;
+          showToast('位置を保存しました');
+        }).catch(() => showToast('保存に失敗しました'));
+      }
+    });
+
+    // ドラッグで位置調整
+    let lastPointer = null;
+    heroWrap.addEventListener('pointerdown', e => {
+      if (!isAdjustMode) return;
+      e.stopPropagation();
+      lastPointer = { x: e.clientX, y: e.clientY };
+      coverImg.style.cursor = 'grabbing';
+    }, true);
+    heroWrap.addEventListener('pointermove', e => {
+      if (!isAdjustMode || !lastPointer) return;
+      e.stopPropagation();
+      const dx = e.clientX - lastPointer.x;
+      const dy = e.clientY - lastPointer.y;
+      lastPointer = { x: e.clientX, y: e.clientY };
+      // 移動量をパーセントに変換（移動方向を反転して直感的に）
+      const rect = heroWrap.getBoundingClientRect();
+      currentPos.x = Math.max(0, Math.min(100, currentPos.x - dx / rect.width * 100));
+      currentPos.y = Math.max(0, Math.min(100, currentPos.y - dy / rect.height * 100));
+      coverImg.style.objectPosition = `${currentPos.x.toFixed(1)}% ${currentPos.y.toFixed(1)}%`;
+    }, true);
+    heroWrap.addEventListener('pointerup', e => {
+      if (!isAdjustMode) return;
+      lastPointer = null;
+      coverImg.style.cursor = 'grab';
+    }, true);
+    heroWrap.addEventListener('pointercancel', () => { lastPointer = null; }, true);
+  }
+
   // ── コンテキストメニュー ────────────────────
   let ctxMenu = $('context-menu');
   let ctxOverlay = $('context-overlay');
@@ -2310,8 +2385,21 @@ async function openDetail(id) {
       const url = el.dataset.url;
       const memo = el.dataset.memo;
       openLightbox(url, memo, () => {
-        openPhotoEditor(url, async blob => {
+        const origUrl = el.dataset.originalUrl || '';
+        openPhotoEditor(url, async (blob, revertUrl) => {
           try {
+            if (revertUrl) {
+              // 元に戻す
+              const f2 = fonts.find(x => x.id === id);
+              if (f2?.photos) {
+                const pi = f2.photos.findIndex(p => p.url === url);
+                if (pi >= 0) f2.photos[pi] = { ...f2.photos[pi], url: revertUrl, originalUrl: null };
+                await updateDoc(doc(db,'fonts',id), { photos: f2.photos });
+                showToast('元の写真に戻しました');
+                openDetail(id);
+              }
+              return;
+            }
             const storageRef = ref(storage, `fonts/${Date.now()}_edited.jpg`);
             await uploadBytes(storageRef, blob);
             const newUrl = await getDownloadURL(storageRef);
@@ -2320,7 +2408,7 @@ async function openDetail(id) {
             if (f2?.photos) {
               const pi = f2.photos.findIndex(p => p.url === url);
               if (pi >= 0) {
-                const orig = f2.photos[pi].originalUrl || f2.photos[pi].url;
+                const orig = origUrl || f2.photos[pi].originalUrl || f2.photos[pi].url;
                 f2.photos[pi] = { ...f2.photos[pi], url: noCacheUrl, originalUrl: orig };
               }
               await updateDoc(doc(db,'fonts',id), { photos: f2.photos });
@@ -2328,7 +2416,7 @@ async function openDetail(id) {
               openDetail(id);
             }
           } catch(e2) { showToast('保存に失敗しました'); }
-        }, () => openLightbox(url, memo));
+        }, () => openLightbox(url, memo), origUrl);
       });
     });
   });
@@ -2414,8 +2502,19 @@ function openUsageDetail(fontId, usageId, usages) {
       const url = el.dataset.url;
       const memo = el.dataset.memo;
       openLightbox(url, memo, () => {
-        openPhotoEditor(url, async blob => {
+        const origUrl = el.dataset.originalUrl || '';
+        openPhotoEditor(url, async (blob, revertUrl) => {
           try {
+            if (revertUrl) {
+              const newPhotos = [...(u.photos||[])];
+              const pi = newPhotos.findIndex(p => p.url === url);
+              if (pi >= 0) newPhotos[pi] = { ...newPhotos[pi], url: revertUrl, originalUrl: null };
+              await updateDoc(doc(db,'fonts',fontId,'usages',usageId), { photos: newPhotos });
+              u.photos = newPhotos;
+              showToast('元の写真に戻しました');
+              openUsageDetail(fontId, usageId, usages);
+              return;
+            }
             const storageRef = ref(storage, `fonts/${fontId}/usages/${Date.now()}_edited.jpg`);
             await uploadBytes(storageRef, blob);
             const rawUrl2 = await getDownloadURL(storageRef);
@@ -2423,7 +2522,7 @@ function openUsageDetail(fontId, usageId, usages) {
             const newPhotos = [...(u.photos||[])];
             const pi = newPhotos.findIndex(p => p.url === url);
             if (pi >= 0) {
-              const orig = newPhotos[pi].originalUrl || newPhotos[pi].url;
+              const orig = origUrl || newPhotos[pi].originalUrl || newPhotos[pi].url;
               newPhotos[pi] = { ...newPhotos[pi], url: newUrl, originalUrl: orig };
             }
             await updateDoc(doc(db,'fonts',fontId,'usages',usageId), { photos: newPhotos });
@@ -2431,7 +2530,7 @@ function openUsageDetail(fontId, usageId, usages) {
             showToast('保存しました');
             openUsageDetail(fontId, usageId, usages);
           } catch(e2) { showToast('保存に失敗しました'); }
-        }, () => openLightbox(url, memo));
+        }, () => openLightbox(url, memo), origUrl);
       });
     });
   });
@@ -3252,7 +3351,7 @@ let peSaturation = 0;
 let peCropStart = null;
 let peCropRect = null;
 
-function openPhotoEditor(src, onApply, onClose) {
+function openPhotoEditor(src, onApply, onClose, originalUrl) {
   peRotation = 0; peBrightness = 0; peContrast = 0; peSaturation = 0;
   peCropRect = null; peCropStart = null;
   peOriginalSrc = src;
@@ -3262,6 +3361,20 @@ function openPhotoEditor(src, onApply, onClose) {
   $('pe-brightness').value = 0; $('pe-brightness-val').textContent = '0';
   $('pe-contrast').value = 0;   $('pe-contrast-val').textContent = '0';
   $('pe-saturation').value = 0; $('pe-saturation-val').textContent = '0';
+
+  // 元に戻すボタンの表示制御
+  const revertBtn = $('pe-revert');
+  if (originalUrl) {
+    revertBtn.style.display = 'inline-flex';
+    revertBtn.onclick = () => {
+      if (peOnApply) peOnApply(null, originalUrl);
+      $('photo-editor').classList.remove('active');
+      if (peOnClose) peOnClose();
+    };
+  } else {
+    revertBtn.style.display = 'none';
+    revertBtn.onclick = null;
+  }
 
   const img = $('photo-editor-img');
   img.style.transform = '';
