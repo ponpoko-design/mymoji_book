@@ -2584,23 +2584,48 @@ async function openDetail(id) {
       checkSearchResults.querySelectorAll('.check-search-item').forEach(el => {
         el.addEventListener('click', async () => {
           const targetId = el.dataset.id;
+          const targetFont = fonts.find(x=>x.id===targetId);
+          if (!targetFont) return;
           // 自分側に追加
           const newChecks = [...(f.checks||[]), targetId];
           await updateDoc(doc(db,'fonts',id), { checks: newChecks });
           f.checks = newChecks;
           // 相手側にも自動追加（双方向リンク）
-          const targetFont = fonts.find(x=>x.id===targetId);
-          if (targetFont) {
-            const targetChecks = targetFont.checks || [];
-            if (!targetChecks.includes(id)) {
-              const newTargetChecks = [...targetChecks, id];
-              await updateDoc(doc(db,'fonts',targetId), { checks: newTargetChecks });
-              targetFont.checks = newTargetChecks;
-            }
+          const targetChecks = targetFont.checks || [];
+          if (!targetChecks.includes(id)) {
+            const newTargetChecks = [...targetChecks, id];
+            await updateDoc(doc(db,'fonts',targetId), { checks: newTargetChecks });
+            targetFont.checks = newTargetChecks;
           }
-          showToast('追加しました（相互リンク）');
-          checkSearchWrap.style.display = 'none';
-          openDetail(id);
+          // チップをその場で追加（ページ再描画なし→検索欄が閉じない）
+          const checkList = $('detail-content').querySelector('#detail-check-list');
+          const chip = document.createElement('button');
+          chip.className = 'check-font-chip';
+          chip.dataset.id = targetId;
+          chip.style.cssText = 'background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border:none;border-radius:50px;padding:6px 14px;font-size:13px;font-weight:600;color:#5a4a8a;cursor:pointer;font-family:inherit;touch-action:manipulation;display:flex;align-items:center;gap:6px;';
+          chip.innerHTML = `${targetFont.name}<span class="check-remove" data-id="${targetId}" style="opacity:0.6;font-size:11px;margin-left:2px;">✕</span>`;
+          chip.addEventListener('click', async e2 => {
+            const removeSpan = e2.target.closest('.check-remove');
+            if (removeSpan) {
+              const removeId = removeSpan.dataset.id;
+              const nc = (f.checks||[]).filter(x => x !== removeId);
+              await updateDoc(doc(db,'fonts',id), { checks: nc });
+              f.checks = nc;
+              const tf = fonts.find(x=>x.id===removeId);
+              if (tf) {
+                const ntc = (tf.checks||[]).filter(x => x !== id);
+                await updateDoc(doc(db,'fonts',removeId), { checks: ntc });
+                tf.checks = ntc;
+              }
+              chip.remove();
+              return;
+            }
+            if (fonts.find(x=>x.id===chip.dataset.id)) openDetail(chip.dataset.id);
+          });
+          checkList.appendChild(chip);
+          // 検索結果からこのフォントを除去
+          el.remove();
+          showToast(`${targetFont.name} を追加しました`);
         });
       });
     });
