@@ -641,18 +641,18 @@
   #lightbox-actions { display: none; }
   /* ×ボタンと編集ボタンを右上に並べる */
   #lightbox-close {
-    position: absolute; top: 16px; right: 16px;
+    position: absolute; bottom: 24px; right: 20px;
     color: white; background: rgba(0,0,0,0.5);
     border: none; border-radius: 50%;
-    width: 40px; height: 40px;
+    width: 44px; height: 44px;
     cursor: pointer; display: flex; align-items: center; justify-content: center;
     touch-action: manipulation; z-index: 10;
   }
   #lightbox-edit-btn {
-    position: absolute; top: 16px; right: 64px;
+    position: absolute; bottom: 24px; right: 72px;
     color: white; background: rgba(0,0,0,0.5);
     border: none; border-radius: 50%;
-    width: 40px; height: 40px;
+    width: 44px; height: 44px;
     cursor: pointer; display: none; align-items: center; justify-content: center;
     touch-action: manipulation; z-index: 10;
   }
@@ -3216,191 +3216,134 @@ function compressImage(file, maxSize, quality) {
   });
 }
 // ── Photo Editor ──────────────────────────
-let peImage = new Image();
+// CSSフィルター方式：crossOrigin不要でFirebase Storage URLに対応
 let peOriginalSrc = '';
 let peCanvas = $('photo-editor-canvas');
 let peCtx = peCanvas.getContext('2d');
 let peOnApply = null;
-let peOnClose = null; // ライトボックスに戻るコールバック
+let peOnClose = null;
 
-// 編集状態
 let peRotation = 0;
 let peBrightness = 0;
 let peContrast = 0;
 let peSaturation = 0;
-
-// クロップ状態
-let peCropActive = false;
 let peCropStart = null;
-let peCropRect = null; // {x,y,w,h} in image coords
+let peCropRect = null;
 
 function openPhotoEditor(src, onApply, onClose) {
   peRotation = 0; peBrightness = 0; peContrast = 0; peSaturation = 0;
-  peCropRect = null; peCropActive = false;
+  peCropRect = null; peCropStart = null;
   peOriginalSrc = src;
   peOnApply = onApply;
   peOnClose = onClose || null;
 
-  // スライダーリセット
   $('pe-brightness').value = 0; $('pe-brightness-val').textContent = '0';
   $('pe-contrast').value = 0;   $('pe-contrast-val').textContent = '0';
   $('pe-saturation').value = 0; $('pe-saturation-val').textContent = '0';
 
-  // タブを補正に戻す
+  const img = $('photo-editor-img');
+  img.src = src;
+  img.style.transform = '';
+  img.style.filter = '';
   peSetTab('adjust');
-
-  peImage = new Image();
-  peImage.crossOrigin = 'anonymous';
-  peImage.onload = () => peRenderPreview();
-  peImage.src = src;
   $('photo-editor').classList.add('active');
+}
+
+function peUpdatePreview() {
+  const img = $('photo-editor-img');
+  // 回転はCSS transformで
+  const rotMap = {0:'rotate(0deg)',90:'rotate(90deg)',180:'rotate(180deg)',270:'rotate(270deg)'};
+  img.style.transform = rotMap[peRotation % 360] || '';
+  // 明るさ・コントラスト・彩度はCSSフィルターで
+  const b = 100 + peBrightness; // 0-200%
+  const c = 100 + peContrast;   // 0-200%
+  const s = 100 + peSaturation; // 0-200%
+  img.style.filter = `brightness(${b}%) contrast(${c}%) saturate(${s}%)`;
 }
 
 function peSetTab(tab) {
   ['adjust','rotate','crop'].forEach(t => {
-    $(`pe-tab-${t}`).classList.toggle('active', t === tab);
-    $(`pe-panel-${t}`).classList.toggle('active', t === tab);
+    $('pe-tab-'+t).classList.toggle('active', t === tab);
+    $('pe-panel-'+t).classList.toggle('active', t === tab);
   });
   const isCrop = tab === 'crop';
   $('pe-crop-overlay').classList.toggle('active', isCrop);
-  if (!isCrop) { $('pe-crop-rect').style.display = 'none'; }
+  if (!isCrop) $('pe-crop-rect').style.display = 'none';
   if (isCrop) peSetupCrop();
 }
 
 ['adjust','rotate','crop'].forEach(t => {
-  $(`pe-tab-${t}`).addEventListener('click', () => peSetTab(t));
+  $('pe-tab-'+t).addEventListener('click', () => peSetTab(t));
 });
 
-function peRenderPreview() {
-  const rot = peRotation % 360;
-  const sw = peImage.naturalWidth, sh = peImage.naturalHeight;
-  const w = (rot === 90 || rot === 270) ? sh : sw;
-  const h = (rot === 90 || rot === 270) ? sw : sh;
-  peCanvas.width = w; peCanvas.height = h;
-  peCtx.save();
-  peCtx.translate(w/2, h/2);
-  peCtx.rotate(peRotation * Math.PI / 180);
-  peCtx.drawImage(peImage, -sw/2, -sh/2);
-  peCtx.restore();
-
-  // 明るさ・コントラスト・彩度
-  if (peBrightness !== 0 || peContrast !== 0 || peSaturation !== 0) {
-    const imgData = peCtx.getImageData(0, 0, w, h);
-    const d = imgData.data;
-    const bright = peBrightness * 2.55;
-    const cont = (100 + peContrast) / 100;
-    const sat = (100 + peSaturation) / 100;
-    for (let i = 0; i < d.length; i += 4) {
-      let r = d[i], g = d[i+1], b = d[i+2];
-      // 明るさ
-      r += bright; g += bright; b += bright;
-      // コントラスト
-      r = (r - 128) * cont + 128;
-      g = (g - 128) * cont + 128;
-      b = (b - 128) * cont + 128;
-      // 彩度
-      const gray = 0.299*r + 0.587*g + 0.114*b;
-      r = gray + (r - gray) * sat;
-      g = gray + (g - gray) * sat;
-      b = gray + (b - gray) * sat;
-      d[i]   = Math.max(0, Math.min(255, r));
-      d[i+1] = Math.max(0, Math.min(255, g));
-      d[i+2] = Math.max(0, Math.min(255, b));
-    }
-    peCtx.putImageData(imgData, 0, 0);
-  }
-
-  $('photo-editor-img').src = peCanvas.toDataURL('image/jpeg', 0.92);
-}
-
-// スライダーイベント
+// スライダー
 ['brightness','contrast','saturation'].forEach(key => {
-  $(`pe-${key}`).addEventListener('input', e => {
+  $('pe-'+key).addEventListener('input', e => {
     const val = parseInt(e.target.value);
-    $(`pe-${key}-val`).textContent = val;
+    $('pe-'+key+'-val').textContent = val;
     if (key === 'brightness') peBrightness = val;
     if (key === 'contrast') peContrast = val;
     if (key === 'saturation') peSaturation = val;
-    peRenderPreview();
+    peUpdatePreview();
   });
 });
 
 // 回転
-$('pe-rotate-left').addEventListener('click', () => { peRotation = (peRotation - 90 + 360) % 360; peRenderPreview(); });
-$('pe-rotate-right').addEventListener('click', () => { peRotation = (peRotation + 90) % 360; peRenderPreview(); });
+$('pe-rotate-left').addEventListener('click', () => { peRotation = (peRotation - 90 + 360) % 360; peUpdatePreview(); });
+$('pe-rotate-right').addEventListener('click', () => { peRotation = (peRotation + 90) % 360; peUpdatePreview(); });
 
 // クロップ
 function peSetupCrop() {
   $('pe-crop-rect').style.display = 'none';
   peCropStart = null;
-
-  const previewImg = $('photo-editor-img');
   const overlay = $('pe-crop-overlay');
   const rectEl = $('pe-crop-rect');
 
   function getPos(e) {
-    const rect = previewImg.getBoundingClientRect();
+    const img = $('photo-editor-img');
+    const rect = img.getBoundingClientRect();
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
     return {
       x: Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)),
-      y: Math.max(0, Math.min(1, (clientY - rect.top) / rect.height))
+      y: Math.max(0, Math.min(1, (clientY - rect.top) / rect.height)),
+      rect
     };
   }
 
   overlay.onpointerdown = e => {
     e.preventDefault();
-    peCropStart = getPos(e);
-    rectEl.style.display = 'block';
-    // rectElをpreviewImg基準で配置
-    const imgRect = previewImg.getBoundingClientRect();
-    rectEl.style.position = 'fixed';
-    rectEl.style.left = imgRect.left + 'px';
-    rectEl.style.top = imgRect.top + 'px';
-    rectEl.style.width = '0px';
-    rectEl.style.height = '0px';
+    const p = getPos(e);
+    peCropStart = p;
+    rectEl.style.cssText = `display:block;position:fixed;border:2px solid white;box-shadow:0 0 0 9999px rgba(0,0,0,0.5);pointer-events:none;left:${p.rect.left + p.x * p.rect.width}px;top:${p.rect.top + p.y * p.rect.height}px;width:0;height:0;`;
   };
   overlay.onpointermove = e => {
     if (!peCropStart) return;
     e.preventDefault();
     const cur = getPos(e);
-    const imgRect = previewImg.getBoundingClientRect();
+    const imgRect = cur.rect;
     const x1 = Math.min(peCropStart.x, cur.x);
     const y1 = Math.min(peCropStart.y, cur.y);
     const w = Math.abs(cur.x - peCropStart.x);
     const h = Math.abs(cur.y - peCropStart.y);
     rectEl.style.left = (imgRect.left + x1 * imgRect.width) + 'px';
-    rectEl.style.top = (imgRect.top + y1 * imgRect.height) + 'px';
-    rectEl.style.width = (w * imgRect.width) + 'px';
+    rectEl.style.top  = (imgRect.top  + y1 * imgRect.height) + 'px';
+    rectEl.style.width  = (w * imgRect.width) + 'px';
     rectEl.style.height = (h * imgRect.height) + 'px';
-    const imgW = peCanvas.width, imgH = peCanvas.height;
-    peCropRect = {
-      x: Math.round(Math.min(peCropStart.x, cur.x) * imgW),
-      y: Math.round(Math.min(peCropStart.y, cur.y) * imgH),
-      w: Math.round(Math.abs(cur.x - peCropStart.x) * imgW),
-      h: Math.round(Math.abs(cur.y - peCropStart.y) * imgH)
-    };
+    peCropRect = { x1, y1, x2: x1 + w, y2: y1 + h };
   };
   overlay.onpointerup = () => { peCropStart = null; };
 }
 
 $('pe-crop-apply').addEventListener('click', () => {
-  if (!peCropRect || peCropRect.w < 10 || peCropRect.h < 10) {
+  if (!peCropRect || (peCropRect.x2 - peCropRect.x1) < 0.01) {
     showToast('範囲を選択してください');
     return;
   }
-  const tmp = document.createElement('canvas');
-  tmp.width = peCropRect.w; tmp.height = peCropRect.h;
-  tmp.getContext('2d').drawImage(peCanvas,
-    peCropRect.x, peCropRect.y, peCropRect.w, peCropRect.h,
-    0, 0, peCropRect.w, peCropRect.h
-  );
-  peCanvas.width = peCropRect.w; peCanvas.height = peCropRect.h;
-  peCtx.drawImage(tmp, 0, 0);
-  peCropRect = null;
-  $('photo-editor-img').src = peCanvas.toDataURL('image/jpeg', 0.92);
+  // クロップ情報を保存してプレビュー更新
+  showToast('クロップ範囲を設定しました（保存時に適用）');
+  $('pe-crop-rect').style.boxShadow = '0 0 0 9999px rgba(0,120,255,0.25)';
   peSetTab('adjust');
-  showToast('クロップしました');
 });
 
 // リセット
@@ -3409,8 +3352,8 @@ $('pe-reset').addEventListener('click', () => {
   $('pe-brightness').value = 0; $('pe-brightness-val').textContent = '0';
   $('pe-contrast').value = 0;   $('pe-contrast-val').textContent = '0';
   $('pe-saturation').value = 0; $('pe-saturation-val').textContent = '0';
+  peUpdatePreview();
   peSetTab('adjust');
-  peRenderPreview();
 });
 
 // 閉じる
@@ -3419,15 +3362,83 @@ $('photo-editor-close').addEventListener('click', () => {
   if (peOnClose) peOnClose();
 });
 
-// 完了・保存
-$('pe-apply').addEventListener('click', () => {
-  peCanvas.toBlob(blob => {
-    if (peOnApply) peOnApply(blob);
-    $('photo-editor').classList.remove('active');
-    if (peOnClose) peOnClose();
-  }, 'image/jpeg', 0.88);
+// 完了・保存：fetchでblog取得→canvasで加工
+$('pe-apply').addEventListener('click', async () => {
+  $('pe-apply').disabled = true;
+  $('pe-apply').textContent = '処理中…';
+  try {
+    // 画像をfetchでblob取得（CORSの問題を回避）
+    const resp = await fetch(peOriginalSrc);
+    const blob = await resp.blob();
+    const bmpUrl = URL.createObjectURL(blob);
+    const img = await new Promise((res, rej) => {
+      const i = new Image();
+      i.onload = () => res(i);
+      i.onerror = rej;
+      i.src = bmpUrl;
+    });
+
+    // 回転
+    const rot = peRotation % 360;
+    const sw = img.naturalWidth, sh = img.naturalHeight;
+    const cw = (rot === 90 || rot === 270) ? sh : sw;
+    const ch = (rot === 90 || rot === 270) ? sw : sh;
+    peCanvas.width = cw; peCanvas.height = ch;
+    peCtx.save();
+    peCtx.translate(cw/2, ch/2);
+    peCtx.rotate(rot * Math.PI / 180);
+    peCtx.drawImage(img, -sw/2, -sh/2);
+    peCtx.restore();
+    URL.revokeObjectURL(bmpUrl);
+
+    // 明るさ・コントラスト・彩度
+    if (peBrightness !== 0 || peContrast !== 0 || peSaturation !== 0) {
+      const imgData = peCtx.getImageData(0, 0, cw, ch);
+      const d = imgData.data;
+      const bright = peBrightness * 2.55;
+      const cont = (100 + peContrast) / 100;
+      const sat = (100 + peSaturation) / 100;
+      for (let i = 0; i < d.length; i += 4) {
+        let r = d[i], g = d[i+1], b = d[i+2];
+        r += bright; g += bright; b += bright;
+        r = (r-128)*cont+128; g = (g-128)*cont+128; b = (b-128)*cont+128;
+        const gray = 0.299*r+0.587*g+0.114*b;
+        r = gray+(r-gray)*sat; g = gray+(g-gray)*sat; b = gray+(b-gray)*sat;
+        d[i]   = Math.max(0,Math.min(255,r));
+        d[i+1] = Math.max(0,Math.min(255,g));
+        d[i+2] = Math.max(0,Math.min(255,b));
+      }
+      peCtx.putImageData(imgData, 0, 0);
+    }
+
+    // クロップ
+    let finalCanvas = peCanvas;
+    if (peCropRect) {
+      const cx = Math.round(peCropRect.x1 * cw);
+      const cy = Math.round(peCropRect.y1 * ch);
+      const cfw = Math.round((peCropRect.x2 - peCropRect.x1) * cw);
+      const cfh = Math.round((peCropRect.y2 - peCropRect.y1) * ch);
+      if (cfw > 10 && cfh > 10) {
+        const tmp = document.createElement('canvas');
+        tmp.width = cfw; tmp.height = cfh;
+        tmp.getContext('2d').drawImage(peCanvas, cx, cy, cfw, cfh, 0, 0, cfw, cfh);
+        finalCanvas = tmp;
+      }
+    }
+
+    finalCanvas.toBlob(resultBlob => {
+      if (peOnApply) peOnApply(resultBlob);
+      $('photo-editor').classList.remove('active');
+      if (peOnClose) peOnClose();
+    }, 'image/jpeg', 0.88);
+
+  } catch(err) {
+    console.error(err);
+    showToast('処理に失敗しました');
+    $('pe-apply').disabled = false;
+    $('pe-apply').textContent = '完了・保存';
+  }
 });
 
 </script>
 </body>
-</html>
