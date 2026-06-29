@@ -1359,6 +1359,7 @@ let fonts = [];
 let currentFontId = null;
 let currentUsageId = null;
 let selectedUsageFontId = null;
+let addUsageFrom = 'nav'; // 'nav' | 'detail'
 let sortMode = 'new'; // 'new' | 'fav'
 let searchQuery = '';
 let categoryFilter = '';
@@ -2434,6 +2435,7 @@ async function openDetail(id) {
       initAddUsage();
       // フォントを事前に選択した状態で用例登録へ
       selectedUsageFontId = id;
+      addUsageFrom = 'detail';
       $('usage-selected-font').innerHTML = `${f.name}${f.maker?' / '+f.maker:''}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="opacity:0.4;flex-shrink:0;"><polyline points="9 18 15 12 9 6"/></svg>`;
       $('usage-step1').style.display = 'none';
       $('usage-step2').style.display = 'block';
@@ -3833,7 +3835,7 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
     const s = btn.dataset.screen;
     if (s === 'home') { showScreen('screen-home'); renderHome(); }
     else if (s === 'add-font') { initAddFont(); showScreen('screen-add-font'); }
-    else if (s === 'add-usage') { initAddUsage(); showScreen('screen-add-usage'); }
+    else if (s === 'add-usage') { addUsageFrom = 'nav'; initAddUsage(); showScreen('screen-add-usage'); }
     else if (s === 'quiz') { showScreen('screen-quiz'); }
   });
 });
@@ -3925,7 +3927,21 @@ $('af-submit').addEventListener('click', async () => {
 });
 
 // ── ADD USAGE screen ───────────────────────
-$('add-usage-back').addEventListener('click', () => { showScreen('screen-home'); renderHome(); });
+$('add-usage-back').addEventListener('click', () => {
+  if ($('usage-step2').style.display !== 'none' && addUsageFrom === 'detail') {
+    // フォント詳細から来た場合はフォント詳細に戻る
+    openDetail(selectedUsageFontId);
+  } else if ($('usage-step2').style.display !== 'none') {
+    // Step2からStep1に戻る
+    $('usage-step2').style.display = 'none';
+    $('usage-step1').style.display = 'block';
+    selectedUsageFontId = null;
+  } else {
+    // Step1からホームに戻る
+    showScreen('screen-home');
+    renderHome();
+  }
+});
 
 function initAddUsage() {
   $('usage-step1').style.display = 'block';
