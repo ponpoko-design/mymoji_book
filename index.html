@@ -361,7 +361,7 @@
   @media (min-width: 768px) {
     .detail-hero { height: 320px; }
     .detail-body { padding: 28px 32px; }
-    .photos-grid { grid-template-columns: repeat(5, 1fr); }
+    .photos-grid { grid-template-columns: repeat(6, 1fr); }
     .usage-grid { grid-template-columns: repeat(3, 1fr); }
     .form-page { max-width: 600px; margin: 0 auto; }
   }
@@ -914,7 +914,7 @@
         <textarea id="af-memo" placeholder="特徴・感想など"></textarea>
       </div>
       <div class="form-group">
-        <label>写真（最大5枚）</label>
+        <label>写真（最大6枚）</label>
         <div class="photo-upload-row" id="af-photos"></div>
       </div>
       <div class="form-group" id="af-photo-memos-wrap"></div>
@@ -970,7 +970,7 @@
           <input type="text" id="au-place" placeholder="例：渋谷駅 B出口">
         </div>
         <div class="form-group">
-          <label>写真（最大5枚）</label>
+          <label>写真（最大6枚）</label>
           <div class="photo-upload-row" id="au-photos"></div>
         </div>
         <div class="form-group" id="au-photo-memos-wrap"></div>
@@ -1041,7 +1041,7 @@
         <textarea id="ef-memo"></textarea>
       </div>
       <div class="form-group">
-        <label>写真（最大5枚）</label>
+        <label>写真（最大6枚）</label>
         <div class="photo-upload-row" id="ef-photos"></div>
       </div>
       <div class="form-group" id="ef-photo-memos-wrap"></div>
@@ -1068,7 +1068,7 @@
         <input type="text" id="eu-place">
       </div>
       <div class="form-group">
-        <label>写真（最大5枚）</label>
+        <label>写真（最大6枚）</label>
         <div class="photo-upload-row" id="eu-photos"></div>
       </div>
       <div class="form-group" id="eu-photo-memos-wrap"></div>
@@ -2768,7 +2768,7 @@ async function openDetail(id) {
     photoAddBtn.addEventListener('click', () => {
       const f2 = fonts.find(x=>x.id===id);
       if (!f2) return;
-      if ((f2.photos||[]).length >= 5) { showToast('写真は最大5枚です'); return; }
+      if ((f2.photos||[]).length >= 6) { showToast('写真は最大6枚です'); return; }
       const input = document.createElement('input');
       input.type = 'file'; input.accept = 'image/*';
       input.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
@@ -3352,9 +3352,9 @@ function buildEditPhotoSlots(containerId, memoWrapId, existingArr, filesArr, mem
     wrap.appendChild(slot);
   });
 
-  // 新規スロット（既存＋新規が5枚以下の分）
-  const remaining = 5 - existingArr.length;
-  for (let i=0; i<Math.min(remaining, 5); i++) {
+  // 新規スロット（既存＋新規が6枚以下の分）
+  const remaining = 6 - existingArr.length;
+  for (let i=0; i<Math.min(remaining, 6); i++) {
     const slot = document.createElement('div');
     slot.className = 'photo-slot';
     slot.dataset.idx = i;
