@@ -3120,7 +3120,15 @@ async function openDetail(id) {
   showScreen('screen-detail');
 }
 
-$('detail-back').addEventListener('click', () => showScreen('screen-home'));
+let quizPrevScreen = null;
+$('detail-back').addEventListener('click', () => {
+  if (quizPrevScreen === 'quiz') {
+    quizPrevScreen = null;
+    showScreen('screen-quiz');
+  } else {
+    showScreen('screen-home');
+  }
+});
 
 // ── Usage Detail ──────────────────────────
 let currentUsageFontId = null;
@@ -5538,7 +5546,7 @@ function renderCmpResult() {
     return [itemA, itemB].map(it => {
       const chips = it.correct
         ? `<div style="margin-top:8px;">${fontChipHTML(it.name, 'correct')}</div>`
-        : `<div style="margin-top:8px;">${fontChipHTML(it.name, 'correct')}</div>`;
+        : `<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">${fontChipHTML(it.name, 'correct')}</div>`;
       return `<div class="quiz-result-item ${it.correct ? 'ok' : 'ng'}">${it.correct ? OK_ICON : NG_ICON}<div style="flex:1;min-width:0;"><div class="ri-name">${it.name}</div>${!it.correct ? '<div class="ri-ans">不正解</div>' : ''}${chips}</div></div>`;
     });
   }).join('');
@@ -5548,10 +5556,16 @@ function renderCmpResult() {
 
 function attachResultChipListeners() {
   document.querySelectorAll('.quiz-result-chip').forEach(btn => {
-    btn.addEventListener('click', () => {
+    // 子要素のクリックを全部button本体で受け取る
+    btn.style.pointerEvents = 'auto';
+    [...btn.children].forEach(c => c.style.pointerEvents = 'none');
+    btn.onclick = () => {
       const fontId = btn.dataset.fontid;
-      if (fontId) openDetail(fontId);
-    });
+      if (fontId) {
+        quizPrevScreen = 'quiz'; // クイズから来たことを記憶
+        openDetail(fontId);
+      }
+    };
   });
 }
 
