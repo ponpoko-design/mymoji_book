@@ -1300,6 +1300,12 @@
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
   </button>
   <img id="lightbox-img" src="" alt="">
+  <button id="lightbox-prev" style="position:fixed;left:12px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.4);border:none;border-radius:50%;width:36px;height:36px;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:10;touch-action:manipulation;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+  <button id="lightbox-next" style="position:fixed;right:12px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.4);border:none;border-radius:50%;width:36px;height:36px;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:10;touch-action:manipulation;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+  </button>
   <div id="lightbox-memo"></div>
   <div id="lightbox-indicator" style="display:none;gap:6px;align-items:center;margin-top:8px;"></div>
 </div>
@@ -3482,11 +3488,20 @@ function _lightboxShow() {
 
 function _lightboxUpdateIndicator() {
   const ind = $('lightbox-indicator');
-  if (lightboxPhotos.length <= 1) { ind.style.display = 'none'; return; }
+  const prevBtn = $('lightbox-prev');
+  const nextBtn = $('lightbox-next');
+  if (lightboxPhotos.length <= 1) {
+    ind.style.display = 'none';
+    prevBtn.style.display = 'none';
+    nextBtn.style.display = 'none';
+    return;
+  }
   ind.style.display = 'flex';
   ind.innerHTML = lightboxPhotos.map((_, i) =>
     `<span style="width:6px;height:6px;border-radius:50%;background:${i === lightboxIndex ? 'white' : 'rgba(255,255,255,0.4)'};display:inline-block;"></span>`
   ).join('');
+  prevBtn.style.display = lightboxIndex > 0 ? 'flex' : 'none';
+  nextBtn.style.display = lightboxIndex < lightboxPhotos.length - 1 ? 'flex' : 'none';
 }
 
 $('lightbox-close').addEventListener('click', () => $('lightbox').classList.remove('active'));
@@ -3495,6 +3510,14 @@ $('lightbox-edit-btn').addEventListener('click', () => {
   if (!lightboxOnEdit) return;
   $('lightbox').classList.remove('active');
   lightboxOnEdit();
+});
+$('lightbox-prev').addEventListener('click', e => {
+  e.stopPropagation();
+  if (lightboxIndex > 0) { lightboxIndex--; _lightboxShow(); }
+});
+$('lightbox-next').addEventListener('click', e => {
+  e.stopPropagation();
+  if (lightboxIndex < lightboxPhotos.length - 1) { lightboxIndex++; _lightboxShow(); }
 });
 
 // スワイプ＋ピンチ（touchイベントベース・iOS対応）
