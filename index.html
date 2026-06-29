@@ -2046,9 +2046,19 @@ $('login-password').addEventListener('keydown', e => { if(e.key==='Enter') $('lo
 function openMenu() {
   const token = getDropboxToken();
   const history = getBackupHistory();
-  // バックアップ状態を更新
+  // バックアップ状態を更新（新形式対応）
   const statusEl = $('menu-backup-status');
-  if (statusEl) statusEl.textContent = `☁️ 最終BU: ${history[0] || 'なし'}`;
+  if (statusEl) {
+    if (history.hourly && history.hourly[0]) {
+      const k = history.hourly[0];
+      const [datePart, hourPart] = k.split('_');
+      statusEl.textContent = `☁️ 最終BU: ${datePart} ${hourPart}:00`;
+    } else if (history.daily && history.daily[0]) {
+      statusEl.textContent = `☁️ 最終BU: ${history.daily[0]}`;
+    } else {
+      statusEl.textContent = '☁️ 最終BU: なし';
+    }
+  }
   // Dropboxボタンのテキストを更新
   const dbxBtn = $('menu-dropbox-toggle');
   if (dbxBtn) {
@@ -2193,6 +2203,10 @@ function renderFontList() {
 }
 
 // ── Search / Sort ──────────────────────────
+$('search-input').addEventListener('focus', () => {
+  $('search-input').value = '';
+  renderFontList('');
+});
 $('search-input').addEventListener('input', e => {
   searchQuery = e.target.value;
   renderFontList();
