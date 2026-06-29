@@ -2916,9 +2916,13 @@ function openUsageDetail(fontId, usageId, usages) {
   const photos = u.photos||[];
   $('usage-detail-content').innerHTML = `
     ${photos.length > 0 ? `
-    <div class="detail-hero" id="usage-hero-wrap" style="position:relative;cursor:pointer;background:var(--c-bg);">
+    <div class="detail-hero" id="usage-hero-wrap" style="position:relative;background:var(--c-bg);">
       <img id="usage-cover-img" src="${photos[0].url}" alt="用例写真" style="width:100%;height:100%;object-fit:contain;">
-      ${photos.length > 1 ? `<div style="position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,0.45);color:white;font-size:12px;padding:4px 12px;border-radius:20px;pointer-events:none;">変更</div>` : ''}
+      <div id="usage-hero-adjust-btn" style="position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,0.5);color:white;font-size:12px;padding:5px 12px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:5px;touch-action:manipulation;z-index:2;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>
+        調整
+      </div>
+      ${photos.length > 1 ? `<button id="usage-hero-change-btn" style="position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,0.45);color:white;font-size:12px;padding:4px 12px;border-radius:20px;border:none;cursor:pointer;z-index:2;touch-action:manipulation;font-family:inherit;">変更</button>` : ''}
     </div>` : ''}
     <div class="detail-body">
       <div style="font-size: 15px;color:var(--c-text-sub);">登録日：${u.date||'-'}</div>
@@ -2977,16 +2981,158 @@ function openUsageDetail(fontId, usageId, usages) {
     });
   });
 
-  // 用例カバー写真 — タップで拡大、長押しで変更
-  const usageHeroWrap = $('usage-detail-content').querySelector('#usage-hero-wrap');
-  if (usageHeroWrap && photos.length > 0) {
-    let usageHeroTimer = null;
-    let usageLongPressed = false;
+  // 用例ヒーロー画像 — フォント詳細と同じ作り
+  const usageAdjustBtn = $('usage-detail-content').querySelector('#usage-hero-adjust-btn');
+  if (usageAdjustBtn && photos.length > 0) {
+    const usageCoverImg = $('usage-cover-img');
+    const usageHeroWrap = $('usage-detail-content').querySelector('#usage-hero-wrap');
+    let usageIsAdjustMode = false;
+    let utx = 0, uty = 0, uscale = 1;
+
+    // 既存のcoverPositionをパース
+    if (u.coverPosition) {
+      const m = u.coverPosition.match(/tx:([-\d.]+),ty:([-\d.]+),s:([\d.]+)/);
+      if (m) { utx = parseFloat(m[1]); uty = parseFloat(m[2]); uscale = parseFloat(m[3]); }
+    }
+
+    function applyUsageTransform() {
+      usageCoverImg.style.transform = `translate(-50%,-50%) translate(${utx.toFixed(1)}px,${uty.toFixed(1)}px) scale(${uscale.toFixed(3)})`;
+    }
+
+    function initUsageCoverSize() {
+      const hw = usageHeroWrap.offsetWidth;
+      const hh = usageHeroWrap.offsetHeight;
+      const iw = usageCoverImg.naturalWidth || usageCoverImg.offsetWidth;
+      const ih = usageCoverImg.naturalHeight || usageCoverImg.offsetHeight;
+      if (!iw || !ih) return;
+      const containScale = Math.min(hw / iw, hh / ih);
+      if (!u.coverPosition) {
+        uscale = containScale; utx = 0; uty = 0;
+      } else if (uscale < containScale * 0.5) {
+        uscale = containScale; utx = 0; uty = 0;
+      }
+      // coverPositionがある場合はimgをabsolute+transformに切り替え
+      if (u.coverPosition) {
+        usageCoverImg.style.cssText = 'position:absolute;top:50%;left:50%;transform-origin:center center;transition:none;max-width:none;max-height:none;width:auto;height:auto;object-fit:unset;';
+        applyUsageTransform();
+      }
+    }
+    if (usageCoverImg.complete && usageCoverImg.naturalWidth) {
+      initUsageCoverSize();
+    } else {
+      usageCoverImg.onload = initUsageCoverSize;
+    }
+
+    const SAVE_ICON = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>`;
+    const MOVE_ICON = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>`;
+    const RESET_ICON = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.49"/></svg>`;
+
+    // リセットボタン
+    const usageResetBtn = document.createElement('button');
+    usageResetBtn.style.cssText = 'position:absolute;bottom:50px;left:10px;background:rgba(0,0,0,0.5);color:white;font-size:12px;padding:5px 12px;border-radius:20px;border:none;cursor:pointer;display:none;align-items:center;gap:5px;touch-action:manipulation;z-index:2;font-family:inherit;';
+    usageResetBtn.innerHTML = RESET_ICON + ' リセット';
+    usageHeroWrap.appendChild(usageResetBtn);
+
+    usageResetBtn.addEventListener('click', async e => {
+      e.stopPropagation();
+      try {
+        await updateDoc(doc(db,'fonts',fontId,'usages',usageId), { coverPosition: null });
+        u.coverPosition = null;
+        usageCoverImg.style.cssText = 'width:100%;height:100%;object-fit:contain;';
+        utx = 0; uty = 0; uscale = 1;
+        showToast('リセットしました');
+      } catch(e2) { showToast('リセットに失敗しました'); }
+    });
+
+    usageAdjustBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      usageIsAdjustMode = !usageIsAdjustMode;
+      if (usageIsAdjustMode) {
+        usageAdjustBtn.innerHTML = SAVE_ICON + ' 保存';
+        usageAdjustBtn.style.background = 'rgba(155,127,232,0.85)';
+        usageHeroWrap.style.touchAction = 'none';
+        usageResetBtn.style.display = 'flex';
+        // adjustモードに入ったらimgをabsoluteに切り替え
+        usageCoverImg.style.cssText = 'position:absolute;top:50%;left:50%;transform-origin:center center;transition:none;max-width:none;max-height:none;width:auto;height:auto;object-fit:unset;';
+        const hw = usageHeroWrap.offsetWidth;
+        const hh = usageHeroWrap.offsetHeight;
+        const iw = usageCoverImg.naturalWidth || usageCoverImg.offsetWidth;
+        const ih = usageCoverImg.naturalHeight || usageCoverImg.offsetHeight;
+        if (iw && ih && !u.coverPosition) {
+          uscale = Math.min(hw / iw, hh / ih);
+          utx = 0; uty = 0;
+        }
+        applyUsageTransform();
+        const hint = document.createElement('div');
+        hint.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.55);color:white;font-size:13px;padding:8px 16px;border-radius:20px;pointer-events:none;white-space:nowrap;z-index:5;';
+        hint.textContent = 'ドラッグ：移動　ピンチ：拡大縮小';
+        usageHeroWrap.appendChild(hint);
+        setTimeout(() => hint.remove(), 2500);
+      } else {
+        usageAdjustBtn.innerHTML = MOVE_ICON + ' 調整';
+        usageAdjustBtn.style.background = 'rgba(0,0,0,0.5)';
+        usageHeroWrap.style.touchAction = '';
+        usageResetBtn.style.display = 'none';
+        const posStr = `tx:${utx.toFixed(1)},ty:${uty.toFixed(1)},s:${uscale.toFixed(3)}`;
+        updateDoc(doc(db,'fonts',fontId,'usages',usageId), { coverPosition: posStr }).then(() => {
+          u.coverPosition = posStr;
+          showToast('保存しました');
+        }).catch(() => showToast('保存に失敗しました'));
+      }
+    });
+
+    // ポインター管理（ドラッグ＋ピンチ）
+    const uActivePtrs = new Map();
+    let uLastPinchDist = null, uLastSinglePos = null;
+
     usageHeroWrap.addEventListener('pointerdown', e => {
-      usageLongPressed = false;
-      if (photos.length <= 1) return;
-      usageHeroTimer = setTimeout(async () => {
-        usageLongPressed = true;
+      if (!usageIsAdjustMode) return;
+      if (usageAdjustBtn.contains(e.target) || usageResetBtn.contains(e.target)) return;
+      uActivePtrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      usageHeroWrap.setPointerCapture(e.pointerId);
+      if (uActivePtrs.size === 1) uLastSinglePos = { x: e.clientX, y: e.clientY };
+      if (uActivePtrs.size === 2) {
+        const v = [...uActivePtrs.values()];
+        uLastPinchDist = Math.hypot(v[0].x - v[1].x, v[0].y - v[1].y);
+      }
+    }, true);
+
+    usageHeroWrap.addEventListener('pointermove', e => {
+      if (!usageIsAdjustMode || !uActivePtrs.has(e.pointerId)) return;
+      uActivePtrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (uActivePtrs.size === 1) {
+        const dx = e.clientX - uLastSinglePos.x;
+        const dy = e.clientY - uLastSinglePos.y;
+        utx += dx; uty += dy;
+        uLastSinglePos = { x: e.clientX, y: e.clientY };
+        applyUsageTransform();
+      } else if (uActivePtrs.size === 2) {
+        const v = [...uActivePtrs.values()];
+        const dist = Math.hypot(v[0].x - v[1].x, v[0].y - v[1].y);
+        if (uLastPinchDist) {
+          uscale *= dist / uLastPinchDist;
+          uscale = Math.max(0.1, Math.min(8, uscale));
+          applyUsageTransform();
+        }
+        uLastPinchDist = dist;
+      }
+    }, true);
+
+    usageHeroWrap.addEventListener('pointerup', e => {
+      uActivePtrs.delete(e.pointerId);
+      if (uActivePtrs.size < 2) uLastPinchDist = null;
+      if (uActivePtrs.size === 0) uLastSinglePos = null;
+    }, true);
+    usageHeroWrap.addEventListener('pointercancel', e => {
+      uActivePtrs.delete(e.pointerId);
+      uLastPinchDist = null; uLastSinglePos = null;
+    }, true);
+
+    // 変更ボタン
+    const usageChangeBtn = $('usage-detail-content').querySelector('#usage-hero-change-btn');
+    if (usageChangeBtn) {
+      usageChangeBtn.addEventListener('click', async e => {
+        e.stopPropagation();
         const items = photos.map((p, i) => ({
           action: String(i),
           icon: i === 0 ? '★' : `${i + 1}枚目`,
@@ -3000,37 +3146,15 @@ function openUsageDetail(fontId, usageId, usages) {
           const [selected] = newPhotos.splice(idx, 1);
           newPhotos.unshift(selected);
           try {
-            await updateDoc(doc(db, 'fonts', fontId, 'usages', usageId), { photos: newPhotos });
+            await updateDoc(doc(db,'fonts',fontId,'usages',usageId), { photos: newPhotos, coverPosition: null });
             u.photos = newPhotos;
+            u.coverPosition = null;
             showToast('カバー写真を変更しました');
             openUsageDetail(fontId, usageId, usages);
           } catch(e2) { showToast('エラーが発生しました'); }
         }
-      }, 500);
-    });
-    usageHeroWrap.addEventListener('pointerup', () => { clearTimeout(usageHeroTimer); });
-    usageHeroWrap.addEventListener('pointercancel', () => { clearTimeout(usageHeroTimer); usageLongPressed = false; });
-    usageHeroWrap.addEventListener('pointermove', e => { if (Math.abs(e.movementX) > 6 || Math.abs(e.movementY) > 6) clearTimeout(usageHeroTimer); });
-    usageHeroWrap.addEventListener('click', () => {
-      if (usageLongPressed) { usageLongPressed = false; return; }
-      const url = photos[0].url;
-      const memo = photos[0].memo || '';
-      openLightbox(url, memo, () => {
-        openPhotoEditor(url, async blob => {
-          try {
-            const storageRef = ref(storage, `fonts/${fontId}/usages/${Date.now()}_edited.jpg`);
-            await uploadBytes(storageRef, blob);
-            const newUrl = await getDownloadURL(storageRef);
-            const newPhotos = [...(u.photos||[])];
-            newPhotos[0] = { ...newPhotos[0], url: newUrl };
-            await updateDoc(doc(db,'fonts',fontId,'usages',usageId), { photos: newPhotos });
-            u.photos = newPhotos;
-            showToast('保存しました');
-            openUsageDetail(fontId, usageId, usages);
-          } catch(e2) { showToast('保存に失敗しました'); }
-        }, () => openLightbox(url, memo));
       });
-    });
+    }
   }
 
   $('usage-detail-edit-btn').onclick = () => openEditUsage(fontId, u);
