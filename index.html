@@ -2202,6 +2202,14 @@ const showToast = msg => {
   setTimeout(() => t.classList.remove('show'), duration);
 };
 const hideLoading = () => $('loading').style.display = 'none';
+let _navLocked = false;
+function navLock(fn, delay = 400) {
+  if (_navLocked) return;
+  _navLocked = true;
+  fn();
+  setTimeout(() => { _navLocked = false; }, delay);
+}
+
 const showScreen = id => {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   $(id).classList.add('active');
@@ -2490,10 +2498,14 @@ async function toggleBasic(id) {
 }
 
 // ── Detail ────────────────────────────────
+let _detailLocked = false;
 async function openDetail(id) {
+  if (_detailLocked) return;
+  _detailLocked = true;
+  try {
   currentFontId = id;
   const f = fonts.find(x=>x.id===id);
-  if (!f) return;
+  if (!f) { _detailLocked = false; return; }
 
   const usnap = await getDocs(collection(db,'fonts',id,'usages'));
   const usages = usnap.docs.map(d=>({id:d.id,...d.data()}))
@@ -3118,17 +3130,20 @@ async function openDetail(id) {
   });
 
   showScreen('screen-detail');
+  } finally {
+    setTimeout(() => { _detailLocked = false; }, 500);
+  }
 }
 
 let quizPrevScreen = null;
-$('detail-back').addEventListener('click', () => {
+$('detail-back').addEventListener('click', () => navLock(() => {
   if (quizPrevScreen === 'quiz') {
     quizPrevScreen = null;
     showScreen('screen-quiz');
   } else {
     showScreen('screen-home');
   }
-});
+}));
 
 // ── Usage Detail ──────────────────────────
 let currentUsageFontId = null;
@@ -3393,10 +3408,10 @@ function openUsageDetail(fontId, usageId, usages) {
   showScreen('screen-usage-detail');
 }
 
-$('usage-detail-back').addEventListener('click', () => {
+$('usage-detail-back').addEventListener('click', () => navLock(() => {
   if (currentFontId) openDetail(currentFontId);
   else showScreen('screen-home');
-});
+}));
 
 // ── Confirm Dialog ─────────────────────────
 let confirmCallback = null;
@@ -3439,9 +3454,9 @@ function openEditFont(id) {
   showScreen('screen-edit-font');
 }
 
-$('edit-font-back').addEventListener('click', () => {
+$('edit-font-back').addEventListener('click', () => navLock(() => {
   if (currentFontId) openDetail(currentFontId);
-});
+}));
 
 async function saveEditFont(id) {
   const name = $('ef-name').value.trim();
@@ -3499,10 +3514,10 @@ function openEditUsage(fontId, u) {
   showScreen('screen-edit-usage');
 }
 
-$('edit-usage-back').addEventListener('click', () => {
+$('edit-usage-back').addEventListener('click', () => navLock(() => {
   if (currentUsageFontId && currentUsageData) openUsageDetail(currentUsageFontId, currentUsageData.id, [currentUsageData]);
   else if (currentFontId) openDetail(currentFontId);
-});
+}));
 
 async function saveEditUsage(fontId, usageId) {
   $('eu-submit').disabled = true; $('eu-submit').textContent = '保存中…';
@@ -4026,15 +4041,17 @@ function buildPhotoSlots(containerId, memoWrapId, filesArr, memosArr) {
 // ── ADD FONT screen ────────────────────────
 document.querySelectorAll('.nav-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    const s = btn.dataset.screen;
-    if (s === 'home') { showScreen('screen-home'); renderHome(); }
-    else if (s === 'add-font') { initAddFont(); showScreen('screen-add-font'); }
-    else if (s === 'add-usage') { addUsageFrom = 'nav'; initAddUsage(); showScreen('screen-add-usage'); }
-    else if (s === 'quiz') { showScreen('screen-quiz'); }
+    navLock(() => {
+      const s = btn.dataset.screen;
+      if (s === 'home') { showScreen('screen-home'); renderHome(); }
+      else if (s === 'add-font') { initAddFont(); showScreen('screen-add-font'); }
+      else if (s === 'add-usage') { addUsageFrom = 'nav'; initAddUsage(); showScreen('screen-add-usage'); }
+      else if (s === 'quiz') { showScreen('screen-quiz'); }
+    });
   });
 });
 
-$('add-font-back').addEventListener('click', () => { showScreen('screen-home'); renderHome(); });
+$('add-font-back').addEventListener('click', () => navLock(() => { showScreen('screen-home'); renderHome(); }));
 
 function initAddFont() {
   $('af-name').value=''; $('af-reading').value=''; $('af-maker').value=''; $('af-memo').value='';
@@ -4121,21 +4138,18 @@ $('af-submit').addEventListener('click', async () => {
 });
 
 // ── ADD USAGE screen ───────────────────────
-$('add-usage-back').addEventListener('click', () => {
+$('add-usage-back').addEventListener('click', () => navLock(() => {
   if ($('usage-step2').style.display !== 'none' && addUsageFrom === 'detail') {
-    // フォント詳細から来た場合はフォント詳細に戻る
     openDetail(selectedUsageFontId);
   } else if ($('usage-step2').style.display !== 'none') {
-    // Step2からStep1に戻る
     $('usage-step2').style.display = 'none';
     $('usage-step1').style.display = 'block';
     selectedUsageFontId = null;
   } else {
-    // Step1からホームに戻る
     showScreen('screen-home');
     renderHome();
   }
-});
+}));
 
 function initAddUsage() {
   $('usage-step1').style.display = 'block';
@@ -4210,11 +4224,11 @@ $('usage-selected-font').addEventListener('click', () => {
   openDetail(selectedUsageFontId);
 });
 
-$('usage-step2-back').addEventListener('click', () => {
+$('usage-step2-back').addEventListener('click', () => navLock(() => {
   selectedUsageFontId = null;
   $('usage-step1').style.display='block';
   $('usage-step2').style.display='none';
-});
+}));
 
 // 「あとで決める」ボタン
 $('usage-skip-font').addEventListener('click', () => {
@@ -4387,7 +4401,7 @@ async function assignUsageToFont(unassignedId, fontId, u) {
   } catch(e) { console.error(e); showToast('エラーが発生しました'); }
 }
 
-$('unassigned-detail-back').addEventListener('click', () => showScreen('screen-home'));
+$('unassigned-detail-back').addEventListener('click', () => navLock(() => showScreen('screen-home')));
 
 // ── Upload photos（並列処理・最適化）──────
 async function uploadPhotos(pathPrefix, filesArr, memosArr) {
@@ -5151,7 +5165,7 @@ function updateQuizHint() {
   hint.textContent = sel.length ? '対象: ' + sel.join(' ＋ ') : '';
 }
 
-$('quiz-header-back').addEventListener('click', quizShowSetup);
+$('quiz-header-back').addEventListener('click', () => navLock(quizShowSetup));
 
 function updateQuizRangeSummary() {}
 
