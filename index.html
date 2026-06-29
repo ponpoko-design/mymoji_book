@@ -5118,6 +5118,8 @@ let quizLog          = [];
 let quizMode         = '4choice';
 let quizCmpAnsweredA = false;
 let quizCmpAnsweredB = false;
+let cmpUserAnswerA   = null;
+let cmpUserAnswerB   = null;
 let cmpQuestions     = [];
 let cmpCurrent       = 0;
 let cmpScore         = 0;
@@ -5377,6 +5379,7 @@ function renderCmpQuestion() {
   const q     = cmpQuestions[cmpCurrent];
   const total = cmpQuestions.length;
   quizCmpAnsweredA = false; quizCmpAnsweredB = false;
+  cmpUserAnswerA = null; cmpUserAnswerB = null;
   window.scrollTo(0, 0);
   $('quiz-cmp-prog-fill').style.width = (cmpCurrent / total * 100) + '%';
   $('quiz-cmp-prog-text').textContent = (cmpCurrent + 1) + ' / ' + total;
@@ -5452,6 +5455,10 @@ function onCmpAnswer(btn, correctName, side) {
     });
   }
 
+  // 回答を記録
+  if (side === 'a') cmpUserAnswerA = chosen;
+  else              cmpUserAnswerB = chosen;
+
   // アコーディオンのヘッダーに結果を反映
   const accBtn = side === 'a' ? $('quiz-cmp-acc-a') : $('quiz-cmp-acc-b');
   const label  = side === 'a' ? 'A' : 'B';
@@ -5467,7 +5474,6 @@ function onCmpAnswer(btn, correctName, side) {
     const chevB    = $('quiz-cmp-acc-b').querySelector('.quiz-cmp-chevron');
     choicesB.style.display = 'flex';
     chevB.style.transform  = 'rotate(180deg)';
-    // Bの位置にスクロール
     setTimeout(() => {
       $('quiz-cmp-acc-b').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
@@ -5475,12 +5481,16 @@ function onCmpAnswer(btn, correctName, side) {
 
   if (quizCmpAnsweredA && quizCmpAnsweredB) {
     const q  = cmpQuestions[cmpCurrent];
-    const aEl = $('quiz-cmp-choices-a').querySelector('.quiz-choice.correct');
-    const bEl = $('quiz-cmp-choices-b').querySelector('.quiz-choice.correct');
-    const cA  = aEl && aEl.dataset.name === q.a.fontName;
-    const cB  = bEl && bEl.dataset.name === q.b.fontName;
-    if (cA) cmpScore++; if (cB) cmpScore++;
-    cmpLog.push({ nameA: q.a.fontName, nameB: q.b.fontName, correctA: cA, correctB: cB });
+    // 正解判定：記録した回答と正解名を直接比較
+    const cA = cmpUserAnswerA === q.a.fontName;
+    const cB = cmpUserAnswerB === q.b.fontName;
+    if (cA) cmpScore++;
+    if (cB) cmpScore++;
+    cmpLog.push({
+      nameA: q.a.fontName, nameB: q.b.fontName,
+      correctA: cA, correctB: cB,
+      userAnswerA: cmpUserAnswerA, userAnswerB: cmpUserAnswerB
+    });
     $('quiz-cmp-next-btn').style.display = 'block';
   }
 }
@@ -5547,13 +5557,21 @@ function renderCmpResult() {
   $('quiz-result-title').textContent = pct >= 80 ? 'すばらしい！' : pct >= 50 ? 'よくできました！' : 'もう少し！';
   $('quiz-result-sub').textContent   = '正解率 ' + pct + '%';
   $('quiz-result-list').innerHTML    = cmpLog.flatMap(item => {
-    const itemA = { name: item.nameA, correct: item.correctA };
-    const itemB = { name: item.nameB, correct: item.correctB };
-    return [itemA, itemB].map(it => {
-      const chips = it.correct
+    return [
+      { name: item.nameA, correct: item.correctA, userAnswer: item.userAnswerA },
+      { name: item.nameB, correct: item.correctB, userAnswer: item.userAnswerB }
+    ].map(it => {
+      const chipsHtml = it.correct
         ? `<div style="margin-top:8px;">${fontChipHTML(it.name, 'correct')}</div>`
-        : `<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">${fontChipHTML(it.name, 'correct')}</div>`;
-      return `<div class="quiz-result-item ${it.correct ? 'ok' : 'ng'}">${it.correct ? OK_ICON : NG_ICON}<div style="flex:1;min-width:0;"><div class="ri-name">${it.name}</div>${!it.correct ? '<div class="ri-ans">不正解</div>' : ''}${chips}</div></div>`;
+        : `<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">${fontChipHTML(it.name, 'correct')}${fontChipHTML(it.userAnswer, 'wrong')}</div>`;
+      return `<div class="quiz-result-item ${it.correct ? 'ok' : 'ng'}">
+        ${it.correct ? OK_ICON : NG_ICON}
+        <div style="flex:1;min-width:0;">
+          <div class="ri-name">${it.name}</div>
+          ${!it.correct ? `<div class="ri-ans">あなたの回答: ${it.userAnswer}</div>` : ''}
+          ${chipsHtml}
+        </div>
+      </div>`;
     });
   }).join('');
   attachResultChipListeners();
