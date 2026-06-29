@@ -2490,22 +2490,24 @@ async function openDetail(id) {
 
     resetBtn.addEventListener('click', async e => {
       e.stopPropagation();
-      // coverPositionを削除してcontain初期表示に戻す
       try {
         await updateDoc(doc(db,'fonts',id), { coverPosition: null });
         const fLocal = fonts.find(x=>x.id===id);
         if (fLocal) fLocal.coverPosition = null;
         f.coverPosition = null;
-        // contain相当のscaleで再初期化
-        const hw = heroWrapEl.offsetWidth;
-        const hh = heroWrapEl.offsetHeight;
-        const iw = coverImg.naturalWidth || coverImg.offsetWidth;
-        const ih = coverImg.naturalHeight || coverImg.offsetHeight;
-        if (iw && ih) {
-          scale = Math.min(hw / iw, hh / ih);
-          tx = 0; ty = 0;
-          applyTransform();
-        }
+        // srcを再セットして画像の実サイズをonloadで取得してからscale計算
+        coverImg.onload = () => {
+          const hw = heroWrapEl.offsetWidth;
+          const hh = heroWrapEl.offsetHeight;
+          const iw = coverImg.naturalWidth;
+          const ih = coverImg.naturalHeight;
+          if (iw && ih) {
+            scale = Math.min(hw / iw, hh / ih);
+            tx = 0; ty = 0;
+            applyTransform();
+          }
+        };
+        coverImg.src = photos[0].url + (photos[0].url.includes('?') ? '&' : '?') + 'reset=' + Date.now();
         showToast('リセットしました');
       } catch(e2) { showToast('リセットに失敗しました'); }
     });
