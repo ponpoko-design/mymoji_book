@@ -1301,6 +1301,7 @@
   </button>
   <img id="lightbox-img" src="" alt="">
   <div id="lightbox-memo"></div>
+  <div id="lightbox-indicator" style="display:none;gap:6px;align-items:center;margin-top:8px;"></div>
 </div>
 
 <!-- 比較フローティングボタン -->
@@ -2686,43 +2687,45 @@ async function openDetail(id) {
       const url = el.dataset.url;
       const memo = el.dataset.memo;
       lightboxCurrentFontName = f.name || '';
-      openLightbox(url, memo, () => {
-        const origUrl = el.dataset.originalUrl || '';
-        openPhotoEditor(url, async (blob, revertUrl) => {
-          try {
-            if (revertUrl) {
-              // 元に戻す
+      // 全写真配列を渡してスワイプ対応
+      const photosArr = photos.map((p, pi) => ({
+        url: p.url,
+        memo: p.memo || '',
+        onEdit: () => {
+          const origUrl = p.originalUrl || '';
+          openPhotoEditor(p.url, async (blob, revertUrl) => {
+            try {
+              if (revertUrl) {
+                const f2 = fonts.find(x => x.id === id);
+                if (f2?.photos) {
+                  const idx2 = f2.photos.findIndex(ph => ph.url === p.url);
+                  if (idx2 >= 0) f2.photos[idx2] = { ...f2.photos[idx2], url: revertUrl, originalUrl: null };
+                  await updateDoc(doc(db,'fonts',id), { photos: f2.photos });
+                  showToast('元の写真に戻しました');
+                  openDetail(id);
+                }
+                return;
+              }
+              const storageRef = ref(storage, `fonts/${Date.now()}_edited.jpg`);
+              await uploadBytes(storageRef, blob);
+              const newUrl = await getDownloadURL(storageRef);
+              const noCacheUrl = newUrl + '&t=' + Date.now();
               const f2 = fonts.find(x => x.id === id);
               if (f2?.photos) {
-                const pi = f2.photos.findIndex(p => p.url === url);
-                if (pi >= 0) f2.photos[pi] = { ...f2.photos[pi], url: revertUrl, originalUrl: null };
+                const idx2 = f2.photos.findIndex(ph => ph.url === p.url);
+                if (idx2 >= 0) {
+                  const orig2 = origUrl || f2.photos[idx2].originalUrl || f2.photos[idx2].url;
+                  f2.photos[idx2] = { ...f2.photos[idx2], url: noCacheUrl, originalUrl: orig2 };
+                }
                 await updateDoc(doc(db,'fonts',id), { photos: f2.photos });
-                showToast('元の写真に戻しました');
+                showToast('保存しました');
                 openDetail(id);
               }
-              return;
-            }
-            const storageRef = ref(storage, `fonts/${Date.now()}_edited.jpg`);
-            await uploadBytes(storageRef, blob);
-            const newUrl = await getDownloadURL(storageRef);
-            const noCacheUrl = newUrl + '&t=' + Date.now();
-            const f2 = fonts.find(x => x.id === id);
-            if (f2?.photos) {
-              const pi = f2.photos.findIndex(p => p.url === url);
-              if (pi >= 0) {
-                const orig = origUrl || f2.photos[pi].originalUrl || f2.photos[pi].url;
-                f2.photos[pi] = { ...f2.photos[pi], url: noCacheUrl, originalUrl: orig };
-              }
-              await updateDoc(doc(db,'fonts',id), { photos: f2.photos });
-              showToast('保存しました');
-              // 即座に該当imgを差し替え
-              const thumbEl = document.querySelector(`.photo-thumb[data-url="${url}"] img`);
-              if (thumbEl) thumbEl.src = noCacheUrl;
-              openDetail(id);
-            }
-          } catch(e2) { showToast('保存に失敗しました'); }
-        }, () => openLightbox(url, memo, null, f.name), origUrl);
-      });
+            } catch(e2) { showToast('保存に失敗しました'); }
+          }, () => openLightbox(p.url, p.memo || '', null, f.name), origUrl);
+        }
+      }));
+      openLightbox(url, memo, null, f.name, photosArr);
     });
   });
   $('detail-content').querySelectorAll('.usage-card').forEach(el => {
@@ -2950,39 +2953,43 @@ function openUsageDetail(fontId, usageId, usages) {
     el.addEventListener('click', () => {
       const url = el.dataset.url;
       const memo = el.dataset.memo;
-      openLightbox(url, memo, () => {
-        const origUrl = el.dataset.originalUrl || '';
-        openPhotoEditor(url, async (blob, revertUrl) => {
-          try {
-            if (revertUrl) {
+      // 全写真配列を渡してスワイプ対応
+      const photosArr = (u.photos || []).map(p => ({
+        url: p.url,
+        memo: p.memo || '',
+        onEdit: () => {
+          const origUrl = p.originalUrl || '';
+          openPhotoEditor(p.url, async (blob, revertUrl) => {
+            try {
+              if (revertUrl) {
+                const newPhotos = [...(u.photos||[])];
+                const pi = newPhotos.findIndex(ph => ph.url === p.url);
+                if (pi >= 0) newPhotos[pi] = { ...newPhotos[pi], url: revertUrl, originalUrl: null };
+                await updateDoc(doc(db,'fonts',fontId,'usages',usageId), { photos: newPhotos });
+                u.photos = newPhotos;
+                showToast('元の写真に戻しました');
+                openUsageDetail(fontId, usageId, usages);
+                return;
+              }
+              const storageRef = ref(storage, `fonts/${fontId}/usages/${Date.now()}_edited.jpg`);
+              await uploadBytes(storageRef, blob);
+              const rawUrl2 = await getDownloadURL(storageRef);
+              const newUrl = rawUrl2 + '&t=' + Date.now();
               const newPhotos = [...(u.photos||[])];
-              const pi = newPhotos.findIndex(p => p.url === url);
-              if (pi >= 0) newPhotos[pi] = { ...newPhotos[pi], url: revertUrl, originalUrl: null };
+              const pi = newPhotos.findIndex(ph => ph.url === p.url);
+              if (pi >= 0) {
+                const orig = origUrl || newPhotos[pi].originalUrl || newPhotos[pi].url;
+                newPhotos[pi] = { ...newPhotos[pi], url: newUrl, originalUrl: orig };
+              }
               await updateDoc(doc(db,'fonts',fontId,'usages',usageId), { photos: newPhotos });
               u.photos = newPhotos;
-              showToast('元の写真に戻しました');
+              showToast('保存しました');
               openUsageDetail(fontId, usageId, usages);
-              return;
-            }
-            const storageRef = ref(storage, `fonts/${fontId}/usages/${Date.now()}_edited.jpg`);
-            await uploadBytes(storageRef, blob);
-            const rawUrl2 = await getDownloadURL(storageRef);
-            const newUrl = rawUrl2 + '&t=' + Date.now();
-            const newPhotos = [...(u.photos||[])];
-            const pi = newPhotos.findIndex(p => p.url === url);
-            if (pi >= 0) {
-              const orig = origUrl || newPhotos[pi].originalUrl || newPhotos[pi].url;
-              newPhotos[pi] = { ...newPhotos[pi], url: newUrl, originalUrl: orig };
-            }
-            await updateDoc(doc(db,'fonts',fontId,'usages',usageId), { photos: newPhotos });
-            u.photos = newPhotos;
-            showToast('保存しました');
-            const usageThumbEl = document.querySelector(`.photo-thumb[data-url="${url}"] img`);
-            if (usageThumbEl) usageThumbEl.src = newUrl;
-            openUsageDetail(fontId, usageId, usages);
-          } catch(e2) { showToast('保存に失敗しました'); }
-        }, () => openLightbox(url, memo, null, f ? f.name : ''), origUrl);
-      });
+            } catch(e2) { showToast('保存に失敗しました'); }
+          }, () => openLightbox(p.url, p.memo || '', null, f ? f.name : ''), origUrl);
+        }
+      }));
+      openLightbox(url, memo, null, f ? f.name : '', photosArr);
     });
   });
 
@@ -3419,30 +3426,134 @@ function buildEditPhotoSlots(containerId, memoWrapId, existingArr, filesArr, mem
 }
 
 // ── Lightbox ──────────────────────────────
+// ライトボックス：写真配列・スワイプ対応
 let lightboxOnEdit = null;
 let lightboxCurrentUrl = '';
 let lightboxCurrentFontName = '';
+let lightboxPhotos = [];   // [{url, memo, onEdit}]
+let lightboxIndex = 0;
 
-function openLightbox(url, memo, onEdit, fontName) {
-  $('lightbox-img').src = url;
-  $('lightbox-memo').textContent = memo||'';
-  lightboxCurrentUrl = url;
+function openLightbox(url, memo, onEdit, fontName, photosArr) {
+  // photosArr: [{url, memo, onEdit}] が渡されればスワイプ対応
+  if (photosArr && photosArr.length > 0) {
+    lightboxPhotos = photosArr;
+    lightboxIndex = photosArr.findIndex(p => p.url === url);
+    if (lightboxIndex < 0) lightboxIndex = 0;
+  } else {
+    lightboxPhotos = [{ url, memo, onEdit }];
+    lightboxIndex = 0;
+  }
   if (fontName !== undefined) lightboxCurrentFontName = fontName || '';
-  lightboxOnEdit = onEdit || null;
-  const editBtn = $('lightbox-edit-btn');
-  if (onEdit) editBtn.classList.add('visible');
-  else editBtn.classList.remove('visible');
-  // 比較ボタンの状態を反映
-  $('lightbox-compare-btn').classList.toggle('active', compareList.some(c => c.url === url));
-  $('lightbox').classList.add('active');
+  _lightboxShow();
 }
+
+function _lightboxShow() {
+  const item = lightboxPhotos[lightboxIndex];
+  const img = $('lightbox-img');
+  img.src = item.url;
+  $('lightbox-memo').textContent = item.memo || '';
+  lightboxCurrentUrl = item.url;
+  lightboxOnEdit = item.onEdit || null;
+  const editBtn = $('lightbox-edit-btn');
+  if (lightboxOnEdit) editBtn.classList.add('visible');
+  else editBtn.classList.remove('visible');
+  $('lightbox-compare-btn').classList.toggle('active', compareList.some(c => c.url === item.url));
+  // ピンチ/スワイプリセット
+  lbScale = 1; lbTx = 0; lbTy = 0;
+  img.style.transform = '';
+  $('lightbox').classList.add('active');
+  // インジケーター更新
+  _lightboxUpdateIndicator();
+}
+
+function _lightboxUpdateIndicator() {
+  const ind = $('lightbox-indicator');
+  if (lightboxPhotos.length <= 1) { ind.style.display = 'none'; return; }
+  ind.style.display = 'flex';
+  ind.innerHTML = lightboxPhotos.map((_, i) =>
+    `<span style="width:6px;height:6px;border-radius:50%;background:${i === lightboxIndex ? 'white' : 'rgba(255,255,255,0.4)'};display:inline-block;"></span>`
+  ).join('');
+}
+
 $('lightbox-close').addEventListener('click', () => $('lightbox').classList.remove('active'));
-$('lightbox').addEventListener('click', e => { if(e.target===$('lightbox')) $('lightbox').classList.remove('active'); });
+$('lightbox').addEventListener('click', e => { if (e.target === $('lightbox')) $('lightbox').classList.remove('active'); });
 $('lightbox-edit-btn').addEventListener('click', () => {
   if (!lightboxOnEdit) return;
   $('lightbox').classList.remove('active');
   lightboxOnEdit();
 });
+
+// スワイプ＋ピンチ
+let lbScale = 1, lbTx = 0, lbTy = 0;
+const lbPtrs = new Map();
+let lbLastPinchDist = null, lbLastPos = null;
+let lbSwipeStartX = null;
+
+const lbImg = $('lightbox-img');
+
+$('lightbox').addEventListener('pointerdown', e => {
+  if (e.target === $('lightbox')) return;
+  lbPtrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (lbPtrs.size === 1) {
+    lbLastPos = { x: e.clientX, y: e.clientY };
+    lbSwipeStartX = e.clientX;
+  }
+  if (lbPtrs.size === 2) {
+    const v = [...lbPtrs.values()];
+    lbLastPinchDist = Math.hypot(v[0].x - v[1].x, v[0].y - v[1].y);
+  }
+}, true);
+
+$('lightbox').addEventListener('pointermove', e => {
+  if (!lbPtrs.has(e.pointerId)) return;
+  lbPtrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (lbPtrs.size === 1 && lbScale <= 1) {
+    // スワイプ（拡大中は移動優先）
+    return;
+  }
+  if (lbPtrs.size === 1 && lbScale > 1) {
+    const dx = e.clientX - lbLastPos.x;
+    const dy = e.clientY - lbLastPos.y;
+    lbTx += dx; lbTy += dy;
+    lbLastPos = { x: e.clientX, y: e.clientY };
+    lbImg.style.transform = `translate(${lbTx}px,${lbTy}px) scale(${lbScale})`;
+  } else if (lbPtrs.size === 2) {
+    const v = [...lbPtrs.values()];
+    const dist = Math.hypot(v[0].x - v[1].x, v[0].y - v[1].y);
+    if (lbLastPinchDist) {
+      lbScale *= dist / lbLastPinchDist;
+      lbScale = Math.max(1, Math.min(6, lbScale));
+      lbImg.style.transform = `translate(${lbTx}px,${lbTy}px) scale(${lbScale})`;
+    }
+    lbLastPinchDist = dist;
+  }
+}, true);
+
+$('lightbox').addEventListener('pointerup', e => {
+  const startX = lbSwipeStartX;
+  const endX = e.clientX;
+  lbPtrs.delete(e.pointerId);
+  if (lbPtrs.size < 2) lbLastPinchDist = null;
+  // スワイプ判定（1本指・拡大なし・横移動50px以上）
+  if (lbPtrs.size === 0 && lbScale <= 1 && startX !== null) {
+    const dx = endX - startX;
+    if (Math.abs(dx) > 50) {
+      if (dx < 0 && lightboxIndex < lightboxPhotos.length - 1) {
+        lightboxIndex++;
+        _lightboxShow();
+      } else if (dx > 0 && lightboxIndex > 0) {
+        lightboxIndex--;
+        _lightboxShow();
+      }
+    }
+    lbSwipeStartX = null;
+  }
+}, true);
+
+$('lightbox').addEventListener('pointercancel', e => {
+  lbPtrs.delete(e.pointerId);
+  lbLastPinchDist = null; lbSwipeStartX = null;
+}, true);
 
 // ── 比較機能 ───────────────────────────────
 let compareList = []; // [{url, memo}]
