@@ -709,10 +709,12 @@
     position: fixed; bottom: 90px; left: 50%;
     transform: translateX(-50%) translateY(20px);
     background: rgba(45,38,64,0.88); color: white;
-    padding: 10px 24px; border-radius: 50px;
+    padding: 10px 24px; border-radius: 20px;
     font-size: 15px; z-index: 300; opacity: 0;
     transition: opacity 0.3s, transform 0.3s;
-    pointer-events: none; white-space: nowrap;
+    pointer-events: none; white-space: normal;
+    max-width: calc(100% - 48px); text-align: center;
+    line-height: 1.5;
   }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -1992,7 +1994,9 @@ const $ = id => document.getElementById(id);
 const showToast = msg => {
   const t = $('toast');
   t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2000);
+  // 長いメッセージは長く表示（1文字あたり約80ms、最低2秒・最大6秒）
+  const duration = Math.min(6000, Math.max(2000, msg.length * 80));
+  setTimeout(() => t.classList.remove('show'), duration);
 };
 const hideLoading = () => $('loading').style.display = 'none';
 const showScreen = id => {
@@ -2465,10 +2469,18 @@ async function openDetail(id) {
       const iw = coverImg.naturalWidth  || coverImg.offsetWidth;
       const ih = coverImg.naturalHeight || coverImg.offsetHeight;
       if (!iw || !ih) return;
-      // 既存のcoverPositionがなければ、初期scaleをcontain相当に（画像全体が見える）
+      const containScale = Math.min(hw / iw, hh / ih);
       if (!f.coverPosition) {
-        scale = Math.min(hw / iw, hh / ih);
+        // coverPositionなし → contain
+        scale = containScale;
         tx = 0; ty = 0;
+      } else {
+        // coverPositionあり → パース済みのtx/ty/scaleをそのまま使うが
+        // scaleがcontainより小さい場合（画像が枠より小さくなる）はcontainに補正
+        if (scale < containScale * 0.5) {
+          scale = containScale;
+          tx = 0; ty = 0;
+        }
       }
       applyTransform();
     }
@@ -2495,19 +2507,14 @@ async function openDetail(id) {
         const fLocal = fonts.find(x=>x.id===id);
         if (fLocal) fLocal.coverPosition = null;
         f.coverPosition = null;
-        // srcを再セットして画像の実サイズをonloadで取得してからscale計算
-        coverImg.onload = () => {
-          const hw = heroWrapEl.offsetWidth;
-          const hh = heroWrapEl.offsetHeight;
-          const iw = coverImg.naturalWidth;
-          const ih = coverImg.naturalHeight;
-          if (iw && ih) {
-            scale = Math.min(hw / iw, hh / ih);
-            tx = 0; ty = 0;
-            applyTransform();
-          }
-        };
-        coverImg.src = photos[0].url + (photos[0].url.includes('?') ? '&' : '?') + 'reset=' + Date.now();
+        // coverPositionをnullにしてからinitCoverSizeを呼ぶ
+        // naturalWidthが取れている場合はそのまま、なければonload後に
+        if (coverImg.naturalWidth) {
+          initCoverSize();
+        } else {
+          coverImg.onload = initCoverSize;
+          coverImg.src = coverImg.src; // 再トリガー
+        }
         showToast('リセットしました');
       } catch(e2) { showToast('リセットに失敗しました'); }
     });
@@ -4319,6 +4326,8 @@ async function dropboxApi(endpoint, body, isBinary = false) {
   });
   if (res.status === 401) {
     localStorage.removeItem(DROPBOX_TOKEN_KEY);
+    showToast('Dropboxの認証が切れました。メニュー→「Dropboxと連携する」を押して再接続してください。');
+    renderBackupStatus();
     return null;
   }
   return isBinary ? res : res.json();
@@ -4340,10 +4349,14 @@ async function dropboxUpload(path, content, isText = true) {
     },
     body
   });
+  if (res.status === 401) {
+    localStorage.removeItem(DROPBOX_TOKEN_KEY);
+    showToast('Dropboxの認証が切れました。メニュー→「Dropboxと連携する」を押して再接続してください。');
+    renderBackupStatus();
+    return false;
+  }
   return res.ok;
 }
-
-// Dropboxからファイル存在確認
 async function dropboxFileExists(path) {
   const token = getDropboxToken();
   if (!token) return false;
@@ -4437,9 +4450,7 @@ async function runBackup(silent = true) {
       await dropboxUpload(dailyPath, JSON.stringify(exportData, null, 2));
     }
 
-    // ⑤ 写真の差分バックアップ
-    await backupPhotos(allPhotoUrls, silent);
-
+    // ⑤ テキストデータのバックアップ完了時点で履歴を先に保存・表示更新
     // ⑥ hourly履歴を更新（直近24時間分を保持）
     const nowMs = now.getTime();
     const cutoffMs = nowMs - 24 * 60 * 60 * 1000; // 24時間前
@@ -4447,7 +4458,6 @@ async function runBackup(silent = true) {
 
     // 24時間より古いhourlyエントリを削除（Dropboxからも）
     const toDeleteHourly = newHourly.filter(k => {
-      // "YYYY-MM-DD_HH" → Dateに変換
       const [datePart, hourPart] = k.split('_');
       const [y, mo, d] = datePart.split('-').map(Number);
       const h = parseInt(hourPart, 10);
@@ -4467,9 +4477,13 @@ async function runBackup(silent = true) {
       }
     }
 
+    // テキスト完了時点で先に保存・表示更新（写真は後から）
     saveBackupHistory({ hourly: keepHourly, daily: newDaily });
     renderBackupStatus();
     if (!silent) showToast(`バックアップ完了（${today} ${pad(now.getHours())}:00）`);
+
+    // ⑧ 写真の差分バックアップ（非同期・完了を待たない）
+    backupPhotos(allPhotoUrls, silent).catch(e => console.warn('Photo backup error:', e));
 
   } catch(e) {
     console.error('Backup error:', e);
@@ -4479,7 +4493,6 @@ async function runBackup(silent = true) {
 
 // 写真差分バックアップ
 async function backupPhotos(allUrls, silent) {
-  // バックアップ済みURLリストをDropboxから取得
   const listPath = `${BACKUP_FOLDER}/photos/backed_up_urls.json`;
   let backedUpUrls = [];
   try {
@@ -4497,29 +4510,30 @@ async function backupPhotos(allUrls, silent) {
     }
   } catch(e) { backedUpUrls = []; }
 
-  // 差分（未バックアップ）のURLだけ抽出
   const newUrls = allUrls.filter(url => !backedUpUrls.includes(url));
-
   if (newUrls.length === 0) return;
   if (!silent) showToast(`写真 ${newUrls.length} 枚をバックアップ中…`);
 
+  // 5枚ずつ並列処理
+  const CONCURRENCY = 5;
   let success = 0;
-  for (const url of newUrls) {
-    try {
-      // Firebase StorageのURLから画像をfetch
+  for (let i = 0; i < newUrls.length; i += CONCURRENCY) {
+    const batch = newUrls.slice(i, i + CONCURRENCY);
+    const results = await Promise.allSettled(batch.map(async url => {
       const res = await fetch(url);
-      if (!res.ok) continue;
+      if (!res.ok) throw new Error('fetch failed');
       const blob = await res.blob();
       const arrayBuf = await blob.arrayBuffer();
-      // ファイル名：URLからハッシュ的な部分を取り出す
       const fileName = url.split('%2F').pop().split('?')[0].replace(/%20/g,'_') || `photo_${Date.now()}.jpg`;
       const dropboxPath = `${BACKUP_FOLDER}/photos/${fileName}`;
       const uploaded = await dropboxUpload(dropboxPath, new Uint8Array(arrayBuf), false);
       if (uploaded) { backedUpUrls.push(url); success++; }
-    } catch(e) { console.warn('Photo backup failed:', url, e); }
+    }));
+    results.forEach((r, idx) => {
+      if (r.status === 'rejected') console.warn('Photo backup failed:', batch[idx], r.reason);
+    });
   }
 
-  // 更新したURLリストを保存
   if (success > 0) {
     await dropboxUpload(listPath, JSON.stringify(backedUpUrls));
     if (!silent) showToast(`写真 ${success} 枚バックアップ完了`);
