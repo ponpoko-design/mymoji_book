@@ -2507,14 +2507,14 @@ async function openDetail(id) {
         const fLocal = fonts.find(x=>x.id===id);
         if (fLocal) fLocal.coverPosition = null;
         f.coverPosition = null;
-        // coverPositionをnullにしてからinitCoverSizeを呼ぶ
-        // naturalWidthが取れている場合はそのまま、なければonload後に
-        if (coverImg.naturalWidth) {
-          initCoverSize();
-        } else {
-          coverImg.onload = initCoverSize;
-          coverImg.src = coverImg.src; // 再トリガー
-        }
+        // transformをクリアしてcontain中央表示に戻す
+        coverImg.style.transform = '';
+        coverImg.style.position = '';
+        coverImg.style.top = '';
+        coverImg.style.left = '';
+        coverImg.style.width = '100%';
+        coverImg.style.height = '100%';
+        coverImg.style.objectFit = 'contain';
         showToast('リセットしました');
       } catch(e2) { showToast('リセットに失敗しました'); }
     });
@@ -2523,7 +2523,7 @@ async function openDetail(id) {
       e.stopPropagation();
       isAdjustMode = !isAdjustMode;
       if (isAdjustMode) {
-        adjustBtn.innerHTML = SAVE_ICON + ' 位置･大小';
+        adjustBtn.innerHTML = SAVE_ICON + ' 保存';
         adjustBtn.style.background = 'rgba(155,127,232,0.85)';
         heroWrapEl.style.touchAction = 'none';
         resetBtn.style.display = 'flex';
@@ -4464,8 +4464,9 @@ async function runBackup(silent = true) {
       return new Date(y, mo-1, d, h).getTime() < cutoffMs;
     });
     const keepHourly = newHourly.filter(k => !toDeleteHourly.includes(k));
+    // 古いhourlyを削除（失敗しても続行）
     for (const k of toDeleteHourly) {
-      await dropboxDelete(`${BACKUP_FOLDER}/hourly/${k}.json`);
+      dropboxDelete(`${BACKUP_FOLDER}/hourly/${k}.json`).catch(() => {});
     }
 
     // ⑦ daily履歴を更新（直近7日分を保持）
@@ -4473,7 +4474,7 @@ async function runBackup(silent = true) {
     if (newDaily.length > MAX_DAILY_COUNT) {
       const toDeleteDaily = newDaily.splice(MAX_DAILY_COUNT);
       for (const date of toDeleteDaily) {
-        await dropboxDelete(`${BACKUP_FOLDER}/daily/${date}.json`);
+        dropboxDelete(`${BACKUP_FOLDER}/daily/${date}.json`).catch(() => {});
       }
     }
 
