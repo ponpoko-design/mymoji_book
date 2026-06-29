@@ -5410,6 +5410,12 @@ function renderCmpQuestion() {
   const chevA    = accA.querySelector('.quiz-cmp-chevron');
   const chevB    = accB.querySelector('.quiz-cmp-chevron');
 
+  // ヘッダーテキストをリセット
+  accA.querySelector('span').textContent = 'A のフォントは？';
+  accB.querySelector('span').textContent = 'B のフォントは？';
+  accA.style.borderColor = '';
+  accB.style.borderColor = '';
+
   choicesA.style.display = 'flex';
   choicesB.style.display = 'none';
   chevA.style.transform  = 'rotate(180deg)';
@@ -5450,10 +5456,10 @@ function onCmpAnswer(btn, correctName, side) {
   const accBtn = side === 'a' ? $('quiz-cmp-acc-a') : $('quiz-cmp-acc-b');
   const label  = side === 'a' ? 'A' : 'B';
   const col    = isCorrect ? '#7a5cc0' : '#c02040';
-  const mark   = isCorrect
-    ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a5cc0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
-    : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e05c7a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
-  accBtn.querySelector('span').innerHTML = `${label} のフォントは？ &nbsp;${mark}&nbsp;<span style="font-size:12px;color:${col};">${chosen}</span>`;
+  const markSvg = isCorrect
+    ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a5cc0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg>`
+    : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e05c7a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;flex-shrink:0;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+  accBtn.querySelector('span').innerHTML = `${label} のフォントは？ &nbsp;${markSvg}&nbsp;<span style="font-size:12px;color:${col};pointer-events:none;">${chosen}</span>`;
 
   // A回答後にBを自動オープン
   if (side === 'a' && !quizCmpAnsweredB) {
