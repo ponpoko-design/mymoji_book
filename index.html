@@ -1372,7 +1372,7 @@ const BASIC_FONT_NAMES = new Set([
 const FONT_DB = {
   ja: [
     { name: '新ゴ', maker: 'モリサワ', category: 'ゴシック', reading: 'しんご' },
-    { name: '中ゴシックBBB', maker: 'モリサワ', category: 'ゴシック', reading: 'なかごしっくびーびーびー' },
+    { name: '中ゴシックBBB', maker: 'モリサワ', category: 'ゴシック', reading: 'ちゅうごしっくびーびーびー' },
     { name: '太ゴB101', maker: 'モリサワ', category: 'ゴシック', reading: 'ふとごびーいちまるいち' },
     { name: 'ゴシックMB101', maker: 'モリサワ', category: 'ゴシック', reading: 'ごしっくえむびーいちまるいち' },
     { name: 'A1ゴシック', maker: 'モリサワ', category: 'ゴシック', reading: 'えーわんごしっく' },
@@ -1516,7 +1516,7 @@ const FONT_DB = {
     { name: 'UD新ゴNT', maker: 'モリサワ', category: 'UD', reading: 'ゆーでぃーしんごえぬてぃー' },
     { name: '太ミンA101', maker: 'モリサワ', category: '明朝', reading: 'ふとみんえーいちまるいち' },
     { name: '見出ミンMA31', maker: 'モリサワ', category: '明朝', reading: 'みだしみんえむえーさんいち' },
-    { name: '見出ゴMB31', maker: 'モリサワ', category: 'ゴシック', reading: 'みだしごえむびーさんいち' },
+    { name: '見出ゴMB31', maker: 'モリサワ', category: 'ゴシック', reading: 'みだしごえむびいさんじゅういち' },
     { name: '丸フォーク', maker: 'モリサワ', category: 'ゴシック', reading: 'まるふぉーく' },
     { name: 'はれやか', maker: 'モリサワ', category: 'その他', reading: 'はれやか' },
     { name: 'ニシン', maker: 'モリサワ', category: 'その他', reading: 'にしん' },
@@ -3281,7 +3281,9 @@ let compareList = []; // [{url, memo}]
 function updateCompareFloat() {
   const btn = $('compare-float-btn');
   $('compare-count-badge').textContent = compareList.length;
-  btn.style.display = compareList.length >= 2 ? 'flex' : 'none';
+  // 比較画面が開いているときは非表示
+  const compareScreenActive = $('compare-screen').classList.contains('active');
+  btn.style.display = (compareList.length >= 2 && !compareScreenActive) ? 'flex' : 'none';
 }
 
 $('lightbox-compare-btn').addEventListener('click', () => {
@@ -3304,6 +3306,7 @@ $('lightbox-compare-btn').addEventListener('click', () => {
 $('compare-float-btn').addEventListener('click', () => {
   renderCompareScreen();
   $('compare-screen').classList.add('active');
+  updateCompareFloat(); // 比較画面開いたので非表示に
 });
 
 function renderCompareScreen() {
@@ -3345,6 +3348,7 @@ function makeComparePanel(item, idx) {
   backBtn.addEventListener('click', e => {
     e.stopPropagation();
     $('compare-screen').classList.remove('active');
+    updateCompareFloat(); // 比較画面閉じたので再表示
     openLightbox(item.url, item.memo);
   });
   panel.appendChild(backBtn);
@@ -3370,6 +3374,7 @@ function makeComparePanel(item, idx) {
     updateCompareFloat();
     if (compareList.length === 0) {
       $('compare-screen').classList.remove('active');
+      updateCompareFloat();
     } else {
       renderCompareScreen();
     }
