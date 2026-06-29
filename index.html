@@ -752,12 +752,12 @@
 
   /* ── Quiz ── */
   .quiz-chip {
-    padding: 6px 14px; border-radius: 50px;
+    padding: 9px 18px; border-radius: 50px;
     border: 1.5px solid var(--c-border);
     background: rgba(255,255,255,0.8); color: var(--c-text-sub);
-    font-size: 13px; font-weight: 600; cursor: pointer;
+    font-size: 14px; font-weight: 600; cursor: pointer;
     font-family: inherit; transition: all 0.15s; line-height: 1;
-    touch-action: manipulation;
+    touch-action: manipulation; min-height: 40px;
   }
   .quiz-chip.selected {
     background: linear-gradient(135deg, rgba(184,160,240,0.25), rgba(122,184,245,0.25));
@@ -774,6 +774,12 @@
     border-color: #b8a0f0;
     background: linear-gradient(135deg, rgba(184,160,240,0.15), rgba(122,184,245,0.15));
   }
+  .quiz-mode-icon {
+    width: 36px; height: 36px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--c-text-sub);
+  }
+  .quiz-mode-card.selected .quiz-mode-icon { color: #9b7fe8; }
   .quiz-choice {
     padding: 13px 16px; border-radius: var(--radius-sm);
     border: 1.5px solid var(--c-border);
@@ -784,17 +790,25 @@
     touch-action: manipulation;
   }
   .quiz-choice:active { transform: scale(0.98); }
-  .quiz-choice.correct { background: rgba(40,180,120,0.15); border-color: #40c080; color: #1a7a4a; }
-  .quiz-choice.wrong   { background: rgba(224,92,122,0.12); border-color: #e05c7a; color: #c02040; }
+  .quiz-choice.correct {
+    background: linear-gradient(135deg, rgba(184,160,240,0.2), rgba(122,184,245,0.2));
+    border-color: #b8a0f0; color: #7a5cc0;
+  }
+  .quiz-choice.wrong { background: rgba(224,92,122,0.1); border-color: #e05c7a; color: #c02040; }
   .quiz-choice .qc-alpha { font-size: 12px; color: var(--c-text-sub); width: 18px; flex-shrink: 0; }
-  .quiz-choice.correct .qc-alpha, .quiz-choice.wrong .qc-alpha { opacity: 0.6; color: inherit; }
+  .quiz-choice.correct .qc-alpha { color: #b8a0f0; }
+  .quiz-choice.wrong .qc-alpha   { color: #e05c7a; opacity: 0.7; }
+  .quiz-choice .qc-check { margin-left: auto; flex-shrink: 0; display: none; }
+  .quiz-choice.correct .qc-check { display: block; }
+  .quiz-choice .qc-cross { margin-left: auto; flex-shrink: 0; display: none; }
+  .quiz-choice.wrong .qc-cross { display: block; }
   .quiz-result-item {
     padding: 10px 14px; border-radius: var(--radius-sm);
     background: rgba(255,255,255,0.7); border: 1px solid var(--c-border);
     display: flex; align-items: flex-start; gap: 10px; font-size: 13px;
   }
   .quiz-result-item .ri-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-  .quiz-result-item.ok .ri-icon { color: #40c080; }
+  .quiz-result-item.ok .ri-icon { color: #9b7fe8; }
   .quiz-result-item.ng .ri-icon { color: #e05c7a; }
   .quiz-result-item .ri-name { font-weight: 700; color: var(--c-text); }
   .quiz-result-item .ri-ans  { font-size: 12px; color: var(--c-text-sub); margin-top: 2px; }
@@ -1133,53 +1147,44 @@
     </div>
 
     <!-- ── 設定画面 ── -->
-    <div id="quiz-setup" class="form-page" style="padding-top:calc(var(--header-h) + 8px);">
-      <div style="margin-bottom:20px;">
+    <div id="quiz-setup" style="padding:calc(var(--header-h) + 4px) 20px 80px;">
+      <div style="margin-bottom:18px;">
         <div style="font-size:11px;font-weight:700;color:var(--c-text-sub);letter-spacing:0.08em;margin-bottom:10px;">出題範囲（複数選択可）</div>
-        <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:7px;" id="quiz-chips-lang">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
           <button class="quiz-chip" data-val="random">ランダム</button>
           <button class="quiz-chip" data-val="ja">日本語</button>
           <button class="quiz-chip" data-val="en">欧文</button>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:7px;" id="quiz-chips-cat">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
           <button class="quiz-chip" data-val="ゴシック">ゴシック</button>
           <button class="quiz-chip" data-val="明朝">明朝</button>
           <button class="quiz-chip" data-val="セリフ">セリフ</button>
           <button class="quiz-chip" data-val="サンセリフ">サンセリフ</button>
           <button class="quiz-chip" data-val="その他">その他</button>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:7px;" id="quiz-chips-special">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
           <button class="quiz-chip" data-val="basic">基本フォント</button>
           <button class="quiz-chip" data-val="check">関連フォント</button>
         </div>
         <div id="quiz-filter-hint" style="font-size:12px;color:var(--c-text-sub);margin-top:10px;min-height:16px;"></div>
       </div>
 
-      <div style="height:1px;background:var(--c-border);margin-bottom:20px;"></div>
+      <div style="height:1px;background:var(--c-border);margin-bottom:18px;"></div>
 
       <div style="margin-bottom:20px;">
         <div style="font-size:11px;font-weight:700;color:var(--c-text-sub);letter-spacing:0.08em;margin-bottom:10px;">モード</div>
-        <div style="display:flex;flex-direction:column;gap:8px;" id="quiz-mode-cards">
+        <div style="display:flex;flex-direction:column;gap:8px;">
           <div class="quiz-mode-card selected" data-mode="4choice">
-            <div style="font-size:20px;width:32px;text-align:center;flex-shrink:0;">📋</div>
-            <div>
-              <div style="font-size:14px;font-weight:700;color:var(--c-text);">4択クイズ</div>
-              <div style="font-size:12px;color:var(--c-text-sub);margin-top:2px;">写真を見てフォント名を4択から選ぶ</div>
-            </div>
+            <div class="quiz-mode-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="7" y1="15" x2="13" y2="15"/></svg></div>
+            <div><div style="font-size:14px;font-weight:700;color:var(--c-text);">4択クイズ</div><div style="font-size:12px;color:var(--c-text-sub);margin-top:2px;">写真を見てフォント名を4択から選ぶ</div></div>
           </div>
           <div class="quiz-mode-card" data-mode="compare">
-            <div style="font-size:20px;width:32px;text-align:center;flex-shrink:0;">🔀</div>
-            <div>
-              <div style="font-size:14px;font-weight:700;color:var(--c-text);">比較クイズ</div>
-              <div style="font-size:12px;color:var(--c-text-sub);margin-top:2px;">2枚並べて両方のフォントを当てる</div>
-            </div>
+            <div class="quiz-mode-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="9" height="16" rx="2"/><rect x="13" y="4" width="9" height="16" rx="2"/></svg></div>
+            <div><div style="font-size:14px;font-weight:700;color:var(--c-text);">比較クイズ</div><div style="font-size:12px;color:var(--c-text-sub);margin-top:2px;">2枚並べて両方のフォントを当てる</div></div>
           </div>
           <div class="quiz-mode-card" data-mode="reverse">
-            <div style="font-size:20px;width:32px;text-align:center;flex-shrink:0;">🔁</div>
-            <div>
-              <div style="font-size:14px;font-weight:700;color:var(--c-text);">逆引きクイズ</div>
-              <div style="font-size:12px;color:var(--c-text-sub);margin-top:2px;">フォント名から用例写真を選ぶ</div>
-            </div>
+            <div class="quiz-mode-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 2.5 2.5 9.5 9.5 9.5"/><path d="M2.5 9.5A9 9 0 1 1 5 17"/></svg></div>
+            <div><div style="font-size:14px;font-weight:700;color:var(--c-text);">逆引きクイズ</div><div style="font-size:12px;color:var(--c-text-sub);margin-top:2px;">フォント名から用例写真を選ぶ</div></div>
           </div>
         </div>
       </div>
@@ -1189,26 +1194,25 @@
 
     <!-- ── 4択クイズ画面 ── -->
     <div id="quiz-play" style="display:none;padding:calc(var(--header-h) + 12px) 16px 80px;">
-      <!-- Progress -->
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
         <div style="flex:1;height:4px;background:var(--c-border);border-radius:2px;overflow:hidden;">
           <div id="quiz-prog-fill" style="height:100%;background:linear-gradient(135deg,#b8a0f0,#7ab8f5);border-radius:2px;transition:width 0.3s;width:0%;"></div>
         </div>
         <div id="quiz-prog-text" style="font-size:12px;color:var(--c-text-sub);white-space:nowrap;">1 / 5</div>
       </div>
 
-      <!-- Photo area with pinch zoom -->
-      <div id="quiz-photo-area" style="position:relative;width:100%;aspect-ratio:4/3;border-radius:14px;overflow:hidden;background:var(--c-border);margin-bottom:16px;touch-action:none;cursor:grab;user-select:none;">
-        <div id="quiz-photo-inner" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;transform-origin:center center;">
-          <img id="quiz-photo-img" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none;">
+      <!-- 写真エリア（contain＋端まで移動） -->
+      <div id="quiz-photo-area" style="position:relative;width:100%;height:260px;border-radius:14px;overflow:hidden;background:var(--c-bg);margin-bottom:14px;touch-action:none;cursor:grab;user-select:none;">
+        <div id="quiz-photo-inner" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transform-origin:center center;">
+          <img id="quiz-photo-img" src="" alt="" style="max-width:100%;max-height:100%;object-fit:contain;display:none;pointer-events:none;">
           <div id="quiz-photo-placeholder" style="display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--c-text-sub);">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-            <span style="font-size:13px;">写真を読み込み中...</span>
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <span style="font-size:13px;">読み込み中...</span>
           </div>
         </div>
-        <div id="quiz-q-badge" style="position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.55);color:#fff;font-size:12px;font-weight:700;padding:4px 10px;border-radius:50px;pointer-events:none;z-index:5;"></div>
+        <div id="quiz-q-badge" style="position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.5);color:#fff;font-size:12px;font-weight:700;padding:4px 10px;border-radius:50px;pointer-events:none;z-index:5;"></div>
         <div id="quiz-zoom-hint" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.45);color:rgba(255,255,255,0.9);font-size:11px;padding:4px 12px;border-radius:50px;pointer-events:none;z-index:5;transition:opacity 0.4s;white-space:nowrap;">ピンチ or ダブルタップで拡大</div>
-        <button id="quiz-zoom-reset" style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.45);color:#fff;border:none;border-radius:50%;width:30px;height:30px;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:5;font-size:16px;touch-action:manipulation;">⊙</button>
+        <button id="quiz-zoom-reset-btn" style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.45);color:#fff;border:none;border-radius:50%;width:32px;height:32px;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:5;touch-action:manipulation;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 9-9M3 3v9h9"/></svg></button>
       </div>
 
       <div id="quiz-q-label" style="font-size:13px;color:var(--c-text-sub);margin-bottom:10px;"></div>
@@ -1224,31 +1228,42 @@
         </div>
         <div id="quiz-cmp-prog-text" style="font-size:12px;color:var(--c-text-sub);white-space:nowrap;">1 / 5</div>
       </div>
-      <div style="display:flex;gap:8px;margin-bottom:14px;">
-        <div id="quiz-cmp-photo-a" style="flex:1;aspect-ratio:3/4;border-radius:10px;background:var(--c-border);position:relative;overflow:hidden;touch-action:none;cursor:grab;">
-          <div id="quiz-cmp-inner-a" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;transform-origin:center center;">
-            <img id="quiz-cmp-img-a" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none;">
-          </div>
-          <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.55);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:50px;pointer-events:none;">A</div>
+
+      <!-- A写真（上下分割・上） -->
+      <div style="font-size:12px;font-weight:700;color:var(--c-text-sub);margin-bottom:6px;">A</div>
+      <div id="quiz-cmp-photo-a" style="position:relative;width:100%;height:220px;border-radius:12px;overflow:hidden;background:var(--c-bg);margin-bottom:14px;touch-action:none;cursor:grab;user-select:none;">
+        <div id="quiz-cmp-inner-a" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transform-origin:center center;">
+          <img id="quiz-cmp-img-a" src="" alt="" style="max-width:100%;max-height:100%;object-fit:contain;display:none;pointer-events:none;">
         </div>
-        <div id="quiz-cmp-photo-b" style="flex:1;aspect-ratio:3/4;border-radius:10px;background:var(--c-border);position:relative;overflow:hidden;touch-action:none;cursor:grab;">
-          <div id="quiz-cmp-inner-b" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;transform-origin:center center;">
-            <img id="quiz-cmp-img-b" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none;">
-          </div>
-          <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.55);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:50px;pointer-events:none;">B</div>
-        </div>
+        <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.5);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:50px;pointer-events:none;z-index:5;">A</div>
+        <div id="quiz-cmp-hint-a" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.45);color:rgba(255,255,255,0.9);font-size:11px;padding:3px 10px;border-radius:50px;pointer-events:none;z-index:5;transition:opacity 0.4s;white-space:nowrap;">ピンチで拡大</div>
+        <button id="quiz-cmp-reset-a" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.45);color:#fff;border:none;border-radius:50%;width:30px;height:30px;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:5;touch-action:manipulation;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 9-9M3 3v9h9"/></svg></button>
       </div>
-      <div style="font-size:13px;color:var(--c-text-sub);margin-bottom:12px;">2つのフォントをそれぞれ4択で答えてください</div>
-      <div style="font-size:13px;font-weight:700;color:var(--c-text-sub);margin-bottom:6px;">A のフォント</div>
-      <div id="quiz-cmp-choices-a" style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px;"></div>
-      <div style="font-size:13px;font-weight:700;color:var(--c-text-sub);margin-bottom:6px;">B のフォント</div>
-      <div id="quiz-cmp-choices-b" style="display:flex;flex-direction:column;gap:7px;margin-bottom:0;"></div>
+
+      <!-- A 選択肢 -->
+      <div style="font-size:13px;font-weight:700;color:var(--c-text-sub);margin-bottom:8px;">A のフォントは？</div>
+      <div id="quiz-cmp-choices-a" style="display:flex;flex-direction:column;gap:7px;margin-bottom:20px;"></div>
+
+      <!-- B写真（上下分割・下） -->
+      <div style="font-size:12px;font-weight:700;color:var(--c-text-sub);margin-bottom:6px;">B</div>
+      <div id="quiz-cmp-photo-b" style="position:relative;width:100%;height:220px;border-radius:12px;overflow:hidden;background:var(--c-bg);margin-bottom:14px;touch-action:none;cursor:grab;user-select:none;">
+        <div id="quiz-cmp-inner-b" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transform-origin:center center;">
+          <img id="quiz-cmp-img-b" src="" alt="" style="max-width:100%;max-height:100%;object-fit:contain;display:none;pointer-events:none;">
+        </div>
+        <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.5);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:50px;pointer-events:none;z-index:5;">B</div>
+        <div id="quiz-cmp-hint-b" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.45);color:rgba(255,255,255,0.9);font-size:11px;padding:3px 10px;border-radius:50px;pointer-events:none;z-index:5;transition:opacity 0.4s;white-space:nowrap;">ピンチで拡大</div>
+        <button id="quiz-cmp-reset-b" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.45);color:#fff;border:none;border-radius:50%;width:30px;height:30px;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:5;touch-action:manipulation;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 9-9M3 3v9h9"/></svg></button>
+      </div>
+
+      <!-- B 選択肢 -->
+      <div style="font-size:13px;font-weight:700;color:var(--c-text-sub);margin-bottom:8px;">B のフォントは？</div>
+      <div id="quiz-cmp-choices-b" style="display:flex;flex-direction:column;gap:7px;"></div>
       <button id="quiz-cmp-next-btn" class="btn-primary" style="display:none;margin-top:16px;">次の問題へ</button>
     </div>
 
     <!-- ── 結果画面 ── -->
     <div id="quiz-result" style="display:none;padding:calc(var(--header-h) + 20px) 20px 80px;text-align:center;">
-      <div id="quiz-result-circle" style="width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,rgba(184,160,240,0.2),rgba(122,184,245,0.2));display:flex;align-items:center;justify-content:center;margin:0 auto 16px;flex-direction:column;border:2px solid rgba(184,160,240,0.4);">
+      <div style="width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,rgba(184,160,240,0.2),rgba(122,184,245,0.2));display:flex;align-items:center;justify-content:center;margin:0 auto 16px;flex-direction:column;border:2px solid rgba(184,160,240,0.4);">
         <div id="quiz-result-score" style="font-size:28px;font-weight:800;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;"></div>
         <div id="quiz-result-denom" style="font-size:12px;color:var(--c-text-sub);"></div>
       </div>
@@ -5066,11 +5081,9 @@ async function loadFontsWithBackup() {
   if (getDropboxToken()) {
     setTimeout(() => runBackup(true), 3000);
   }
-  // C: 30分ごとに自動チェック（1時間以内に済んでいればスキップ）
   setInterval(() => {
     if (getDropboxToken()) runBackup(true);
   }, 30 * 60 * 1000);
-  // B: タブがアクティブに戻ったときにチェック
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && getDropboxToken()) {
       runBackup(true);
@@ -5082,17 +5095,24 @@ async function loadFontsWithBackup() {
 //  QUIZ
 // ══════════════════════════════════════════
 
-// ── Quiz state ────────────────────────────
-let quizQuestions   = [];  // [{fontId, usageIdx, fontName, photoUrl}]
-let quizCurrent     = 0;
-let quizScore       = 0;
-let quizAnswered    = false;
-let quizLog         = []; // [{name, correct, userAnswer}]
-let quizMode        = '4choice'; // '4choice' | 'compare' | 'reverse'
+let quizQuestions    = [];
+let quizCurrent      = 0;
+let quizScore        = 0;
+let quizAnswered     = false;
+let quizLog          = [];
+let quizMode         = '4choice';
 let quizCmpAnsweredA = false;
 let quizCmpAnsweredB = false;
+let cmpQuestions     = [];
+let cmpCurrent       = 0;
+let cmpScore         = 0;
+let cmpLog           = [];
+const QUIZ_COUNT     = 5;
 
-// ── Quiz chip / mode setup ─────────────────
+const jaNameSet = new Set(FONT_DB.ja.map(x => x.name));
+const enNameSet = new Set(FONT_DB.en.map(x => x.name));
+
+// ── chip / mode ─────────────────────────
 document.querySelectorAll('.quiz-chip').forEach(chip => {
   chip.addEventListener('click', () => {
     chip.classList.toggle('selected');
@@ -5108,18 +5128,49 @@ document.querySelectorAll('.quiz-mode-card').forEach(card => {
 });
 
 function updateQuizHint() {
-  const sel = [...document.querySelectorAll('.quiz-chip.selected')].map(c => c.textContent.trim());
+  const sel  = [...document.querySelectorAll('.quiz-chip.selected')].map(c => c.textContent.trim());
   const hint = $('quiz-filter-hint');
   hint.style.color = 'var(--c-text-sub)';
   hint.textContent = sel.length ? '対象: ' + sel.join(' ＋ ') : '';
 }
 
-// ── Quiz header back ──────────────────────
-$('quiz-header-back').addEventListener('click', () => {
-  quizShowSetup();
-});
+$('quiz-header-back').addEventListener('click', quizShowSetup);
 
-// ── Start ─────────────────────────────────
+// ── screen switches ──────────────────────
+function quizShowSetup() {
+  $('quiz-setup').style.display        = 'block';
+  $('quiz-play').style.display         = 'none';
+  $('quiz-compare-play').style.display = 'none';
+  $('quiz-result').style.display       = 'none';
+  $('quiz-header-back').style.display  = 'none';
+  $('quiz-header-title').textContent   = 'クイズ';
+}
+function quizShowPlay() {
+  $('quiz-setup').style.display        = 'none';
+  $('quiz-play').style.display         = 'block';
+  $('quiz-compare-play').style.display = 'none';
+  $('quiz-result').style.display       = 'none';
+  $('quiz-header-back').style.display  = 'flex';
+  $('quiz-header-title').textContent   = 'クイズ';
+}
+function quizShowCompare() {
+  $('quiz-setup').style.display        = 'none';
+  $('quiz-play').style.display         = 'none';
+  $('quiz-compare-play').style.display = 'block';
+  $('quiz-result').style.display       = 'none';
+  $('quiz-header-back').style.display  = 'flex';
+  $('quiz-header-title').textContent   = '比較クイズ';
+}
+function quizShowResult() {
+  $('quiz-setup').style.display        = 'none';
+  $('quiz-play').style.display         = 'none';
+  $('quiz-compare-play').style.display = 'none';
+  $('quiz-result').style.display       = 'block';
+  $('quiz-header-back').style.display  = 'none';
+  $('quiz-header-title').textContent   = '結果';
+}
+
+// ── start ────────────────────────────────
 $('quiz-start-btn').addEventListener('click', () => {
   const selected = [...document.querySelectorAll('.quiz-chip.selected')];
   if (!selected.length) {
@@ -5130,70 +5181,47 @@ $('quiz-start-btn').addEventListener('click', () => {
   }
   const pool = buildQuizPool();
   if (pool.length < 4) {
-    showToast('用例写真が少なすぎます。もっとフォントを登録してください');
+    showToast('用例写真が少なすぎます。フォントを登録してください');
     return;
   }
-  if (quizMode === 'compare') {
-    startCompareQuiz(pool);
-  } else {
-    startQuiz(pool);
-  }
+  if (quizMode === 'compare') startCompareQuiz(pool);
+  else startQuiz(pool);
 });
 
-// ── Build pool from selected filters ──────
+// ── build pool ───────────────────────────
 function buildQuizPool() {
-  const selectedVals = [...document.querySelectorAll('.quiz-chip.selected')].map(c => c.dataset.val);
-  const wantRandom  = selectedVals.includes('random');
-  const wantJa      = selectedVals.includes('ja');
-  const wantEn      = selectedVals.includes('en');
-  const wantBasic   = selectedVals.includes('basic');
-  const wantCheck   = selectedVals.includes('check');
-  const catFilters  = selectedVals.filter(v => !['random','ja','en','basic','check'].includes(v));
-  const jaNames     = new Set(FONT_DB.ja.map(x => x.name));
-  const enNames     = new Set(FONT_DB.en.map(x => x.name));
+  const vals       = [...document.querySelectorAll('.quiz-chip.selected')].map(c => c.dataset.val);
+  const wantRandom = vals.includes('random');
+  const wantJa     = vals.includes('ja');
+  const wantEn     = vals.includes('en');
+  const wantBasic  = vals.includes('basic');
+  const wantCheck  = vals.includes('check');
+  const catFilters = vals.filter(v => !['random','ja','en','basic','check'].includes(v));
 
   const pool = [];
   for (const font of fonts) {
     if (!font.photos || !font.photos.length) continue;
-    // 言語フィルター
     if (!wantRandom) {
-      const isJa = jaNames.has(font.name);
-      const isEn = enNames.has(font.name);
-      if (wantJa && wantEn) { /* both ok */ }
-      else if (wantJa && !isJa) continue;
-      else if (wantEn && !isEn) continue;
-      else if (!wantJa && !wantEn) {
-        // catのみ or special
-      }
+      const isJa = jaNameSet.has(font.name);
+      const isEn = enNameSet.has(font.name);
+      if (wantJa && !wantEn && !isJa) continue;
+      if (wantEn && !wantJa && !isEn) continue;
     }
-    // カテゴリーフィルター
     if (catFilters.length && !catFilters.includes(font.category)) continue;
-    // 基本フォント
     if (wantBasic && !wantCheck && !font.basic) continue;
-    // 関連フォント（checksに何か入ってる）
-    if (wantCheck && !wantBasic) {
-      if (!font.checks || !font.checks.length) continue;
-    }
-    // 各写真をエントリとして追加（フォント詳細写真）
-    font.photos.forEach((photo, idx) => {
-      if (photo && photo.url) {
-        pool.push({ fontId: font.id, fontName: font.name, photoUrl: photo.url, usageType: 'font' });
-      }
+    if (wantCheck && !wantBasic && (!font.checks || !font.checks.length)) continue;
+
+    font.photos.forEach(photo => {
+      if (photo && photo.url) pool.push({ fontId: font.id, fontName: font.name, photoUrl: photo.url });
     });
-    // 用例写真も含める
     if (font.usages) {
       font.usages.forEach(usage => {
-        if (usage.photos) {
-          usage.photos.forEach(photo => {
-            if (photo && photo.url) {
-              pool.push({ fontId: font.id, fontName: font.name, photoUrl: photo.url, usageType: 'usage' });
-            }
-          });
-        }
+        if (usage.photos) usage.photos.forEach(photo => {
+          if (photo && photo.url) pool.push({ fontId: font.id, fontName: font.name, photoUrl: photo.url });
+        });
       });
     }
   }
-  // シャッフル
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
@@ -5201,17 +5229,21 @@ function buildQuizPool() {
   return pool;
 }
 
-// ── Build 4 choices ───────────────────────
+// ── build choices（同言語に絞る）────────────
 function buildChoices(correctName) {
-  const allNames = [...new Set(fonts.map(f => f.name))];
-  const others   = allNames.filter(n => n !== correctName);
-  // シャッフルしてダミー3つ選ぶ
+  const isJa = jaNameSet.has(correctName);
+  const isEn = enNameSet.has(correctName);
+  let namePool;
+  if (isJa)      namePool = fonts.filter(f => jaNameSet.has(f.name)).map(f => f.name);
+  else if (isEn) namePool = fonts.filter(f => enNameSet.has(f.name)).map(f => f.name);
+  else           namePool = fonts.map(f => f.name);
+
+  const others = [...new Set(namePool)].filter(n => n !== correctName);
   for (let i = others.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [others[i], others[j]] = [others[j], others[i]];
   }
   const choices = [correctName, ...others.slice(0, 3)];
-  // 選択肢をシャッフル
   for (let i = choices.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [choices[i], choices[j]] = [choices[j], choices[i]];
@@ -5219,89 +5251,49 @@ function buildChoices(correctName) {
   return choices;
 }
 
-// ── Show screens within quiz ───────────────
-function quizShowSetup() {
-  $('quiz-setup').style.display = 'block';
-  $('quiz-play').style.display = 'none';
-  $('quiz-compare-play').style.display = 'none';
-  $('quiz-result').style.display = 'none';
-  $('quiz-header-back').style.display = 'none';
-  $('quiz-header-title').textContent = 'クイズ';
-}
-function quizShowPlay() {
-  $('quiz-setup').style.display = 'none';
-  $('quiz-play').style.display = 'block';
-  $('quiz-compare-play').style.display = 'none';
-  $('quiz-result').style.display = 'none';
-  $('quiz-header-back').style.display = 'flex';
-  $('quiz-header-title').textContent = 'クイズ';
-}
-function quizShowCompare() {
-  $('quiz-setup').style.display = 'none';
-  $('quiz-play').style.display = 'none';
-  $('quiz-compare-play').style.display = 'block';
-  $('quiz-result').style.display = 'none';
-  $('quiz-header-back').style.display = 'flex';
-  $('quiz-header-title').textContent = '比較クイズ';
-}
-function quizShowResult() {
-  $('quiz-setup').style.display = 'none';
-  $('quiz-play').style.display = 'none';
-  $('quiz-compare-play').style.display = 'none';
-  $('quiz-result').style.display = 'block';
-  $('quiz-header-back').style.display = 'none';
-  $('quiz-header-title').textContent = '結果';
+// ── SVG icons for choices ────────────────
+const CHECK_SVG = '<svg style="margin-left:auto;flex-shrink:0;" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#b8a0f0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="qc-check"><polyline points="20 6 9 17 4 12"/></svg>';
+const CROSS_SVG = '<svg style="margin-left:auto;flex-shrink:0;" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#e05c7a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="qc-cross"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+const ALPHA_LABELS = ['A','B','C','D'];
+
+function choiceHTML(name, idx, small) {
+  const sz = small ? 'font-size:14px;padding:10px 14px;' : '';
+  return `<button class="quiz-choice" style="${sz}" data-name="${name}"><span class="qc-alpha">${ALPHA_LABELS[idx]}</span>${name}${CHECK_SVG}${CROSS_SVG}</button>`;
 }
 
-// ── 4択クイズ ─────────────────────────────
-const QUIZ_COUNT = 5;
-
+// ── 4択 ─────────────────────────────────
 function startQuiz(pool) {
-  // 重複フォントを除いて最大QUIZ_COUNT問選ぶ
   const seen = new Set();
   quizQuestions = [];
   for (const item of pool) {
-    if (!seen.has(item.fontName)) {
-      seen.add(item.fontName);
-      quizQuestions.push(item);
-    }
+    if (!seen.has(item.fontName)) { seen.add(item.fontName); quizQuestions.push(item); }
     if (quizQuestions.length >= QUIZ_COUNT) break;
   }
-  quizCurrent = 0;
-  quizScore   = 0;
-  quizLog     = [];
+  quizCurrent = 0; quizScore = 0; quizLog = [];
   quizShowPlay();
   renderQuizQuestion();
   initQuizPinch();
 }
 
 function renderQuizQuestion() {
-  const q = quizQuestions[quizCurrent];
+  const q     = quizQuestions[quizCurrent];
   const total = quizQuestions.length;
   quizAnswered = false;
-  window.scrollTo(0,0);
-
-  // Progress
+  window.scrollTo(0, 0);
   $('quiz-prog-fill').style.width = (quizCurrent / total * 100) + '%';
   $('quiz-prog-text').textContent = (quizCurrent + 1) + ' / ' + total;
   $('quiz-q-badge').textContent   = 'Q' + (quizCurrent + 1);
   $('quiz-q-label').textContent   = 'このフォントはどれ？';
 
-  // Photo
   const img = $('quiz-photo-img');
   const ph  = $('quiz-photo-placeholder');
-  img.style.display = 'none';
-  ph.style.display  = 'flex';
+  img.style.display = 'none'; ph.style.display = 'flex';
   quizResetZoom();
   img.onload = () => { img.style.display = 'block'; ph.style.display = 'none'; };
   img.src = q.photoUrl;
 
-  // Choices
   const choices = buildChoices(q.fontName);
-  const alpha = ['A','B','C','D'];
-  $('quiz-choices').innerHTML = choices.map((name, i) =>
-    `<button class="quiz-choice" data-name="${name}"><span class="qc-alpha">${alpha[i]}</span>${name}</button>`
-  ).join('');
+  $('quiz-choices').innerHTML = choices.map((name, i) => choiceHTML(name, i, false)).join('');
   $('quiz-choices').querySelectorAll('.quiz-choice').forEach(btn => {
     btn.addEventListener('click', () => onQuizAnswer(btn, q.fontName));
   });
@@ -5311,11 +5303,10 @@ function renderQuizQuestion() {
 function onQuizAnswer(btn, correctName) {
   if (quizAnswered) return;
   quizAnswered = true;
-  const chosen = btn.dataset.name;
+  const chosen    = btn.dataset.name;
   const isCorrect = chosen === correctName;
   if (isCorrect) quizScore++;
   quizLog.push({ name: correctName, correct: isCorrect, userAnswer: chosen });
-
   btn.classList.add(isCorrect ? 'correct' : 'wrong');
   if (!isCorrect) {
     $('quiz-choices').querySelectorAll('.quiz-choice').forEach(b => {
@@ -5327,21 +5318,12 @@ function onQuizAnswer(btn, correctName) {
 
 $('quiz-next-btn').addEventListener('click', () => {
   quizCurrent++;
-  if (quizCurrent >= quizQuestions.length) {
-    renderQuizResult();
-  } else {
-    renderQuizQuestion();
-  }
+  if (quizCurrent >= quizQuestions.length) renderQuizResult();
+  else renderQuizQuestion();
 });
 
-// ── 比較クイズ ─────────────────────────────
-let cmpQuestions = []; // [{a:{fontName,photoUrl}, b:{fontName,photoUrl}}]
-let cmpCurrent   = 0;
-let cmpScore     = 0;
-let cmpLog       = [];
-
+// ── 比較クイズ ───────────────────────────
 function startCompareQuiz(pool) {
-  // checksを持つfontから2枚ペアを選ぶ、なければランダムペア
   const pairs = [];
   const checkFonts = fonts.filter(f => f.checks && f.checks.length && f.photos && f.photos.length);
   for (const fontA of checkFonts) {
@@ -5355,24 +5337,19 @@ function startCompareQuiz(pool) {
       }
     }
   }
-  // ペアが足りなければプールからランダムにペアを作る
   if (pairs.length < QUIZ_COUNT) {
     const seenNames = new Set(pairs.flatMap(p => [p.a.fontName, p.b.fontName]));
-    const remaining = pool.filter(item => !seenNames.has(item.fontName));
-    for (let i = 0; i < remaining.length - 1 && pairs.length < QUIZ_COUNT; i += 2) {
-      pairs.push({ a: remaining[i], b: remaining[i+1] });
+    const rem = pool.filter(item => !seenNames.has(item.fontName));
+    for (let i = 0; i < rem.length - 1 && pairs.length < QUIZ_COUNT; i += 2) {
+      pairs.push({ a: rem[i], b: rem[i + 1] });
     }
   }
-  // シャッフル
   for (let i = pairs.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
   }
   cmpQuestions = pairs.slice(0, QUIZ_COUNT);
-  if (!cmpQuestions.length) {
-    showToast('比較クイズに使えるフォントが足りません');
-    return;
-  }
+  if (!cmpQuestions.length) { showToast('比較クイズに使えるフォントが足りません'); return; }
   cmpCurrent = 0; cmpScore = 0; cmpLog = [];
   quizShowCompare();
   renderCmpQuestion();
@@ -5380,12 +5357,10 @@ function startCompareQuiz(pool) {
 }
 
 function renderCmpQuestion() {
-  const q = cmpQuestions[cmpCurrent];
+  const q     = cmpQuestions[cmpCurrent];
   const total = cmpQuestions.length;
-  quizCmpAnsweredA = false;
-  quizCmpAnsweredB = false;
-  window.scrollTo(0,0);
-
+  quizCmpAnsweredA = false; quizCmpAnsweredB = false;
+  window.scrollTo(0, 0);
   $('quiz-cmp-prog-fill').style.width = (cmpCurrent / total * 100) + '%';
   $('quiz-cmp-prog-text').textContent = (cmpCurrent + 1) + ' / ' + total;
 
@@ -5399,12 +5374,9 @@ function renderCmpQuestion() {
   loadImg('quiz-cmp-img-b', q.b.photoUrl);
   cmpResetZoom();
 
-  const alpha = ['A','B','C','D'];
   const renderChoices = (containerId, correctName, side) => {
     const choices = buildChoices(correctName);
-    $(containerId).innerHTML = choices.map((name, i) =>
-      `<button class="quiz-choice" style="font-size:14px;padding:10px 14px;" data-name="${name}" data-side="${side}"><span class="qc-alpha">${alpha[i]}</span>${name}</button>`
-    ).join('');
+    $(containerId).innerHTML = choices.map((name, i) => choiceHTML(name, i, true)).join('');
     $(containerId).querySelectorAll('.quiz-choice').forEach(btn => {
       btn.addEventListener('click', () => onCmpAnswer(btn, correctName, side));
     });
@@ -5415,8 +5387,8 @@ function renderCmpQuestion() {
 }
 
 function onCmpAnswer(btn, correctName, side) {
-  const answeredFlag = side === 'a' ? quizCmpAnsweredA : quizCmpAnsweredB;
-  if (answeredFlag) return;
+  if (side === 'a' && quizCmpAnsweredA) return;
+  if (side === 'b' && quizCmpAnsweredB) return;
   if (side === 'a') quizCmpAnsweredA = true;
   else              quizCmpAnsweredB = true;
 
@@ -5424,34 +5396,33 @@ function onCmpAnswer(btn, correctName, side) {
   const isCorrect = chosen === correctName;
   btn.classList.add(isCorrect ? 'correct' : 'wrong');
   if (!isCorrect) {
-    const containerId = side === 'a' ? 'quiz-cmp-choices-a' : 'quiz-cmp-choices-b';
-    $(containerId).querySelectorAll('.quiz-choice').forEach(b => {
+    const cid = side === 'a' ? 'quiz-cmp-choices-a' : 'quiz-cmp-choices-b';
+    $(cid).querySelectorAll('.quiz-choice').forEach(b => {
       if (b.dataset.name === correctName) b.classList.add('correct');
     });
   }
   if (quizCmpAnsweredA && quizCmpAnsweredB) {
     const q = cmpQuestions[cmpCurrent];
-    const aCorrect = $('quiz-cmp-choices-a').querySelector('.quiz-choice.correct')?.dataset.name === q.a.fontName;
-    const bCorrect = $('quiz-cmp-choices-b').querySelector('.quiz-choice.correct')?.dataset.name === q.b.fontName;
-    // 正解判定はログ用に両方記録
-    cmpLog.push({ nameA: q.a.fontName, nameB: q.b.fontName,
-                  correctA: aCorrect, correctB: bCorrect });
-    if (aCorrect) cmpScore++;
-    if (bCorrect) cmpScore++;
+    const aEl = $('quiz-cmp-choices-a').querySelector('.quiz-choice.correct');
+    const bEl = $('quiz-cmp-choices-b').querySelector('.quiz-choice.correct');
+    const cA = aEl && aEl.dataset.name === q.a.fontName;
+    const cB = bEl && bEl.dataset.name === q.b.fontName;
+    if (cA) cmpScore++; if (cB) cmpScore++;
+    cmpLog.push({ nameA: q.a.fontName, nameB: q.b.fontName, correctA: cA, correctB: cB });
     $('quiz-cmp-next-btn').style.display = 'block';
   }
 }
 
 $('quiz-cmp-next-btn').addEventListener('click', () => {
   cmpCurrent++;
-  if (cmpCurrent >= cmpQuestions.length) {
-    renderCmpResult();
-  } else {
-    renderCmpQuestion();
-  }
+  if (cmpCurrent >= cmpQuestions.length) renderCmpResult();
+  else renderCmpQuestion();
 });
 
-// ── Result ───────────────────────────────
+// ── result ───────────────────────────────
+const OK_ICON = '<svg style="flex-shrink:0;margin-top:1px;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9b7fe8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="8 12 11 15 16 9"/></svg>';
+const NG_ICON = '<svg style="flex-shrink:0;margin-top:1px;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e05c7a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>';
+
 function renderQuizResult() {
   const total = quizQuestions.length;
   const pct   = Math.round(quizScore / total * 100);
@@ -5459,14 +5430,9 @@ function renderQuizResult() {
   $('quiz-result-denom').textContent = '/ ' + total + '問';
   $('quiz-result-title').textContent = pct >= 80 ? 'すばらしい！' : pct >= 50 ? 'よくできました！' : 'もう少し！';
   $('quiz-result-sub').textContent   = '正解率 ' + pct + '%';
-  $('quiz-result-list').innerHTML    = quizLog.map(item => `
-    <div class="quiz-result-item ${item.correct ? 'ok' : 'ng'}">
-      <span class="ri-icon">${item.correct ? '✓' : '✗'}</span>
-      <div>
-        <div class="ri-name">${item.name}</div>
-        ${!item.correct ? `<div class="ri-ans">あなたの回答: ${item.userAnswer}</div>` : ''}
-      </div>
-    </div>`).join('');
+  $('quiz-result-list').innerHTML    = quizLog.map(item =>
+    `<div class="quiz-result-item ${item.correct ? 'ok' : 'ng'}">${item.correct ? OK_ICON : NG_ICON}<div><div class="ri-name">${item.name}</div>${!item.correct ? `<div class="ri-ans">あなたの回答: ${item.userAnswer}</div>` : ''}</div></div>`
+  ).join('');
   quizShowResult();
 }
 
@@ -5478,8 +5444,8 @@ function renderCmpResult() {
   $('quiz-result-title').textContent = pct >= 80 ? 'すばらしい！' : pct >= 50 ? 'よくできました！' : 'もう少し！';
   $('quiz-result-sub').textContent   = '正解率 ' + pct + '%';
   $('quiz-result-list').innerHTML    = cmpLog.flatMap(item => [
-    `<div class="quiz-result-item ${item.correctA ? 'ok' : 'ng'}"><span class="ri-icon">${item.correctA ? '✓' : '✗'}</span><div><div class="ri-name">${item.nameA}</div>${!item.correctA ? `<div class="ri-ans">不正解</div>` : ''}</div></div>`,
-    `<div class="quiz-result-item ${item.correctB ? 'ok' : 'ng'}"><span class="ri-icon">${item.correctB ? '✓' : '✗'}</span><div><div class="ri-name">${item.nameB}</div>${!item.correctB ? `<div class="ri-ans">不正解</div>` : ''}</div></div>`
+    `<div class="quiz-result-item ${item.correctA ? 'ok' : 'ng'}">${item.correctA ? OK_ICON : NG_ICON}<div><div class="ri-name">${item.nameA}</div>${!item.correctA ? '<div class="ri-ans">不正解</div>' : ''}</div></div>`,
+    `<div class="quiz-result-item ${item.correctB ? 'ok' : 'ng'}">${item.correctB ? OK_ICON : NG_ICON}<div><div class="ri-name">${item.nameB}</div>${!item.correctB ? '<div class="ri-ans">不正解</div>' : ''}</div></div>`
   ]).join('');
   quizShowResult();
 }
@@ -5492,48 +5458,49 @@ $('quiz-retry-btn').addEventListener('click', () => {
 });
 $('quiz-back-to-setup-btn').addEventListener('click', quizShowSetup);
 
-// ── Pinch zoom for quiz photo ──────────────
-function makePinch(areaId, innerId, resetFn) {
+// ── Pinch zoom（contain・端まで移動可）────
+function makePinch(areaId, innerId, resetBtnId, hintId) {
   const area  = $(areaId);
   const inner = $(innerId);
-  if (!area || !inner) return;
+  if (!area || !inner) return { reset: () => {} };
 
   let scale = 1, tx = 0, ty = 0;
-  let isDragging = false, lastX = 0, lastY = 0;
-  let lastDist = 0, lastTap = 0;
-  const MIN = 1, MAX = 5;
-  let hintTimer = null;
+  let isDragging = false, lastX = 0, lastY = 0, lastDist = 0, lastTap = 0;
+  const MIN = 1, MAX = 6;
 
-  function applyTransform() {
-    const rect  = area.getBoundingClientRect();
-    const maxTx = rect.width  * (scale - 1) / 2;
-    const maxTy = rect.height * (scale - 1) / 2;
+  function clamp() {
+    if (scale <= 1) { tx = 0; ty = 0; return; }
+    const maxTx = area.offsetWidth  * scale * 0.5;
+    const maxTy = area.offsetHeight * scale * 0.5;
     tx = Math.max(-maxTx, Math.min(maxTx, tx));
     ty = Math.max(-maxTy, Math.min(maxTy, ty));
-    inner.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`;
-    const resetBtn = area.querySelector('.quiz-zoom-reset-btn');
-    if (resetBtn) resetBtn.style.display = scale > 1.05 ? 'flex' : 'none';
   }
 
-  // reset公開
-  resetFn.reset = () => { scale = 1; tx = 0; ty = 0; applyTransform(); };
+  function applyTransform() {
+    clamp();
+    inner.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`;
+    const btn = $(resetBtnId);
+    if (btn) btn.style.display = scale > 1.05 ? 'flex' : 'none';
+  }
+
+  const resetFn = () => { scale = 1; tx = 0; ty = 0; applyTransform(); };
+  if ($(resetBtnId)) $(resetBtnId).addEventListener('click', resetFn);
 
   // ダブルタップ
   area.addEventListener('touchstart', e => {
     if (e.touches.length !== 1) return;
     const now = Date.now();
     if (now - lastTap < 300) {
-      scale = scale > 1.05 ? 1 : 2.5;
-      tx = 0; ty = 0; applyTransform();
       e.preventDefault();
+      if (scale > 1.05) { scale = 1; tx = 0; ty = 0; }
+      else { scale = 2.5; }
+      applyTransform();
     }
     lastTap = now;
     isDragging = true;
-    lastX = e.touches[0].clientX;
-    lastY = e.touches[0].clientY;
+    lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
   }, { passive: false });
 
-  // ピンチ開始
   area.addEventListener('touchstart', e => {
     if (e.touches.length === 2) {
       lastDist = Math.hypot(
@@ -5557,24 +5524,20 @@ function makePinch(areaId, innerId, resetFn) {
       e.preventDefault();
       tx += e.touches[0].clientX - lastX;
       ty += e.touches[0].clientY - lastY;
-      lastX = e.touches[0].clientX;
-      lastY = e.touches[0].clientY;
+      lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
       applyTransform();
     }
   }, { passive: false });
 
   area.addEventListener('touchend', () => { isDragging = false; });
 
-  // ホイール（PC）
   area.addEventListener('wheel', e => {
     e.preventDefault();
     scale = Math.max(MIN, Math.min(MAX, scale * (e.deltaY > 0 ? 0.9 : 1.1)));
     applyTransform();
   }, { passive: false });
 
-  // マウスドラッグ
   area.addEventListener('mousedown', e => {
-    if (scale <= 1) return;
     isDragging = true; lastX = e.clientX; lastY = e.clientY;
   });
   window.addEventListener('mousemove', e => {
@@ -5585,42 +5548,28 @@ function makePinch(areaId, innerId, resetFn) {
   });
   window.addEventListener('mouseup', () => { isDragging = false; });
 
-  // ヒント自動非表示
-  const hint = $('quiz-zoom-hint');
-  if (hint) {
-    clearTimeout(hintTimer);
+  if (hintId && $(hintId)) {
+    const hint = $(hintId);
     hint.style.opacity = '1';
-    hintTimer = setTimeout(() => { hint.style.opacity = '0'; }, 2500);
+    setTimeout(() => { hint.style.opacity = '0'; }, 2500);
   }
+
+  return { reset: resetFn };
 }
 
-const quizZoom  = {};
-const cmpZoomA  = {};
-const cmpZoomB  = {};
+let quizPinch = null;
+let cmpPinchA = null;
+let cmpPinchB = null;
 
 function initQuizPinch() {
-  makePinch('quiz-photo-area', 'quiz-photo-inner', quizZoom);
-  // リセットボタン追加（1回だけ）
-  if (!$('quiz-photo-area').querySelector('.quiz-zoom-reset-btn')) {
-    const btn = document.createElement('button');
-    btn.className = 'quiz-zoom-reset-btn';
-    btn.style.cssText = 'position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.45);color:#fff;border:none;border-radius:50%;width:30px;height:30px;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:5;font-size:16px;touch-action:manipulation;';
-    btn.textContent = '⊙';
-    btn.addEventListener('click', () => quizZoom.reset && quizZoom.reset());
-    $('quiz-photo-area').appendChild(btn);
-  }
-  // ヒント表示
-  const hint = $('quiz-zoom-hint');
-  if (hint) { hint.style.opacity = '1'; setTimeout(() => { hint.style.opacity = '0'; }, 2500); }
+  quizPinch = makePinch('quiz-photo-area', 'quiz-photo-inner', 'quiz-zoom-reset-btn', 'quiz-zoom-hint');
 }
-
 function initCmpPinch() {
-  makePinch('quiz-cmp-photo-a', 'quiz-cmp-inner-a', cmpZoomA);
-  makePinch('quiz-cmp-photo-b', 'quiz-cmp-inner-b', cmpZoomB);
+  cmpPinchA = makePinch('quiz-cmp-photo-a', 'quiz-cmp-inner-a', 'quiz-cmp-reset-a', 'quiz-cmp-hint-a');
+  cmpPinchB = makePinch('quiz-cmp-photo-b', 'quiz-cmp-inner-b', 'quiz-cmp-reset-b', 'quiz-cmp-hint-b');
 }
-
-function quizResetZoom() { if (quizZoom.reset) quizZoom.reset(); }
-function cmpResetZoom()  { if (cmpZoomA.reset) cmpZoomA.reset(); if (cmpZoomB.reset) cmpZoomB.reset(); }
+function quizResetZoom() { if (quizPinch) quizPinch.reset(); }
+function cmpResetZoom()  { if (cmpPinchA) cmpPinchA.reset(); if (cmpPinchB) cmpPinchB.reset(); }
 
 </script>
 </body>
