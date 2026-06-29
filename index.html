@@ -137,8 +137,10 @@
     width: 100%;
     max-width: var(--max-w);
     height: var(--nav-h);
-    background: linear-gradient(135deg, #9b7fe8, #5aaae8);
-    border-top: none;
+    background: rgba(255,255,255,0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--c-border);
     display: flex;
     z-index: 100;
   }
@@ -149,16 +151,17 @@
   .nav-btn {
     flex: 1; background: none; border: none; cursor: pointer;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 4px; color: rgba(255,255,255,0.5); font-size: 12px; font-weight: 500;
+    gap: 4px; color: #b0a8c8; font-size: 12px; font-weight: 500;
     transition: color 0.2s;
   }
   .nav-btn .icon { font-size: 26px; display: flex; align-items: center; justify-content: center; }
-  .nav-btn svg { stroke: rgba(255,255,255,0.5); }
   .nav-btn.active {
     font-weight: 700;
-    color: #fff;
+    background: linear-gradient(135deg, #b8a0f0, #7ab8f5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
-  .nav-btn.active svg { stroke: #fff; }
   .nav-btn .icon-outline { display: block; }
   .nav-btn .icon-filled { display: none; }
   .nav-btn.active .icon-outline { display: none; }
