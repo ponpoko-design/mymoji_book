@@ -2295,7 +2295,7 @@ async function openDetail(id) {
       <img id="detail-cover-img" src="${photos[0].url}" alt="${f.name}" style="position:absolute;top:50%;left:50%;transform-origin:center center;transition:none;max-width:none;max-height:none;">
       <div id="detail-hero-adjust-btn" style="position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,0.5);color:white;font-size:12px;padding:5px 12px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:5px;touch-action:manipulation;z-index:2;">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>
-        位置を調整
+        調整
       </div>
       ${photos.length > 1 ? `<button id="detail-hero-change-btn" style="position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,0.45);color:white;font-size:12px;padding:4px 12px;border-radius:20px;border:none;cursor:pointer;z-index:2;touch-action:manipulation;font-family:inherit;">変更</button>` : ''}
     </div>` : ''}
@@ -2480,23 +2480,54 @@ async function openDetail(id) {
 
     const SAVE_ICON = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>`;
     const MOVE_ICON = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>`;
+    const RESET_ICON = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.49"/></svg>`;
+
+    // リセットボタン（調整モード時に「位置大小」の上に表示）
+    const resetBtn = document.createElement('button');
+    resetBtn.style.cssText = 'position:absolute;bottom:50px;left:10px;background:rgba(0,0,0,0.5);color:white;font-size:12px;padding:5px 12px;border-radius:20px;border:none;cursor:pointer;display:none;align-items:center;gap:5px;touch-action:manipulation;z-index:2;font-family:inherit;';
+    resetBtn.innerHTML = RESET_ICON + ' リセット';
+    heroWrapEl.appendChild(resetBtn);
+
+    resetBtn.addEventListener('click', async e => {
+      e.stopPropagation();
+      // coverPositionを削除してcontain初期表示に戻す
+      try {
+        await updateDoc(doc(db,'fonts',id), { coverPosition: null });
+        const fLocal = fonts.find(x=>x.id===id);
+        if (fLocal) fLocal.coverPosition = null;
+        f.coverPosition = null;
+        // contain相当のscaleで再初期化
+        const hw = heroWrapEl.offsetWidth;
+        const hh = heroWrapEl.offsetHeight;
+        const iw = coverImg.naturalWidth || coverImg.offsetWidth;
+        const ih = coverImg.naturalHeight || coverImg.offsetHeight;
+        if (iw && ih) {
+          scale = Math.min(hw / iw, hh / ih);
+          tx = 0; ty = 0;
+          applyTransform();
+        }
+        showToast('リセットしました');
+      } catch(e2) { showToast('リセットに失敗しました'); }
+    });
 
     adjustBtn.addEventListener('click', e => {
       e.stopPropagation();
       isAdjustMode = !isAdjustMode;
       if (isAdjustMode) {
-        adjustBtn.innerHTML = SAVE_ICON + ' 保存';
+        adjustBtn.innerHTML = SAVE_ICON + ' 位置･大小';
         adjustBtn.style.background = 'rgba(155,127,232,0.85)';
         heroWrapEl.style.touchAction = 'none';
+        resetBtn.style.display = 'flex';
         const hint = document.createElement('div');
         hint.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.55);color:white;font-size:13px;padding:8px 16px;border-radius:20px;pointer-events:none;white-space:nowrap;z-index:5;';
         hint.textContent = 'ドラッグ：移動　ピンチ：拡大縮小';
         heroWrapEl.appendChild(hint);
         setTimeout(() => hint.remove(), 2500);
       } else {
-        adjustBtn.innerHTML = MOVE_ICON + ' 位置を調整';
+        adjustBtn.innerHTML = MOVE_ICON + ' 調整';
         adjustBtn.style.background = 'rgba(0,0,0,0.5)';
         heroWrapEl.style.touchAction = '';
+        resetBtn.style.display = 'none';
         const posStr = `tx:${tx.toFixed(1)},ty:${ty.toFixed(1)},s:${scale.toFixed(3)}`;
         updateDoc(doc(db,'fonts',id), { coverPosition: posStr }).then(() => {
           const fLocal = fonts.find(x=>x.id===id);
