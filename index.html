@@ -427,7 +427,7 @@
     touch-action: manipulation;
   }
 
-  /* フォーム系ヘッダーはサイズ小さめ */
+  /* フォーム系ヘッダーはサイズ小さめ・中央固定 */
   #screen-add-font .app-header h1,
   #screen-add-usage .app-header h1,
   #screen-edit-font .app-header h1,
@@ -438,6 +438,10 @@
   #screen-unassigned-detail .app-header h1 {
     font-size: 17px;
     font-weight: 800;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
   }
   #context-menu {
     display: none; position: fixed; z-index: 300;
@@ -955,7 +959,7 @@
       <div id="usage-step2" style="display:none;">
         <div style="background:var(--c-card);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:20px;border:1px solid var(--c-border);">
           <div style="font-size: 14px;color:var(--c-text-sub);">登録フォント</div>
-          <div id="usage-selected-font" style="font-size: 18px;font-weight:700;margin-top:4px;"></div>
+          <div id="usage-selected-font" style="font-size: 18px;font-weight:700;margin-top:4px;cursor:pointer;display:flex;align-items:center;gap:6px;"></div>
         </div>
         <div class="form-group">
           <label>登録日 *</label>
@@ -2430,7 +2434,7 @@ async function openDetail(id) {
       initAddUsage();
       // フォントを事前に選択した状態で用例登録へ
       selectedUsageFontId = id;
-      $('usage-selected-font').textContent = `${f.name}${f.maker?' / '+f.maker:''}`;
+      $('usage-selected-font').innerHTML = `${f.name}${f.maker?' / '+f.maker:''}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="opacity:0.4;flex-shrink:0;"><polyline points="9 18 15 12 9 6"/></svg>`;
       $('usage-step1').style.display = 'none';
       $('usage-step2').style.display = 'block';
       buildPhotoSlots('au-photos','au-photo-memos-wrap',auPhotoFiles,auPhotoMemos);
@@ -3971,7 +3975,7 @@ function renderUsageFontList() {
     el.addEventListener('click', () => {
       selectedUsageFontId = el.dataset.id;
       const f = fonts.find(x=>x.id===el.dataset.id);
-      $('usage-selected-font').textContent = `${f.name}${f.maker?' / '+f.maker:''}`;
+      $('usage-selected-font').innerHTML = `${f.name}${f.maker?' / '+f.maker:''}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="opacity:0.4;flex-shrink:0;"><polyline points="9 18 15 12 9 6"/></svg>`;
       $('usage-step1').style.display='none';
       $('usage-step2').style.display='block';
       buildPhotoSlots('au-photos','au-photo-memos-wrap',auPhotoFiles,auPhotoMemos);
@@ -3989,6 +3993,11 @@ document.querySelectorAll('[data-ucat]').forEach(btn => {
     usageCatFilter = btn.dataset.ucat;
     renderUsageFontList();
   });
+});
+
+$('usage-selected-font').addEventListener('click', () => {
+  if (!selectedUsageFontId) return;
+  openDetail(selectedUsageFontId);
 });
 
 $('usage-step2-back').addEventListener('click', () => {
