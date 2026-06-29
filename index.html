@@ -356,7 +356,7 @@
   /* ── Detail page ── */
   .detail-hero {
     width: 100%; height: 220px;
-    background: var(--c-border); overflow: hidden; position: relative;
+    background: var(--c-bg); overflow: hidden; position: relative;
   }
   @media (min-width: 768px) {
     .detail-hero { height: 320px; }
@@ -365,7 +365,7 @@
     .usage-grid { grid-template-columns: repeat(3, 1fr); }
     .form-page { max-width: 600px; margin: 0 auto; }
   }
-  .detail-hero img { width: 100%; height: 100%; object-fit: cover; }
+  .detail-hero img { width: 100%; height: 100%; object-fit: contain; }
   .detail-body { padding: 20px; }
   .detail-title { font-size: 24px; font-weight: 800; }
   .detail-reading { font-size: 15px; color: var(--c-text-sub); margin-top: 2px; }
@@ -2295,8 +2295,8 @@ async function openDetail(id) {
 
   $('detail-content').innerHTML = `
     ${photos.length > 0 ? `
-    <div class="detail-hero" id="detail-hero-wrap" style="position:relative;cursor:default;background:var(--c-bg);overflow:hidden;">
-      <img id="detail-cover-img" src="${photos[0].url}" alt="${f.name}" style="position:absolute;top:50%;left:50%;transform-origin:center center;transition:none;max-width:none;max-height:none;">
+    <div class="detail-hero" id="detail-hero-wrap" style="position:relative;background:var(--c-bg);">
+      <img id="detail-cover-img" src="${photos[0].url}" alt="${f.name}" style="width:100%;height:100%;object-fit:contain;">
       <div id="detail-hero-adjust-btn" style="position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,0.5);color:white;font-size:12px;padding:5px 12px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:5px;touch-action:manipulation;z-index:2;">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>
         調整
@@ -4497,13 +4497,17 @@ async function backupPhotos(allUrls, silent) {
   let backedUpUrls = [];
   try {
     const token = getDropboxToken();
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000); // 10秒タイムアウト
     const res = await fetch('https://content.dropboxapi.com/2/files/download', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Dropbox-API-Arg': JSON.stringify({ path: listPath })
-      }
+      },
+      signal: controller.signal
     });
+    clearTimeout(timeout);
     if (res.ok) {
       const text = await res.text();
       backedUpUrls = JSON.parse(text);
@@ -4520,14 +4524,22 @@ async function backupPhotos(allUrls, silent) {
   for (let i = 0; i < newUrls.length; i += CONCURRENCY) {
     const batch = newUrls.slice(i, i + CONCURRENCY);
     const results = await Promise.allSettled(batch.map(async url => {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('fetch failed');
-      const blob = await res.blob();
-      const arrayBuf = await blob.arrayBuffer();
-      const fileName = url.split('%2F').pop().split('?')[0].replace(/%20/g,'_') || `photo_${Date.now()}.jpg`;
-      const dropboxPath = `${BACKUP_FOLDER}/photos/${fileName}`;
-      const uploaded = await dropboxUpload(dropboxPath, new Uint8Array(arrayBuf), false);
-      if (uploaded) { backedUpUrls.push(url); success++; }
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000); // 15秒タイムアウト
+      try {
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeout);
+        if (!res.ok) throw new Error('fetch failed');
+        const blob = await res.blob();
+        const arrayBuf = await blob.arrayBuffer();
+        const fileName = url.split('%2F').pop().split('?')[0].replace(/%20/g,'_') || `photo_${Date.now()}.jpg`;
+        const dropboxPath = `${BACKUP_FOLDER}/photos/${fileName}`;
+        const uploaded = await dropboxUpload(dropboxPath, new Uint8Array(arrayBuf), false);
+        if (uploaded) { backedUpUrls.push(url); success++; }
+      } catch(e) {
+        clearTimeout(timeout);
+        throw e;
+      }
     }));
     results.forEach((r, idx) => {
       if (r.status === 'rejected') console.warn('Photo backup failed:', batch[idx], r.reason);
