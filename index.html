@@ -1188,7 +1188,7 @@
           </div>
           <div class="quiz-mode-card" data-mode="reverse">
             <div class="quiz-mode-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 2.5 2.5 9.5 9.5 9.5"/><path d="M2.5 9.5A9 9 0 1 1 5 17"/></svg></div>
-            <div style="font-size:16px;font-weight:700;color:var(--c-text);">逆引きクイズ</div>
+            <div style="font-size:16px;font-weight:700;color:var(--c-text);">用例から当てる！</div>
           </div>
         </div>
       </div>
@@ -5207,9 +5207,11 @@ $('quiz-start-btn').addEventListener('click', () => {
     hint.textContent = '範囲を1つ以上選んでください';
     return;
   }
-  const pool = buildQuizPool();
+  const pool = quizMode === 'reverse' ? buildUsagePool() : buildQuizPool();
   if (pool.length < 4) {
-    showToast('用例写真が少なすぎます。フォントを登録してください');
+    showToast(quizMode === 'reverse'
+      ? '用例写真が少なすぎます。用例を登録してください'
+      : '用例写真が少なすぎます。フォントを登録してください');
     return;
   }
   if (quizMode === 'compare') startCompareQuiz(pool);
@@ -5250,6 +5252,50 @@ function buildQuizPool() {
       });
     }
   }
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool;
+}
+
+// ── build usage-only pool（用例から当てる！）─
+function buildUsagePool() {
+  const vals       = [...document.querySelectorAll('.quiz-chip.selected')].map(c => c.dataset.val);
+  const wantRandom = vals.includes('random');
+  const wantJa     = vals.includes('ja');
+  const wantEn     = vals.includes('en');
+  const wantBasic  = vals.includes('basic');
+  const wantCheck  = vals.includes('check');
+  const catFilters = vals.filter(v => !['random','ja','en','basic','check'].includes(v));
+
+  const pool = [];
+  for (const font of fonts) {
+    // 用例がないフォントはスキップ
+    if (!font.usages || !font.usages.length) continue;
+    // 言語フィルター
+    if (!wantRandom) {
+      const isJa = jaNameSet.has(font.name);
+      const isEn = enNameSet.has(font.name);
+      if (wantJa && !wantEn && !isJa) continue;
+      if (wantEn && !wantJa && !isEn) continue;
+    }
+    if (catFilters.length && !catFilters.includes(font.category)) continue;
+    if (wantBasic && !wantCheck && !font.basic) continue;
+    if (wantCheck && !wantBasic && (!font.checks || !font.checks.length)) continue;
+
+    // 用例写真のみをプールに追加
+    font.usages.forEach(usage => {
+      if (usage.photos) {
+        usage.photos.forEach(photo => {
+          if (photo && photo.url) {
+            pool.push({ fontId: font.id, fontName: font.name, photoUrl: photo.url });
+          }
+        });
+      }
+    });
+  }
+  // シャッフル
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
@@ -5603,7 +5649,7 @@ function attachResultChipListeners() {
 }
 
 $('quiz-retry-btn').addEventListener('click', () => {
-  const pool = buildQuizPool();
+  const pool = quizMode === 'reverse' ? buildUsagePool() : buildQuizPool();
   if (pool.length < 4) { showToast('用例写真が少なすぎます'); return; }
   if (quizMode === 'compare') startCompareQuiz(pool);
   else startQuiz(pool);
