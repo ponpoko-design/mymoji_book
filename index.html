@@ -1193,7 +1193,7 @@
     </div>
 
     <!-- ── 4択クイズ画面 ── -->
-    <div id="quiz-play" style="display:none;padding:12px 16px 80px;">
+    <div id="quiz-play" style="display:none;padding:calc(var(--header-h) + 12px) 16px 80px;">
 
       <!-- 写真エリア（contain＋端まで移動） -->
       <div id="quiz-photo-area" style="position:relative;width:100%;height:260px;border-radius:14px;overflow:hidden;background:var(--c-bg);margin-bottom:12px;touch-action:none;cursor:grab;user-select:none;">
@@ -1218,7 +1218,7 @@
     </div>
 
     <!-- ── 比較クイズ画面 ── -->
-    <div id="quiz-compare-play" style="display:none;padding:12px 16px 80px;">
+    <div id="quiz-compare-play" style="display:none;padding:calc(var(--header-h) + 12px) 16px 80px;">
 
       <!-- A写真（上下分割・上） -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
@@ -1262,7 +1262,7 @@
     </div>
 
     <!-- ── 結果画面 ── -->
-    <div id="quiz-result" style="display:none;padding:20px 20px 80px;text-align:center;">
+    <div id="quiz-result" style="display:none;padding:calc(var(--header-h) + 20px) 20px 80px;text-align:center;">
       <div style="width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,rgba(184,160,240,0.2),rgba(122,184,245,0.2));display:flex;align-items:center;justify-content:center;margin:0 auto 16px;flex-direction:column;border:2px solid rgba(184,160,240,0.4);">
         <div id="quiz-result-score" style="font-size:28px;font-weight:800;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;"></div>
         <div id="quiz-result-denom" style="font-size:12px;color:var(--c-text-sub);"></div>
@@ -5170,7 +5170,7 @@ function quizShowSetup() {
   $('quiz-compare-play').style.display = 'none';
   $('quiz-result').style.display       = 'none';
   $('quiz-header-back').style.display  = 'none';
-  $('quiz-header-title').textContent   = 'クイズ';
+  $('quiz-header-title').textContent   = '文字クイズ';
 }
 function quizShowPlay() {
   $('quiz-setup').style.display        = 'none';
@@ -5178,7 +5178,7 @@ function quizShowPlay() {
   $('quiz-compare-play').style.display = 'none';
   $('quiz-result').style.display       = 'none';
   $('quiz-header-back').style.display  = 'flex';
-  $('quiz-header-title').textContent   = 'クイズ';
+  $('quiz-header-title').textContent   = '文字クイズ';
 }
 function quizShowCompare() {
   $('quiz-setup').style.display        = 'none';
@@ -5307,7 +5307,7 @@ function renderQuizQuestion() {
   const total = quizQuestions.length;
   quizAnswered = false;
   window.scrollTo(0, 0);
-  $('quiz-prog-fill').style.width = (quizCurrent / total * 100) + '%';
+
   $('quiz-prog-text').textContent = (quizCurrent + 1) + ' / ' + total;
   $('quiz-q-badge').textContent   = 'Q' + (quizCurrent + 1);
   $('quiz-q-label').textContent   = 'このフォントはどれ？';
@@ -5389,7 +5389,7 @@ function renderCmpQuestion() {
   quizCmpAnsweredA = false; quizCmpAnsweredB = false;
   cmpUserAnswerA = null; cmpUserAnswerB = null;
   window.scrollTo(0, 0);
-  $('quiz-cmp-prog-fill').style.width = (cmpCurrent / total * 100) + '%';
+
   $('quiz-cmp-prog-text').textContent = (cmpCurrent + 1) + ' / ' + total;
 
   const loadImg = (imgId, url) => {
