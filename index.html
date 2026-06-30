@@ -1368,7 +1368,7 @@
       <div id="pe-crop-dark-bottom" style="position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);pointer-events:none;"></div>
       <div id="pe-crop-dark-left"   style="position:absolute;top:0;bottom:0;left:0;background:rgba(0,0,0,0.55);pointer-events:none;"></div>
       <div id="pe-crop-dark-right"  style="position:absolute;top:0;bottom:0;right:0;background:rgba(0,0,0,0.55);pointer-events:none;"></div>
-      <div id="pe-crop-frame" style="position:absolute;border:1.5px solid rgba(255,255,255,0.7);box-sizing:border-box;">
+      <div id="pe-crop-frame" style="position:absolute;border:1.5px solid rgba(200,160,248,0.8);box-sizing:border-box;">
         <!-- サードライングリッド -->
         <div style="position:absolute;inset:0;pointer-events:none;">
           <div style="position:absolute;left:33.3%;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.25);"></div>
@@ -1378,26 +1378,26 @@
         </div>
         <!-- iPhoneスタイル四隅ハンドル（太いL字・大きなタッチ領域） -->
         <div class="pe-crop-handle" data-corner="tl" style="position:absolute;top:-2px;left:-2px;width:44px;height:44px;touch-action:none;cursor:nwse-resize;">
-          <div style="position:absolute;top:0;left:0;width:28px;height:4px;background:white;border-radius:2px;"></div>
-          <div style="position:absolute;top:0;left:0;width:4px;height:28px;background:white;border-radius:2px;"></div>
+          <div style="position:absolute;top:0;left:0;width:28px;height:4px;background:#c8a0f8;border-radius:2px;box-shadow:0 1px 4px rgba(0,0,0,0.5);"></div>
+          <div style="position:absolute;top:0;left:0;width:4px;height:28px;background:#c8a0f8;border-radius:2px;box-shadow:1px 0 4px rgba(0,0,0,0.5);"></div>
         </div>
         <div class="pe-crop-handle" data-corner="tr" style="position:absolute;top:-2px;right:-2px;width:44px;height:44px;touch-action:none;cursor:nesw-resize;">
-          <div style="position:absolute;top:0;right:0;width:28px;height:4px;background:white;border-radius:2px;"></div>
-          <div style="position:absolute;top:0;right:0;width:4px;height:28px;background:white;border-radius:2px;"></div>
+          <div style="position:absolute;top:0;right:0;width:28px;height:4px;background:#c8a0f8;border-radius:2px;box-shadow:0 1px 4px rgba(0,0,0,0.5);"></div>
+          <div style="position:absolute;top:0;right:0;width:4px;height:28px;background:#c8a0f8;border-radius:2px;box-shadow:-1px 0 4px rgba(0,0,0,0.5);"></div>
         </div>
         <div class="pe-crop-handle" data-corner="bl" style="position:absolute;bottom:-2px;left:-2px;width:44px;height:44px;touch-action:none;cursor:nesw-resize;">
-          <div style="position:absolute;bottom:0;left:0;width:28px;height:4px;background:white;border-radius:2px;"></div>
-          <div style="position:absolute;bottom:0;left:0;width:4px;height:28px;background:white;border-radius:2px;"></div>
+          <div style="position:absolute;bottom:0;left:0;width:28px;height:4px;background:#c8a0f8;border-radius:2px;box-shadow:0 -1px 4px rgba(0,0,0,0.5);"></div>
+          <div style="position:absolute;bottom:0;left:0;width:4px;height:28px;background:#c8a0f8;border-radius:2px;box-shadow:1px 0 4px rgba(0,0,0,0.5);"></div>
         </div>
         <div class="pe-crop-handle" data-corner="br" style="position:absolute;bottom:-2px;right:-2px;width:44px;height:44px;touch-action:none;cursor:nwse-resize;">
-          <div style="position:absolute;bottom:0;right:0;width:28px;height:4px;background:white;border-radius:2px;"></div>
-          <div style="position:absolute;bottom:0;right:0;width:4px;height:28px;background:white;border-radius:2px;"></div>
+          <div style="position:absolute;bottom:0;right:0;width:28px;height:4px;background:#c8a0f8;border-radius:2px;box-shadow:0 -1px 4px rgba(0,0,0,0.5);"></div>
+          <div style="position:absolute;bottom:0;right:0;width:4px;height:28px;background:#c8a0f8;border-radius:2px;box-shadow:-1px 0 4px rgba(0,0,0,0.5);"></div>
         </div>
         <!-- 上下左右の中点ハンドル（細め） -->
-        <div class="pe-crop-handle" data-corner="t"  style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);width:60px;height:28px;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:ns-resize;"><div style="width:40px;height:4px;background:white;border-radius:2px;"></div></div>
-        <div class="pe-crop-handle" data-corner="b"  style="position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);width:60px;height:28px;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:ns-resize;"><div style="width:40px;height:4px;background:white;border-radius:2px;"></div></div>
-        <div class="pe-crop-handle" data-corner="l"  style="position:absolute;left:-14px;top:50%;transform:translateY(-50%);width:28px;height:60px;display:flex;justify-content:center;align-items:center;touch-action:none;cursor:ew-resize;"><div style="height:40px;width:4px;background:white;border-radius:2px;"></div></div>
-        <div class="pe-crop-handle" data-corner="r"  style="position:absolute;right:-14px;top:50%;transform:translateY(-50%);width:28px;height:60px;display:flex;justify-content:center;align-items:center;touch-action:none;cursor:ew-resize;"><div style="height:40px;width:4px;background:white;border-radius:2px;"></div></div>
+        <div class="pe-crop-handle" data-corner="t"  style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);width:60px;height:28px;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:ns-resize;"><div style="width:40px;height:4px;background:#c8a0f8;border-radius:2px;box-shadow:0 1px 4px rgba(0,0,0,0.5);"></div></div>
+        <div class="pe-crop-handle" data-corner="b"  style="position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);width:60px;height:28px;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:ns-resize;"><div style="width:40px;height:4px;background:#c8a0f8;border-radius:2px;box-shadow:0 -1px 4px rgba(0,0,0,0.5);"></div></div>
+        <div class="pe-crop-handle" data-corner="l"  style="position:absolute;left:-14px;top:50%;transform:translateY(-50%);width:28px;height:60px;display:flex;justify-content:center;align-items:center;touch-action:none;cursor:ew-resize;"><div style="height:40px;width:4px;background:#c8a0f8;border-radius:2px;box-shadow:1px 0 4px rgba(0,0,0,0.5);"></div></div>
+        <div class="pe-crop-handle" data-corner="r"  style="position:absolute;right:-14px;top:50%;transform:translateY(-50%);width:28px;height:60px;display:flex;justify-content:center;align-items:center;touch-action:none;cursor:ew-resize;"><div style="height:40px;width:4px;background:#c8a0f8;border-radius:2px;box-shadow:-1px 0 4px rgba(0,0,0,0.5);"></div></div>
       </div>
     </div>
     <div id="pe-header">
@@ -4733,7 +4733,7 @@ function updateCropUI() {
   const y2 = offY + cropRect.y2 * iH;
   const w = x2 - x, h = y2 - y;
 
-  $('pe-crop-frame').style.cssText = `position:absolute;border:2px solid white;box-sizing:border-box;left:${x}px;top:${y}px;width:${w}px;height:${h}px;cursor:move;`;
+  $('pe-crop-frame').style.cssText = `position:absolute;border:1.5px solid rgba(200,160,248,0.8);box-sizing:border-box;left:${x}px;top:${y}px;width:${w}px;height:${h}px;cursor:move;`;
 
   // 暗幕
   $('pe-crop-dark-top').style.height    = y + 'px';
