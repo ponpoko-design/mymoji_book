@@ -753,19 +753,19 @@
 
   /* ── Quiz ── */
   .quiz-chip {
-    padding: 9px 18px; border-radius: 50px;
+    padding: 7px 14px; border-radius: 50px;
     border: 1.5px solid var(--c-border);
     background: rgba(255,255,255,0.8); color: var(--c-text-sub);
-    font-size: 14px; font-weight: 600; cursor: pointer;
+    font-size: 13px; font-weight: 600; cursor: pointer;
     font-family: inherit; transition: all 0.15s; line-height: 1;
-    touch-action: manipulation; min-height: 40px;
+    touch-action: manipulation; min-height: 36px;
   }
   .quiz-chip.selected {
     background: linear-gradient(135deg, rgba(184,160,240,0.25), rgba(122,184,245,0.25));
     border-color: #b8a0f0; color: #7a5cc0;
   }
   .quiz-mode-card {
-    padding: 12px 14px; border-radius: var(--radius-sm);
+    padding: 10px 14px; border-radius: var(--radius-sm);
     border: 1.5px solid var(--c-border);
     background: rgba(255,255,255,0.8); cursor: pointer;
     display: flex; align-items: center; gap: 12px;
@@ -1148,45 +1148,45 @@
     </div>
 
     <!-- ── 設定画面 ── -->
-    <div id="quiz-setup" style="padding:calc(var(--header-h)) 20px 80px;">
+    <div id="quiz-setup" style="padding:calc(var(--header-h) + 6px) 20px 80px;">
 
-      <div style="margin-bottom:18px;margin-top:12px;">
-        <div style="font-size:11px;font-weight:700;color:var(--c-text-sub);letter-spacing:0.08em;margin-bottom:10px;">出題範囲（複数選択可）</div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+      <div style="margin-bottom:10px;">
+        <div style="font-size:11px;font-weight:700;color:var(--c-text-sub);letter-spacing:0.08em;margin-bottom:8px;">出題範囲（複数選択可）</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;">
           <button class="quiz-chip" data-val="random">ランダム</button>
           <button class="quiz-chip" data-val="ja">日本語</button>
           <button class="quiz-chip" data-val="en">欧文</button>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;">
           <button class="quiz-chip" data-val="ゴシック">ゴシック</button>
           <button class="quiz-chip" data-val="明朝">明朝</button>
           <button class="quiz-chip" data-val="セリフ">セリフ</button>
           <button class="quiz-chip" data-val="サンセリフ">サンセリフ</button>
           <button class="quiz-chip" data-val="その他">その他</button>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
           <button class="quiz-chip" data-val="basic">基本フォント</button>
           <button class="quiz-chip" data-val="check">関連フォント</button>
         </div>
-        <div id="quiz-filter-hint" style="font-size:12px;color:var(--c-text-sub);margin-top:10px;min-height:16px;"></div>
+        <div id="quiz-filter-hint" style="font-size:12px;color:var(--c-text-sub);margin-top:6px;min-height:14px;"></div>
       </div>
 
-      <div style="height:1px;background:var(--c-border);margin-bottom:16px;"></div>
+      <div style="height:1px;background:var(--c-border);margin-bottom:10px;"></div>
 
-      <div style="margin-bottom:20px;">
-        <div style="font-size:11px;font-weight:700;color:var(--c-text-sub);letter-spacing:0.08em;margin-bottom:10px;">モード</div>
-        <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="margin-bottom:12px;">
+        <div style="font-size:11px;font-weight:700;color:var(--c-text-sub);letter-spacing:0.08em;margin-bottom:8px;">モード</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
           <div class="quiz-mode-card selected" data-mode="4choice">
-            <div class="quiz-mode-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="7" y1="15" x2="13" y2="15"/></svg></div>
-            <div><div style="font-size:14px;font-weight:700;color:var(--c-text);">4択クイズ</div><div style="font-size:12px;color:var(--c-text-sub);margin-top:2px;">写真を見てフォント名を4択から選ぶ</div></div>
+            <div class="quiz-mode-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="7" y1="15" x2="13" y2="15"/></svg></div>
+            <div style="font-size:14px;font-weight:700;color:var(--c-text);">4択クイズ</div>
           </div>
           <div class="quiz-mode-card" data-mode="compare">
-            <div class="quiz-mode-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="9" height="16" rx="2"/><rect x="13" y="4" width="9" height="16" rx="2"/></svg></div>
-            <div><div style="font-size:14px;font-weight:700;color:var(--c-text);">比較クイズ</div><div style="font-size:12px;color:var(--c-text-sub);margin-top:2px;">2枚並べて両方のフォントを当てる</div></div>
+            <div class="quiz-mode-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="9" height="16" rx="2"/><rect x="13" y="4" width="9" height="16" rx="2"/></svg></div>
+            <div style="font-size:14px;font-weight:700;color:var(--c-text);">比較クイズ</div>
           </div>
           <div class="quiz-mode-card" data-mode="reverse">
-            <div class="quiz-mode-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 2.5 2.5 9.5 9.5 9.5"/><path d="M2.5 9.5A9 9 0 1 1 5 17"/></svg></div>
-            <div><div style="font-size:14px;font-weight:700;color:var(--c-text);">逆引きクイズ</div><div style="font-size:12px;color:var(--c-text-sub);margin-top:2px;">フォント名から用例写真を選ぶ</div></div>
+            <div class="quiz-mode-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 2.5 2.5 9.5 9.5 9.5"/><path d="M2.5 9.5A9 9 0 1 1 5 17"/></svg></div>
+            <div style="font-size:14px;font-weight:700;color:var(--c-text);">逆引きクイズ</div>
           </div>
         </div>
       </div>
