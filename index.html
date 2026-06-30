@@ -665,6 +665,25 @@
     transition: background 0.2s;
   }
   #lightbox-compare-btn.active { background: rgba(155,127,232,0.85); }
+  /* 補足ボタン */
+  #lightbox-supplement-btn {
+    position: absolute; top: 16px; right: 16px;
+    color: rgba(255,255,255,0.6);
+    background: transparent;
+    border: 1.5px solid rgba(255,255,255,0.35);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.04em;
+    cursor: pointer; display: flex; align-items: center;
+    touch-action: manipulation; z-index: 10;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+    font-family: inherit;
+  }
+  #lightbox-supplement-btn.on {
+    background: rgba(224,96,144,0.85);
+    border-color: transparent;
+    color: white;
+  }
   /* フローティング比較ボタン */
   #compare-float-btn {
     position: fixed; bottom: calc(var(--nav-h) + 16px); right: 16px;
@@ -1349,21 +1368,36 @@
       <div id="pe-crop-dark-bottom" style="position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);pointer-events:none;"></div>
       <div id="pe-crop-dark-left"   style="position:absolute;top:0;bottom:0;left:0;background:rgba(0,0,0,0.55);pointer-events:none;"></div>
       <div id="pe-crop-dark-right"  style="position:absolute;top:0;bottom:0;right:0;background:rgba(0,0,0,0.55);pointer-events:none;"></div>
-      <div id="pe-crop-frame" style="position:absolute;border:2px solid white;box-sizing:border-box;">
+      <div id="pe-crop-frame" style="position:absolute;border:1.5px solid rgba(255,255,255,0.7);box-sizing:border-box;">
+        <!-- サードライングリッド -->
         <div style="position:absolute;inset:0;pointer-events:none;">
-          <div style="position:absolute;left:33.3%;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.4);"></div>
-          <div style="position:absolute;left:66.6%;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.4);"></div>
-          <div style="position:absolute;top:33.3%;left:0;right:0;height:1px;background:rgba(255,255,255,0.4);"></div>
-          <div style="position:absolute;top:66.6%;left:0;right:0;height:1px;background:rgba(255,255,255,0.4);"></div>
+          <div style="position:absolute;left:33.3%;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.25);"></div>
+          <div style="position:absolute;left:66.6%;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.25);"></div>
+          <div style="position:absolute;top:33.3%;left:0;right:0;height:1px;background:rgba(255,255,255,0.25);"></div>
+          <div style="position:absolute;top:66.6%;left:0;right:0;height:1px;background:rgba(255,255,255,0.25);"></div>
         </div>
-        <div class="pe-crop-handle" data-corner="tl" style="position:absolute;top:-2px;left:-2px;width:22px;height:22px;border-top:3px solid white;border-left:3px solid white;touch-action:none;cursor:nwse-resize;"></div>
-        <div class="pe-crop-handle" data-corner="tr" style="position:absolute;top:-2px;right:-2px;width:22px;height:22px;border-top:3px solid white;border-right:3px solid white;touch-action:none;cursor:nesw-resize;"></div>
-        <div class="pe-crop-handle" data-corner="bl" style="position:absolute;bottom:-2px;left:-2px;width:22px;height:22px;border-bottom:3px solid white;border-left:3px solid white;touch-action:none;cursor:nesw-resize;"></div>
-        <div class="pe-crop-handle" data-corner="br" style="position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;border-bottom:3px solid white;border-right:3px solid white;touch-action:none;cursor:nwse-resize;"></div>
-        <div class="pe-crop-handle" data-corner="t"  style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:44px;height:22px;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:ns-resize;"><div style="width:36px;height:3px;background:white;border-radius:2px;"></div></div>
-        <div class="pe-crop-handle" data-corner="b"  style="position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);width:44px;height:22px;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:ns-resize;"><div style="width:36px;height:3px;background:white;border-radius:2px;"></div></div>
-        <div class="pe-crop-handle" data-corner="l"  style="position:absolute;left:-10px;top:50%;transform:translateY(-50%);width:22px;height:44px;display:flex;justify-content:center;align-items:center;touch-action:none;cursor:ew-resize;"><div style="height:36px;width:3px;background:white;border-radius:2px;"></div></div>
-        <div class="pe-crop-handle" data-corner="r"  style="position:absolute;right:-10px;top:50%;transform:translateY(-50%);width:22px;height:44px;display:flex;justify-content:center;align-items:center;touch-action:none;cursor:ew-resize;"><div style="height:36px;width:3px;background:white;border-radius:2px;"></div></div>
+        <!-- iPhoneスタイル四隅ハンドル（太いL字・大きなタッチ領域） -->
+        <div class="pe-crop-handle" data-corner="tl" style="position:absolute;top:-2px;left:-2px;width:44px;height:44px;touch-action:none;cursor:nwse-resize;">
+          <div style="position:absolute;top:0;left:0;width:28px;height:4px;background:white;border-radius:2px;"></div>
+          <div style="position:absolute;top:0;left:0;width:4px;height:28px;background:white;border-radius:2px;"></div>
+        </div>
+        <div class="pe-crop-handle" data-corner="tr" style="position:absolute;top:-2px;right:-2px;width:44px;height:44px;touch-action:none;cursor:nesw-resize;">
+          <div style="position:absolute;top:0;right:0;width:28px;height:4px;background:white;border-radius:2px;"></div>
+          <div style="position:absolute;top:0;right:0;width:4px;height:28px;background:white;border-radius:2px;"></div>
+        </div>
+        <div class="pe-crop-handle" data-corner="bl" style="position:absolute;bottom:-2px;left:-2px;width:44px;height:44px;touch-action:none;cursor:nesw-resize;">
+          <div style="position:absolute;bottom:0;left:0;width:28px;height:4px;background:white;border-radius:2px;"></div>
+          <div style="position:absolute;bottom:0;left:0;width:4px;height:28px;background:white;border-radius:2px;"></div>
+        </div>
+        <div class="pe-crop-handle" data-corner="br" style="position:absolute;bottom:-2px;right:-2px;width:44px;height:44px;touch-action:none;cursor:nwse-resize;">
+          <div style="position:absolute;bottom:0;right:0;width:28px;height:4px;background:white;border-radius:2px;"></div>
+          <div style="position:absolute;bottom:0;right:0;width:4px;height:28px;background:white;border-radius:2px;"></div>
+        </div>
+        <!-- 上下左右の中点ハンドル（細め） -->
+        <div class="pe-crop-handle" data-corner="t"  style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);width:60px;height:28px;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:ns-resize;"><div style="width:40px;height:4px;background:white;border-radius:2px;"></div></div>
+        <div class="pe-crop-handle" data-corner="b"  style="position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);width:60px;height:28px;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:ns-resize;"><div style="width:40px;height:4px;background:white;border-radius:2px;"></div></div>
+        <div class="pe-crop-handle" data-corner="l"  style="position:absolute;left:-14px;top:50%;transform:translateY(-50%);width:28px;height:60px;display:flex;justify-content:center;align-items:center;touch-action:none;cursor:ew-resize;"><div style="height:40px;width:4px;background:white;border-radius:2px;"></div></div>
+        <div class="pe-crop-handle" data-corner="r"  style="position:absolute;right:-14px;top:50%;transform:translateY(-50%);width:28px;height:60px;display:flex;justify-content:center;align-items:center;touch-action:none;cursor:ew-resize;"><div style="height:40px;width:4px;background:white;border-radius:2px;"></div></div>
       </div>
     </div>
     <div id="pe-header">
@@ -1481,6 +1515,7 @@
 <div id="lightbox">
   <button id="lightbox-close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
   <button id="lightbox-edit-btn" title="編集"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+  <button id="lightbox-supplement-btn" title="補足画像としてマーク">補足</button>
   <button id="lightbox-compare-btn" title="比較に追加">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
   </button>
@@ -2198,7 +2233,7 @@ const showToast = msg => {
 };
 const hideLoading = () => $('loading').style.display = 'none';
 let _navLocked = false;
-function navLock(fn, delay = 400) {
+function navLock(fn, delay = 200) {
   if (_navLocked) return;
   _navLocked = true;
   fn();
@@ -2311,7 +2346,18 @@ async function loadFonts() {
   try {
     const q = query(collection(db,'fonts'), orderBy('createdAt','desc'));
     const snap = await getDocs(q);
-    fonts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const loaded = [];
+    for (const d of snap.docs) {
+      const fontData = { id: d.id, ...d.data() };
+      try {
+        const usnap = await getDocs(collection(db,'fonts',d.id,'usages'));
+        fontData.usages = usnap.docs.map(u => ({ id: u.id, ...u.data() }));
+      } catch(e2) {
+        fontData.usages = [];
+      }
+      loaded.push(fontData);
+    }
+    fonts = loaded;
     renderHome();
   } catch(e) {
     console.error(e);
@@ -2567,9 +2613,10 @@ async function openDetail(id) {
         </div>
         <div class="photos-grid" id="detail-photos-grid">
           ${photos.map((p,i)=>`
-            <div class="photo-thumb" data-url="${p.url}" data-memo="${p.memo||''}" data-original-url="${p.originalUrl||''}" data-idx="${i}">
+        <div class="photo-thumb" data-url="${p.url}" data-memo="${p.memo||''}" data-original-url="${p.originalUrl||''}" data-idx="${i}" data-supplement="${p.supplement||''}">
               <img src="${p.url}" loading="lazy">
               ${i===0 ? '<div style="position:absolute;bottom:4px;left:4px;background:rgba(155,127,232,0.85);color:white;font-size:10px;padding:2px 6px;border-radius:6px;pointer-events:none;">カバー</div>' : ''}
+              ${p.supplement ? '<div style="position:absolute;top:4px;right:4px;background:rgba(224,96,144,0.85);color:white;font-size:9px;padding:2px 5px;border-radius:5px;pointer-events:none;">補足</div>' : ''}
             </div>
           `).join('')}
         </div>
@@ -2910,6 +2957,10 @@ async function openDetail(id) {
       const photosArr = photos.map((p, pi) => ({
         url: p.url,
         memo: p.memo || '',
+        isDetailPhoto: true,
+        supplement: !!p.supplement,
+        photoIdx: pi,
+        fontId: id,
         onEdit: () => {
           const origUrl = p.originalUrl || '';
           openPhotoEditor(p.url, async (blob, revertUrl) => {
@@ -3688,6 +3739,18 @@ function _lightboxShow() {
   if (lightboxOnEdit) editBtn.classList.add('visible');
   else editBtn.classList.remove('visible');
   $('lightbox-compare-btn').classList.toggle('active', compareList.some(c => c.url === item.url));
+  // 補足ボタン：このフォントのphotosに対してのみ表示（用例画面では非表示）
+  const supplBtn = $('lightbox-supplement-btn');
+  if (lightboxOnEdit || (item.fontId && item.photoIndex !== undefined)) {
+    // photo詳細から開かれた場合
+    supplBtn.style.display = 'flex';
+    supplBtn.classList.toggle('on', !!item.supplement);
+  } else if (item.isDetailPhoto) {
+    supplBtn.style.display = 'flex';
+    supplBtn.classList.toggle('on', !!item.supplement);
+  } else {
+    supplBtn.style.display = 'none';
+  }
   // ピンチ/スワイプリセット
   lbScale = 1; lbTx = 0; lbTy = 0;
   img.style.transform = '';
@@ -3716,6 +3779,25 @@ function _lightboxUpdateIndicator() {
 
 $('lightbox-close').addEventListener('click', () => $('lightbox').classList.remove('active'));
 $('lightbox').addEventListener('click', e => { if (e.target === $('lightbox')) $('lightbox').classList.remove('active'); });
+
+// 補足ボタン
+$('lightbox-supplement-btn').addEventListener('click', async e => {
+  e.stopPropagation();
+  const item = lightboxPhotos[lightboxIndex];
+  if (!item || !item.isDetailPhoto || item.fontId === undefined || item.photoIdx === undefined) return;
+  const f2 = fonts.find(x => x.id === item.fontId);
+  if (!f2 || !f2.photos || !f2.photos[item.photoIdx]) return;
+  const newVal = !f2.photos[item.photoIdx].supplement;
+  f2.photos[item.photoIdx] = { ...f2.photos[item.photoIdx], supplement: newVal };
+  // lightboxPhotos内も更新
+  lightboxPhotos[lightboxIndex] = { ...item, supplement: newVal };
+  const btn = $('lightbox-supplement-btn');
+  btn.classList.toggle('on', newVal);
+  showToast(newVal ? '補足画像に設定しました（クイズから除外）' : '補足を解除しました');
+  try {
+    await updateDoc(doc(db,'fonts',item.fontId), { photos: f2.photos });
+  } catch(err) { showToast('保存に失敗しました'); }
+});
 $('lightbox-edit-btn').addEventListener('click', () => {
   if (!lightboxOnEdit) return;
   $('lightbox').classList.remove('active');
@@ -4035,7 +4117,7 @@ function buildPhotoSlots(containerId, memoWrapId, filesArr, memosArr) {
 
 // ── ADD FONT screen ────────────────────────
 document.querySelectorAll('.nav-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
+  const doNav = () => {
     navLock(() => {
       const s = btn.dataset.screen;
       if (s === 'home') { showScreen('screen-home'); renderHome(); }
@@ -4043,7 +4125,9 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
       else if (s === 'add-usage') { addUsageFrom = 'nav'; initAddUsage(); showScreen('screen-add-usage'); }
       else if (s === 'quiz') { showScreen('screen-quiz'); }
     });
-  });
+  };
+  btn.addEventListener('touchstart', e => { e.preventDefault(); doNav(); }, { passive: false });
+  btn.addEventListener('click', doNav);
 });
 
 $('add-font-back').addEventListener('click', () => navLock(() => { showScreen('screen-home'); renderHome(); }));
@@ -5242,12 +5326,12 @@ function buildQuizPool() {
     if (wantCheck && !wantBasic && (!font.checks || !font.checks.length)) continue;
 
     font.photos.forEach(photo => {
-      if (photo && photo.url) pool.push({ fontId: font.id, fontName: font.name, photoUrl: photo.url });
+      if (photo && photo.url && !photo.supplement) pool.push({ fontId: font.id, fontName: font.name, photoUrl: photo.url });
     });
     if (font.usages) {
       font.usages.forEach(usage => {
         if (usage.photos) usage.photos.forEach(photo => {
-          if (photo && photo.url) pool.push({ fontId: font.id, fontName: font.name, photoUrl: photo.url });
+          if (photo && photo.url && !photo.supplement) pool.push({ fontId: font.id, fontName: font.name, photoUrl: photo.url });
         });
       });
     }
@@ -5288,7 +5372,7 @@ function buildUsagePool() {
     font.usages.forEach(usage => {
       if (usage.photos) {
         usage.photos.forEach(photo => {
-          if (photo && photo.url) {
+          if (photo && photo.url && !photo.supplement) {
             pool.push({ fontId: font.id, fontName: font.name, photoUrl: photo.url });
           }
         });
