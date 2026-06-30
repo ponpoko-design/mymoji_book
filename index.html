@@ -508,6 +508,12 @@
   /* クロップ用オーバーレイ（写真の上に重ねる） */
   #pe-crop-ui { touch-action: none; }
   .pe-crop-handle { touch-action: none; }
+  .pe-crop-bar {
+    background: #c8a0f8;
+    border-radius: 2px;
+    box-shadow: 0 0 4px rgba(0,0,0,0.6);
+    position: absolute;
+  }
 
   /* コントロールエリア（下部固定） */
   #pe-controls {
@@ -1378,26 +1384,34 @@
         </div>
         <!-- iPhoneスタイル四隅ハンドル（太いL字・大きなタッチ領域） -->
         <div class="pe-crop-handle" data-corner="tl" style="position:absolute;top:-2px;left:-2px;width:44px;height:44px;touch-action:none;cursor:nwse-resize;">
-          <div style="position:absolute;top:0;left:0;width:28px;height:4px;background:#c8a0f8;border-radius:2px;box-shadow:0 1px 4px rgba(0,0,0,0.5);"></div>
-          <div style="position:absolute;top:0;left:0;width:4px;height:28px;background:#c8a0f8;border-radius:2px;box-shadow:1px 0 4px rgba(0,0,0,0.5);"></div>
+          <div class="pe-crop-bar" style="top:0;left:0;width:28px;height:4px;"></div>
+          <div class="pe-crop-bar" style="top:0;left:0;width:4px;height:28px;"></div>
         </div>
         <div class="pe-crop-handle" data-corner="tr" style="position:absolute;top:-2px;right:-2px;width:44px;height:44px;touch-action:none;cursor:nesw-resize;">
-          <div style="position:absolute;top:0;right:0;width:28px;height:4px;background:#c8a0f8;border-radius:2px;box-shadow:0 1px 4px rgba(0,0,0,0.5);"></div>
-          <div style="position:absolute;top:0;right:0;width:4px;height:28px;background:#c8a0f8;border-radius:2px;box-shadow:-1px 0 4px rgba(0,0,0,0.5);"></div>
+          <div class="pe-crop-bar" style="top:0;right:0;width:28px;height:4px;"></div>
+          <div class="pe-crop-bar" style="top:0;right:0;width:4px;height:28px;"></div>
         </div>
         <div class="pe-crop-handle" data-corner="bl" style="position:absolute;bottom:-2px;left:-2px;width:44px;height:44px;touch-action:none;cursor:nesw-resize;">
-          <div style="position:absolute;bottom:0;left:0;width:28px;height:4px;background:#c8a0f8;border-radius:2px;box-shadow:0 -1px 4px rgba(0,0,0,0.5);"></div>
-          <div style="position:absolute;bottom:0;left:0;width:4px;height:28px;background:#c8a0f8;border-radius:2px;box-shadow:1px 0 4px rgba(0,0,0,0.5);"></div>
+          <div class="pe-crop-bar" style="bottom:0;left:0;width:28px;height:4px;"></div>
+          <div class="pe-crop-bar" style="bottom:0;left:0;width:4px;height:28px;"></div>
         </div>
         <div class="pe-crop-handle" data-corner="br" style="position:absolute;bottom:-2px;right:-2px;width:44px;height:44px;touch-action:none;cursor:nwse-resize;">
-          <div style="position:absolute;bottom:0;right:0;width:28px;height:4px;background:#c8a0f8;border-radius:2px;box-shadow:0 -1px 4px rgba(0,0,0,0.5);"></div>
-          <div style="position:absolute;bottom:0;right:0;width:4px;height:28px;background:#c8a0f8;border-radius:2px;box-shadow:-1px 0 4px rgba(0,0,0,0.5);"></div>
+          <div class="pe-crop-bar" style="bottom:0;right:0;width:28px;height:4px;"></div>
+          <div class="pe-crop-bar" style="bottom:0;right:0;width:4px;height:28px;"></div>
         </div>
         <!-- 上下左右の中点ハンドル（細め） -->
-        <div class="pe-crop-handle" data-corner="t"  style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);width:60px;height:28px;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:ns-resize;"><div style="width:40px;height:4px;background:#c8a0f8;border-radius:2px;box-shadow:0 1px 4px rgba(0,0,0,0.5);"></div></div>
-        <div class="pe-crop-handle" data-corner="b"  style="position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);width:60px;height:28px;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:ns-resize;"><div style="width:40px;height:4px;background:#c8a0f8;border-radius:2px;box-shadow:0 -1px 4px rgba(0,0,0,0.5);"></div></div>
-        <div class="pe-crop-handle" data-corner="l"  style="position:absolute;left:-14px;top:50%;transform:translateY(-50%);width:28px;height:60px;display:flex;justify-content:center;align-items:center;touch-action:none;cursor:ew-resize;"><div style="height:40px;width:4px;background:#c8a0f8;border-radius:2px;box-shadow:1px 0 4px rgba(0,0,0,0.5);"></div></div>
-        <div class="pe-crop-handle" data-corner="r"  style="position:absolute;right:-14px;top:50%;transform:translateY(-50%);width:28px;height:60px;display:flex;justify-content:center;align-items:center;touch-action:none;cursor:ew-resize;"><div style="height:40px;width:4px;background:#c8a0f8;border-radius:2px;box-shadow:-1px 0 4px rgba(0,0,0,0.5);"></div></div>
+        <div class="pe-crop-handle" data-corner="t" style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);width:60px;height:28px;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:ns-resize;">
+          <div class="pe-crop-bar" style="position:static;width:40px;height:4px;"></div>
+        </div>
+        <div class="pe-crop-handle" data-corner="b" style="position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);width:60px;height:28px;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:ns-resize;">
+          <div class="pe-crop-bar" style="position:static;width:40px;height:4px;"></div>
+        </div>
+        <div class="pe-crop-handle" data-corner="l" style="position:absolute;left:-14px;top:50%;transform:translateY(-50%);width:28px;height:60px;display:flex;justify-content:center;align-items:center;touch-action:none;cursor:ew-resize;">
+          <div class="pe-crop-bar" style="position:static;width:4px;height:40px;"></div>
+        </div>
+        <div class="pe-crop-handle" data-corner="r" style="position:absolute;right:-14px;top:50%;transform:translateY(-50%);width:28px;height:60px;display:flex;justify-content:center;align-items:center;touch-action:none;cursor:ew-resize;">
+          <div class="pe-crop-bar" style="position:static;width:4px;height:40px;"></div>
+        </div>
       </div>
     </div>
     <div id="pe-header">
