@@ -2346,18 +2346,7 @@ async function loadFonts() {
   try {
     const q = query(collection(db,'fonts'), orderBy('createdAt','desc'));
     const snap = await getDocs(q);
-    const loaded = [];
-    for (const d of snap.docs) {
-      const fontData = { id: d.id, ...d.data() };
-      try {
-        const usnap = await getDocs(collection(db,'fonts',d.id,'usages'));
-        fontData.usages = usnap.docs.map(u => ({ id: u.id, ...u.data() }));
-      } catch(e2) {
-        fontData.usages = [];
-      }
-      loaded.push(fontData);
-    }
-    fonts = loaded;
+    fonts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderHome();
   } catch(e) {
     console.error(e);
@@ -2551,6 +2540,9 @@ async function openDetail(id) {
   const usnap = await getDocs(collection(db,'fonts',id,'usages'));
   const usages = usnap.docs.map(d=>({id:d.id,...d.data()}))
     .sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+  // クイズ用にキャッシュ
+  f.usages = usages;
+  f._usagesLoaded = true;
 
   const favBtn = $('detail-fav');
   favBtn.style.color=''; favBtn.innerHTML = f.favorite ? '<svg width="22" height="22" viewBox="0 0 24 24" fill="#e06090" stroke="#e06090" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>' : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c8c0dc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>';
@@ -5283,13 +5275,35 @@ function quizShowResult() {
 }
 
 // ── start ────────────────────────────────
-$('quiz-start-btn').addEventListener('click', () => {
+// usagesを未ロードのフォントだけまとめてフェッチ
+async function ensureUsagesLoaded() {
+  const unloaded = fonts.filter(f => !f._usagesLoaded);
+  if (!unloaded.length) return;
+  await Promise.all(unloaded.map(async f => {
+    try {
+      const usnap = await getDocs(collection(db,'fonts',f.id,'usages'));
+      f.usages = usnap.docs.map(u => ({ id: u.id, ...u.data() }));
+    } catch(e) {
+      f.usages = [];
+    }
+    f._usagesLoaded = true;
+  }));
+}
+
+$('quiz-start-btn').addEventListener('click', async () => {
   const selected = [...document.querySelectorAll('.quiz-chip.selected')];
   if (!selected.length) {
     const hint = $('quiz-filter-hint');
     hint.style.color = '#e05c7a';
     hint.textContent = '範囲を1つ以上選んでください';
     return;
+  }
+  // 用例系モードはusages必須なので事前ロード
+  if (quizMode === 'reverse' || quizMode === 'normal') {
+    const btn = $('quiz-start-btn');
+    btn.disabled = true; btn.textContent = '読み込み中…';
+    await ensureUsagesLoaded();
+    btn.disabled = false; btn.textContent = 'クイズを始める';
   }
   const pool = quizMode === 'reverse' ? buildUsagePool() : buildQuizPool();
   if (pool.length < 4) {
