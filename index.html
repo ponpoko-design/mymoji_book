@@ -66,21 +66,24 @@
     pointer-events: none;
     z-index: 0;
     overflow: hidden;
+    will-change: transform;
   }
   .blob {
     position: absolute;
     border-radius: 50%;
-    filter: blur(48px);
-    opacity: 0.65;
-    animation: blobFloat 12s ease-in-out infinite alternate;
+    filter: blur(40px);
+    opacity: 0.55;
+    animation: blobFloat 18s ease-in-out infinite alternate;
+    will-change: transform;
+    transform: translateZ(0);
   }
   .blob-1 { width: 260px; height: 260px; background: var(--c-lavender); top: -60px; left: -40px; animation-delay: 0s; }
-  .blob-2 { width: 200px; height: 200px; background: var(--c-sky); top: 100px; right: -30px; animation-delay: 3s; }
-  .blob-3 { width: 180px; height: 180px; background: var(--c-peach); top: 50%; left: 20px; animation-delay: 6s; }
+  .blob-2 { width: 200px; height: 200px; background: var(--c-sky); top: 100px; right: -30px; animation-delay: 4s; }
+  .blob-3 { width: 180px; height: 180px; background: var(--c-peach); top: 50%; left: 20px; animation-delay: 8s; }
   .blob-4 { width: 220px; height: 220px; background: var(--c-mint); bottom: 80px; right: -20px; animation-delay: 2s; }
   @keyframes blobFloat {
-    from { transform: translate(0, 0) scale(1); }
-    to   { transform: translate(12px, 16px) scale(1.08); }
+    from { transform: translateZ(0) translate(0, 0) scale(1); }
+    to   { transform: translateZ(0) translate(10px, 14px) scale(1.06); }
   }
 
   /* ── Screens ── */
@@ -2246,15 +2249,14 @@ const showToast = msg => {
   setTimeout(() => t.classList.remove('show'), duration);
 };
 const hideLoading = () => $('loading').style.display = 'none';
-let _navLocked = false;
-function navLock(fn, delay = 200) {
-  if (_navLocked) return;
-  _navLocked = true;
+// navLock: タイムスタンプベースのdebounce（ロック状態を持たない）
+let _lastNavTime = 0;
+function navLock(fn, delay = 250) {
+  const now = Date.now();
+  if (now - _lastNavTime < delay) return;
+  _lastNavTime = now;
   fn();
-  setTimeout(() => { _navLocked = false; }, delay);
 }
-// 安全のため定期的にロック解除（詰まり防止）
-setInterval(() => { _navLocked = false; }, 1000);
 
 const showScreen = id => {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -2544,14 +2546,15 @@ async function toggleBasic(id) {
 }
 
 // ── Detail ────────────────────────────────
-let _detailLocked = false;
+let _lastDetailTime = 0;
 async function openDetail(id) {
-  if (_detailLocked) return;
-  _detailLocked = true;
+  const now = Date.now();
+  if (now - _lastDetailTime < 300) return;
+  _lastDetailTime = now;
   try {
   currentFontId = id;
   const f = fonts.find(x=>x.id===id);
-  if (!f) { _detailLocked = false; return; }
+  if (!f) { return; }
 
   const usnap = await getDocs(collection(db,'fonts',id,'usages'));
   const usages = usnap.docs.map(d=>({id:d.id,...d.data()}))
@@ -3186,8 +3189,6 @@ async function openDetail(id) {
   showScreen('screen-detail');
   } catch(e2) {
     console.error(e2);
-  } finally {
-    _detailLocked = false;
   }
 }
 
