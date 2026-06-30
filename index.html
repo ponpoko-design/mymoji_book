@@ -2239,6 +2239,8 @@ function navLock(fn, delay = 200) {
   fn();
   setTimeout(() => { _navLocked = false; }, delay);
 }
+// 安全のため定期的にロック解除（詰まり防止）
+setInterval(() => { _navLocked = false; }, 1000);
 
 const showScreen = id => {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -3168,8 +3170,10 @@ async function openDetail(id) {
   });
 
   showScreen('screen-detail');
+  } catch(e2) {
+    console.error(e2);
   } finally {
-    setTimeout(() => { _detailLocked = false; }, 500);
+    _detailLocked = false;
   }
 }
 
