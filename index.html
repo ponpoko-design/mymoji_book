@@ -5773,10 +5773,16 @@ $('quiz-retry-btn').addEventListener('click', () => {
 $('quiz-back-to-setup-btn').addEventListener('click', quizShowSetup);
 
 // ── Pinch zoom（contain・端まで移動可）────
+// ※ リスナーは1回だけ登録（クイズ毎の重複追加を防止）
 function makePinch(areaId, innerId, resetBtnId, hintId) {
   const area  = $(areaId);
   const inner = $(innerId);
   if (!area || !inner) return { reset: () => {} };
+  if (area._pinchInited) {
+    // 既に初期化済み → ズームリセットだけして返す
+    if (area._pinchReset) area._pinchReset();
+    return area._pinchAPI;
+  }
 
   let scale = 1, tx = 0, ty = 0;
   let isDragging = false, lastX = 0, lastY = 0, lastDist = 0, lastTap = 0;
@@ -5868,7 +5874,11 @@ function makePinch(areaId, innerId, resetBtnId, hintId) {
     setTimeout(() => { hint.style.opacity = '0'; }, 2500);
   }
 
-  return { reset: resetFn };
+  const api = { reset: resetFn };
+  area._pinchInited = true;
+  area._pinchReset = resetFn;
+  area._pinchAPI = api;
+  return api;
 }
 
 let quizPinch = null;
