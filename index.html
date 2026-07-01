@@ -1161,6 +1161,18 @@
         <input type="text" id="eu-place">
       </div>
       <div class="form-group">
+        <label>フォント</label>
+        <div id="eu-font-display" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,255,255,0.7);border:1.5px solid var(--c-border);border-radius:14px;">
+          <span id="eu-font-name" style="font-size:15px;font-weight:600;color:var(--c-text);flex:1;"></span>
+          <button id="eu-font-change-btn" style="background:none;border:1.5px solid var(--c-border);border-radius:20px;padding:4px 12px;font-size:13px;color:var(--c-text-sub);cursor:pointer;font-family:inherit;touch-action:manipulation;white-space:nowrap;">変更</button>
+        </div>
+        <div id="eu-font-search-wrap" style="display:none;margin-top:8px;">
+          <input type="text" id="eu-font-search-input" placeholder="フォント名で検索…" autocomplete="off"
+            style="width:100%;padding:10px 14px;border:1.5px solid var(--c-border);border-radius:12px;font-size:15px;color:var(--c-text);background:rgba(255,255,255,0.9);font-family:inherit;outline:none;box-sizing:border-box;">
+          <div id="eu-font-search-results" style="margin-top:4px;border:1.5px solid var(--c-border);border-radius:12px;overflow:hidden;background:rgba(255,255,255,0.95);max-height:220px;overflow-y:auto;"></div>
+        </div>
+      </div>
+      <div class="form-group">
         <label>写真（最大6枚）</label>
         <div class="photo-upload-row" id="eu-photos"></div>
       </div>
@@ -3575,7 +3587,48 @@ function openEditUsage(fontId, u) {
   euPhotoFiles = [null,null,null,null,null];
   euPhotoMemos = ['','','','',''];
   buildEditPhotoSlots('eu-photos','eu-photo-memos-wrap', euExistingPhotos, euPhotoFiles, euPhotoMemos);
-  $('eu-submit').onclick = () => saveEditUsage(fontId, u.id);
+
+  // フォント表示・変更
+  let euCurrentFontId = fontId;
+  const f0 = fonts.find(x => x.id === fontId);
+  $('eu-font-name').textContent = f0 ? f0.name : '(不明)';
+  $('eu-font-search-wrap').style.display = 'none';
+  $('eu-font-search-input').value = '';
+  $('eu-font-search-results').innerHTML = '';
+
+  $('eu-font-change-btn').onclick = () => {
+    const isOpen = $('eu-font-search-wrap').style.display !== 'none';
+    $('eu-font-search-wrap').style.display = isOpen ? 'none' : 'block';
+    $('eu-font-change-btn').textContent = isOpen ? '変更' : 'キャンセル';
+    if (!isOpen) { $('eu-font-search-input').value = ''; $('eu-font-search-results').innerHTML = ''; $('eu-font-search-input').focus(); }
+  };
+
+  $('eu-font-search-input').oninput = () => {
+    const q = $('eu-font-search-input').value.toLowerCase().trim();
+    if (!q) { $('eu-font-search-results').innerHTML = ''; return; }
+    const results = fonts.filter(x => (x.name||'').toLowerCase().includes(q)).slice(0, 8);
+    $('eu-font-search-results').innerHTML = results.length
+      ? results.map(x => `<div class="eu-font-result-item" data-id="${x.id}" style="padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:8px;touch-action:manipulation;">
+          <span class="font-cat-badge" style="margin-top:0;flex-shrink:0;">${x.category||''}</span>
+          <span style="font-size:15px;font-weight:600;">${x.name}</span>
+          <span style="font-size:12px;color:var(--c-text-sub);margin-left:auto;">${x.maker||''}</span>
+        </div>`).join('')
+      : '<div style="padding:12px 14px;font-size:14px;color:var(--c-text-sub);">見つかりません</div>';
+    $('eu-font-search-results').querySelectorAll('.eu-font-result-item').forEach(el => {
+      el.addEventListener('click', () => {
+        euCurrentFontId = el.dataset.id;
+        const picked = fonts.find(x => x.id === euCurrentFontId);
+        $('eu-font-name').textContent = picked ? picked.name : '';
+        $('eu-font-search-wrap').style.display = 'none';
+        $('eu-font-change-btn').textContent = '変更';
+        $('eu-font-search-input').value = '';
+        $('eu-font-search-results').innerHTML = '';
+        showToast(`${picked ? picked.name : ''}に変更しました（保存で確定）`);
+      });
+    });
+  };
+
+  $('eu-submit').onclick = () => saveEditUsage(fontId, u.id, euCurrentFontId);
   $('delete-usage-btn').onclick = () => showConfirm(
     '用例を削除しますか？',
     'この操作は取り消せません',
@@ -3589,18 +3642,38 @@ $('edit-usage-back').addEventListener('click', () => navLock(() => {
   else if (currentFontId) openDetail(currentFontId);
 }));
 
-async function saveEditUsage(fontId, usageId) {
+async function saveEditUsage(fontId, usageId, newFontId) {
   $('eu-submit').disabled = true; $('eu-submit').textContent = '保存中…';
   try {
-    const newPhotos = await uploadPhotos(`fonts/${fontId}/usages`, euPhotoFiles, euPhotoMemos);
+    const newPhotos = await uploadPhotos(`fonts/${newFontId || fontId}/usages`, euPhotoFiles, euPhotoMemos);
     const allPhotos = [...euExistingPhotos, ...newPhotos];
-    await updateDoc(doc(db,'fonts',fontId,'usages',usageId), {
+    const updateData = {
       date: $('eu-date').value,
       place: $('eu-place').value.trim(),
       photos: allPhotos
-    });
-    showToast('保存しました！');
-    openDetail(fontId);
+    };
+
+    if (newFontId && newFontId !== fontId) {
+      // フォントが変わった → 旧フォントから削除して新フォントに追加
+      const oldDoc = await getDocs(collection(db,'fonts',fontId,'usages'));
+      const oldU = oldDoc.docs.find(d => d.id === usageId);
+      if (oldU) {
+        const existingData = oldU.data();
+        await addDoc(collection(db,'fonts',newFontId,'usages'), { ...existingData, ...updateData });
+        await deleteDoc(doc(db,'fonts',fontId,'usages',usageId));
+        // メモリ上も更新
+        const oldFont = fonts.find(x => x.id === fontId);
+        if (oldFont?.usages) oldFont.usages = oldFont.usages.filter(u => u.id !== usageId);
+        const newFont = fonts.find(x => x.id === newFontId);
+        if (newFont) newFont._usagesLoaded = false; // 再ロードを促す
+      }
+      showToast('フォントを変更して保存しました！');
+      openDetail(newFontId);
+    } else {
+      await updateDoc(doc(db,'fonts',fontId,'usages',usageId), updateData);
+      showToast('保存しました！');
+      openDetail(fontId);
+    }
   } catch(e) { console.error(e); showToast('エラーが発生しました'); }
   $('eu-submit').disabled = false; $('eu-submit').textContent = '保存する';
 }
