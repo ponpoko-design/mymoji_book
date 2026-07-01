@@ -45,6 +45,7 @@
     min-height: 100vh;
     display: flex;
     justify-content: center;
+    overscroll-behavior: none;
   }
 
   #app {
@@ -641,6 +642,8 @@
     background: rgba(0,0,0,0.85);
     align-items: center; justify-content: center;
     flex-direction: column;
+    overscroll-behavior: none;
+    touch-action: none;
   }
   #lightbox.active { display: flex; }
   #lightbox img { max-width: 94vw; max-height: 78vh; border-radius: 12px; object-fit: contain; }
@@ -3929,6 +3932,7 @@ const lbImg = $('lightbox-img');
 const lbEl = $('lightbox');
 
 lbEl.addEventListener('touchstart', e => {
+  e.preventDefault(); // iOSのスワイプ戻り・Pull-to-refresh防止
   if (e.touches.length === 1) {
     lbSwipeStartX = e.touches[0].clientX;
     lbSwipeStartY = e.touches[0].clientY;
@@ -3939,11 +3943,11 @@ lbEl.addEventListener('touchstart', e => {
       e.touches[0].clientY - e.touches[1].clientY
     );
   }
-}, { passive: true });
+}, { passive: false });
 
 lbEl.addEventListener('touchmove', e => {
+  e.preventDefault(); // 常にデフォルト動作をブロック
   if (e.touches.length === 2) {
-    e.preventDefault();
     const dist = Math.hypot(
       e.touches[0].clientX - e.touches[1].clientX,
       e.touches[0].clientY - e.touches[1].clientY
@@ -3954,15 +3958,17 @@ lbEl.addEventListener('touchmove', e => {
       lbImg.style.transform = `translate(${lbTx}px,${lbTy}px) scale(${lbScale})`;
     }
     lbLastPinchDist = dist;
-  } else if (e.touches.length === 1 && lbScale > 1) {
-    // 拡大中は移動
+  } else if (e.touches.length === 1) {
     if (lbSwipeStartX !== null) {
       const dx = e.touches[0].clientX - lbSwipeStartX;
       const dy = e.touches[0].clientY - lbSwipeStartY;
-      lbTx += dx; lbTy += dy;
+      if (lbScale > 1) {
+        // 拡大中は画像を移動
+        lbTx += dx; lbTy += dy;
+        lbImg.style.transform = `translate(${lbTx}px,${lbTy}px) scale(${lbScale})`;
+      }
       lbSwipeStartX = e.touches[0].clientX;
       lbSwipeStartY = e.touches[0].clientY;
-      lbImg.style.transform = `translate(${lbTx}px,${lbTy}px) scale(${lbScale})`;
     }
   }
 }, { passive: false });
