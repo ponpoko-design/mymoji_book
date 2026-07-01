@@ -2458,11 +2458,19 @@ function renderFontList() {
 // ── Search / Sort ──────────────────────────
 $('search-input').addEventListener('focus', () => {
   $('search-input').value = '';
-  renderFontList('');
+  searchQuery = '';
+  renderFontList();
 });
 $('search-input').addEventListener('input', e => {
   searchQuery = e.target.value;
   renderFontList();
+});
+// 検索ボックスをクリア・blur時もリセット
+$('search-input').addEventListener('blur', () => {
+  if ($('search-input').value === '') {
+    searchQuery = '';
+    renderFontList();
+  }
 });
 $('sort-btn').addEventListener('click', () => {
   sortMode = sortMode === 'new' ? 'fav' : 'new';
