@@ -3246,9 +3246,14 @@ function openUsageDetail(fontId, usageId, usages) {
       const url = el.dataset.url;
       const memo = el.dataset.memo;
       // 全写真配列を渡してスワイプ対応
-      const photosArr = (u.photos || []).map(p => ({
+      const photosArr = (u.photos || []).map((p, pi) => ({
         url: p.url,
         memo: p.memo || '',
+        isDetailPhoto: true,
+        supplement: !!p.supplement,
+        fontId: fontId,
+        usageId: usageId,
+        photoIdx: pi,
         onEdit: () => {
           const origUrl = p.originalUrl || '';
           openPhotoEditor(p.url, async (blob, revertUrl) => {
@@ -3796,17 +3801,28 @@ $('lightbox-supplement-btn').addEventListener('click', async e => {
   e.stopPropagation();
   const item = lightboxPhotos[lightboxIndex];
   if (!item || !item.isDetailPhoto || item.fontId === undefined || item.photoIdx === undefined) return;
-  const f2 = fonts.find(x => x.id === item.fontId);
-  if (!f2 || !f2.photos || !f2.photos[item.photoIdx]) return;
-  const newVal = !f2.photos[item.photoIdx].supplement;
-  f2.photos[item.photoIdx] = { ...f2.photos[item.photoIdx], supplement: newVal };
-  // lightboxPhotos内も更新
+
+  const newVal = !item.supplement;
   lightboxPhotos[lightboxIndex] = { ...item, supplement: newVal };
-  const btn = $('lightbox-supplement-btn');
-  btn.classList.toggle('on', newVal);
+  $('lightbox-supplement-btn').classList.toggle('on', newVal);
   showToast(newVal ? '補足画像に設定しました（クイズから除外）' : '補足を解除しました');
+
   try {
-    await updateDoc(doc(db,'fonts',item.fontId), { photos: f2.photos });
+    if (item.usageId) {
+      // 用例写真の場合
+      const f2 = fonts.find(x => x.id === item.fontId);
+      if (!f2) return;
+      const u2 = (f2.usages || []).find(u => u.id === item.usageId);
+      if (!u2 || !u2.photos || !u2.photos[item.photoIdx]) return;
+      u2.photos[item.photoIdx] = { ...u2.photos[item.photoIdx], supplement: newVal };
+      await updateDoc(doc(db, 'fonts', item.fontId, 'usages', item.usageId), { photos: u2.photos });
+    } else {
+      // フォント直下の写真の場合
+      const f2 = fonts.find(x => x.id === item.fontId);
+      if (!f2 || !f2.photos || !f2.photos[item.photoIdx]) return;
+      f2.photos[item.photoIdx] = { ...f2.photos[item.photoIdx], supplement: newVal };
+      await updateDoc(doc(db, 'fonts', item.fontId), { photos: f2.photos });
+    }
   } catch(err) { showToast('保存に失敗しました'); }
 });
 $('lightbox-edit-btn').addEventListener('click', () => {
