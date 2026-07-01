@@ -916,6 +916,7 @@
       <button class="cat-chip active" data-cat="">すべて</button>
       <button class="cat-chip" data-cat="ゴシック">ゴシック</button>
       <button class="cat-chip" data-cat="明朝">明朝</button>
+      <button class="cat-chip" data-cat="丸ゴ">丸ゴ</button>
       <button class="cat-chip" data-cat="セリフ">セリフ</button>
       <button class="cat-chip" data-cat="サンセリフ">サンセリフ</button>
       <button class="cat-chip" data-cat="UD">UD</button>
@@ -998,6 +999,7 @@
         <div class="radio-group">
           <label class="radio-label"><input type="radio" name="af-cat" value="ゴシック" checked> ゴシック</label>
           <label class="radio-label"><input type="radio" name="af-cat" value="明朝"> 明朝</label>
+          <label class="radio-label"><input type="radio" name="af-cat" value="丸ゴ"> 丸ゴ</label>
           <label class="radio-label"><input type="radio" name="af-cat" value="セリフ"> セリフ</label>
           <label class="radio-label"><input type="radio" name="af-cat" value="サンセリフ"> サンセリフ</label>
           <label class="radio-label"><input type="radio" name="af-cat" value="UD"> UD</label>
@@ -1038,6 +1040,7 @@
           <button class="cat-chip active" data-ucat="">すべて</button>
           <button class="cat-chip" data-ucat="ゴシック">ゴシック</button>
           <button class="cat-chip" data-ucat="明朝">明朝</button>
+          <button class="cat-chip" data-ucat="丸ゴ">丸ゴ</button>
           <button class="cat-chip" data-ucat="セリフ">セリフ</button>
           <button class="cat-chip" data-ucat="サンセリフ">サンセリフ</button>
           <button class="cat-chip" data-ucat="UD">UD</button>
@@ -1125,6 +1128,7 @@
         <div class="radio-group">
           <label class="radio-label"><input type="radio" name="ef-cat" value="ゴシック"> ゴシック</label>
           <label class="radio-label"><input type="radio" name="ef-cat" value="明朝"> 明朝</label>
+          <label class="radio-label"><input type="radio" name="ef-cat" value="丸ゴ"> 丸ゴ</label>
           <label class="radio-label"><input type="radio" name="ef-cat" value="セリフ"> セリフ</label>
           <label class="radio-label"><input type="radio" name="ef-cat" value="サンセリフ"> サンセリフ</label>
           <label class="radio-label"><input type="radio" name="ef-cat" value="UD"> UD</label>
@@ -1205,6 +1209,7 @@
         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;">
           <button class="quiz-chip" data-val="ゴシック">ゴシック</button>
           <button class="quiz-chip" data-val="明朝">明朝</button>
+          <button class="quiz-chip" data-val="丸ゴ">丸ゴ</button>
           <button class="quiz-chip" data-val="セリフ">セリフ</button>
           <button class="quiz-chip" data-val="サンセリフ">サンセリフ</button>
           <button class="quiz-chip" data-val="その他">その他</button>
@@ -2426,7 +2431,7 @@ function renderFontList() {
   if (langFilter) {
     const jaNames = new Set(FONT_DB.ja.map(x => x.name));
     const enNames = new Set(FONT_DB.en.map(x => x.name));
-    const JA_CATS = new Set(['ゴシック','明朝','UD']);
+    const JA_CATS = new Set(['ゴシック','明朝','丸ゴ','UD']);
     const EN_CATS = new Set(['セリフ','サンセリフ']);
     const getLang = f => {
       if (f.lang) return f.lang;           // 登録時に保存されたlangを優先
@@ -2504,12 +2509,12 @@ $('sort-btn').addEventListener('click', () => {
 
 // ── Cat chips per lang ────────────────────
 const CAT_CHIPS = {
-  '':   ['すべて', 'ゴシック', '明朝', 'セリフ', 'サンセリフ', 'UD', 'その他'],
-  'ja': ['すべて', 'ゴシック', '明朝', 'UD', 'その他'],
+  '':   ['すべて', 'ゴシック', '明朝', '丸ゴ', 'セリフ', 'サンセリフ', 'UD', 'その他'],
+  'ja': ['すべて', 'ゴシック', '明朝', '丸ゴ', 'UD', 'その他'],
   'en': ['すべて', 'セリフ', 'サンセリフ', 'UD', 'その他'],
 };
 const CAT_VALUES = {
-  'すべて': '', 'ゴシック': 'ゴシック', '明朝': '明朝',
+  'すべて': '', 'ゴシック': 'ゴシック', '明朝': '明朝', '丸ゴ': '丸ゴ',
   'セリフ': 'セリフ', 'サンセリフ': 'サンセリフ', 'UD': 'UD', 'その他': 'その他',
 };
 
