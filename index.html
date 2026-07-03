@@ -1595,13 +1595,14 @@
 
 <!-- 比較スライドインパネル -->
 <div id="compare-slide-panel" style="position:fixed;top:0;right:0;width:min(340px,100vw);height:100%;z-index:650;background:var(--c-bg);box-shadow:-4px 0 24px rgba(0,0,0,0.18);display:flex;flex-direction:column;transform:translateX(100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);pointer-events:none;">
-  <div style="padding:20px 20px 0;border-bottom:1px solid var(--c-border);padding-bottom:16px;">
+  <div style="padding:20px 20px 0;border-bottom:1px solid var(--c-border);padding-bottom:16px;display:flex;align-items:center;justify-content:space-between;">
     <div style="font-size:16px;font-weight:700;color:var(--c-text);">比較リスト</div>
+    <button id="compare-clear-all" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--c-text-sub);font-family:inherit;padding:4px 0;">全クリア</button>
   </div>
   <div id="compare-slide-list" style="flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:10px;"></div>
   <div style="padding:16px 20px;border-top:1px solid var(--c-border);display:flex;gap:10px;align-items:center;">
-    <button id="compare-slide-back" style="flex:0 0 auto;background:none;border:1.5px solid var(--c-border);border-radius:20px;padding:10px 18px;font-size:14px;color:var(--c-text-sub);cursor:pointer;font-family:inherit;white-space:nowrap;">もどる</button>
-    <button id="compare-slide-go" style="flex:1;background:var(--c-lavender);border:none;border-radius:20px;padding:12px;font-size:15px;font-weight:700;color:var(--c-text);cursor:pointer;font-family:inherit;">比較する</button>
+    <button id="compare-slide-back" style="flex:0 0 auto;background:none;border:1.5px solid var(--c-border);border-radius:100px;padding:12px 20px;font-size:14px;color:var(--c-text-sub);cursor:pointer;font-family:inherit;white-space:nowrap;">もどる</button>
+    <button id="compare-slide-go" style="flex:1;background:linear-gradient(135deg,#9b7fe8,#5aaae8);border:none;border-radius:100px;padding:13px;font-size:15px;font-weight:700;color:white;cursor:pointer;font-family:inherit;">比較する</button>
   </div>
 </div>
 <!-- スライドパネル背景 -->
@@ -4124,6 +4125,12 @@ $('compare-float-btn').addEventListener('click', () => {
 });
 
 $('compare-slide-back').addEventListener('click', () => {
+  closeCompareSlidePanel();
+});
+
+$('compare-clear-all').addEventListener('click', () => {
+  compareList = [];
+  updateCompareFloat();
   closeCompareSlidePanel();
 });
 
