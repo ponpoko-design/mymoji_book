@@ -3044,6 +3044,7 @@ async function openDetail(id) {
         supplement: !!p.supplement,
         photoIdx: pi,
         fontId: id,
+        fontName: f.name || '',
         onEdit: () => {
           const origUrl = p.originalUrl || '';
           openPhotoEditor(p.url, async (blob, revertUrl) => {
@@ -3326,6 +3327,7 @@ function openUsageDetail(fontId, usageId, usages) {
         fontId: fontId,
         usageId: usageId,
         photoIdx: pi,
+        fontName: f ? f.name : '',
         onEdit: () => {
           const origUrl = p.originalUrl || '';
           openPhotoEditor(p.url, async (blob, revertUrl) => {
@@ -3884,6 +3886,8 @@ function _lightboxShow() {
   $('lightbox-memo').textContent = item.memo || '';
   lightboxCurrentUrl = item.url;
   lightboxOnEdit = item.onEdit || null;
+  // 写真ごとのfontNameがあれば更新（スワイプ時も正しいフォント名で比較できるように）
+  if (item.fontName !== undefined) lightboxCurrentFontName = item.fontName;
   const editBtn = $('lightbox-edit-btn');
   if (lightboxOnEdit) editBtn.classList.add('visible');
   else editBtn.classList.remove('visible');
