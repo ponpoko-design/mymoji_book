@@ -1609,6 +1609,11 @@
 
 <!-- 比較画面 -->
 <div id="compare-screen" style="display:none;position:fixed;inset:0;z-index:600;background:#111;flex-direction:column;">
+  <div style="display:flex;align-items:center;justify-content:flex-end;padding:10px 14px;position:absolute;top:0;right:0;z-index:10;">
+    <button id="compare-screen-close" style="background:rgba(255,255,255,0.15);border:none;color:white;border-radius:50%;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
   <div id="compare-panels" style="flex:1;display:flex;flex-direction:column;overflow:hidden;"></div>
 </div>
 
@@ -4121,6 +4126,11 @@ $('compare-slide-back').addEventListener('click', () => {
   closeCompareSlidePanel();
 });
 
+$('compare-screen-close').addEventListener('click', () => {
+  $('compare-screen').classList.remove('active');
+  updateCompareFloat();
+});
+
 $('compare-slide-overlay').addEventListener('click', () => {
   closeCompareSlidePanel();
 });
@@ -4144,7 +4154,7 @@ $('lightbox-compare-btn').addEventListener('click', () => {
     $('lightbox-compare-btn').classList.remove('active');
     showToast('比較から除外しました');
   } else {
-    if (compareList.length >= 4) { showToast('最大4枚まで選択できます'); return; }
+    if (compareList.length >= 5) { showToast('リストから削除してから追加してください（最大4枚）'); return; }
     compareList.push({ url, memo, fontName: lightboxCurrentFontName });
     $('lightbox-compare-btn').classList.add('active');
     showToast(`比較に追加 (${compareList.length}/4)`);
@@ -4157,11 +4167,21 @@ function renderCompareScreen() {
   const count = compareList.length;
   panels.innerHTML = '';
 
+  if (count === 0) {
+    // リストが空になった場合
+    panels.style.cssText = 'flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;';
+    panels.innerHTML = `
+      <div style="color:rgba(255,255,255,0.6);font-size:15px;">比較リストが空です</div>
+      <button onclick="$('compare-screen').classList.remove('active');updateCompareFloat();" style="background:rgba(255,255,255,0.15);border:none;color:white;border-radius:20px;padding:10px 24px;font-size:14px;cursor:pointer;font-family:inherit;">閉じる</button>
+    `;
+    return;
+  }
+
   if (count <= 3) {
     panels.style.cssText = 'flex:1;display:flex;flex-direction:column;overflow:hidden;';
     compareList.forEach((item, i) => panels.appendChild(makeComparePanel(item, i)));
   } else {
-    // 4枚: 2x2
+    // 4枚以上: 2x2
     panels.style.cssText = 'flex:1;display:flex;flex-direction:column;overflow:hidden;';
     const top = document.createElement('div');
     top.style.cssText = 'flex:1;display:flex;flex-direction:row;overflow:hidden;';
@@ -4213,14 +4233,9 @@ function makeComparePanel(item, idx) {
   closeBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
   closeBtn.addEventListener('click', e => {
     e.stopPropagation();
-    compareList = compareList.filter(c => c.url !== item.url);
+    // 表示からは消すが compareList には残す
+    panel.remove();
     updateCompareFloat();
-    if (compareList.length === 0) {
-      $('compare-screen').classList.remove('active');
-      updateCompareFloat();
-    } else {
-      renderCompareScreen();
-    }
   });
   bottomRight.appendChild(closeBtn);
   panel.appendChild(bottomRight);
@@ -5738,13 +5753,28 @@ function buildUsagePool() {
 }
 
 // ── build choices（同言語に絞る）────────────
+const JA_CATS_QUIZ = new Set(['ゴシック','明朝','丸ゴ','UD']);
+function getFontLang(f) {
+  if (f.lang) return f.lang;
+  if (jaNameSet.has(f.name)) return 'ja';
+  if (enNameSet.has(f.name)) return 'en';
+  if (JA_CATS_QUIZ.has(f.category)) return 'ja';
+  if (f.category === 'セリフ' || f.category === 'サンセリフ') return 'en';
+  return null;
+}
+
 function buildChoices(correctName) {
-  const isJa = jaNameSet.has(correctName);
-  const isEn = enNameSet.has(correctName);
+  const correctFont = fonts.find(f => f.name === correctName);
+  const correctLang = correctFont ? getFontLang(correctFont) : null;
+
   let namePool;
-  if (isJa)      namePool = fonts.filter(f => jaNameSet.has(f.name)).map(f => f.name);
-  else if (isEn) namePool = fonts.filter(f => enNameSet.has(f.name)).map(f => f.name);
-  else           namePool = fonts.map(f => f.name);
+  if (correctLang === 'ja') {
+    namePool = fonts.filter(f => getFontLang(f) === 'ja').map(f => f.name);
+  } else if (correctLang === 'en') {
+    namePool = fonts.filter(f => getFontLang(f) === 'en').map(f => f.name);
+  } else {
+    namePool = fonts.map(f => f.name);
+  }
 
   const others = [...new Set(namePool)].filter(n => n !== correctName);
   for (let i = others.length - 1; i > 0; i--) {
