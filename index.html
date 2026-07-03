@@ -1205,6 +1205,10 @@
       </div>
       <div class="form-group" id="eu-photo-memos-wrap"></div>
       <button class="btn-primary" id="eu-submit">保存する</button>
+      <button id="usage-copy-btn" style="margin-top:12px;width:100%;display:flex;align-items:center;justify-content:center;gap:6px;background:none;border:1.5px solid var(--c-border);border-radius:100px;padding:12px 16px;font-size:14px;color:var(--c-text-sub);cursor:pointer;font-family:inherit;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        用例をコピー
+      </button>
     </div>
   </div>
   <!-- ===== QUIZ ===== -->
@@ -3345,10 +3349,6 @@ function openUsageDetail(fontId, usageId, usages) {
           <button class="usage-related-link" data-font-id="${r.fontId}" data-usage-id="${r.usageId}" style="background:var(--c-lavender);border:none;border-radius:20px;padding:4px 12px;font-size:13px;font-weight:600;color:var(--c-text);cursor:pointer;font-family:inherit;">${r.fontName}</button>
         `).join('')}
       </div>` : ''}
-      <button id="usage-copy-btn" style="margin-top:16px;display:flex;align-items:center;gap:6px;background:none;border:1.5px solid var(--c-border);border-radius:100px;padding:8px 16px;font-size:13px;color:var(--c-text-sub);cursor:pointer;font-family:inherit;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-        用例をコピー
-      </button>
       ${photos.length?`
         <div class="detail-section">
           <h3>PHOTOS</h3>
@@ -3601,9 +3601,7 @@ function openUsageDetail(fontId, usageId, usages) {
     });
   });
 
-  // 用例コピーボタン
-  const copyBtn = $('usage-detail-content').querySelector('#usage-copy-btn');
-  if (copyBtn) copyBtn.addEventListener('click', () => openUsageCopyModal(fontId, usageId, u));
+  // 用例コピーボタンは編集画面に移動済み
 
   showScreen('screen-usage-detail');
 }
@@ -3867,6 +3865,7 @@ function openEditUsage(fontId, u) {
     'この操作は取り消せません',
     () => deleteUsage(fontId, u.id)
   );
+  $('usage-copy-btn').onclick = () => openUsageCopyModal(fontId, u.id, u);
   showScreen('screen-edit-usage');
 }
 
