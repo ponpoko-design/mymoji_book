@@ -4130,15 +4130,26 @@ $('compare-slide-back').addEventListener('click', () => {
 
 $('compare-clear-all').addEventListener('click', () => {
   compareList = [];
-  updateCompareFloat();
-  closeCompareSlidePanel();
+  $('compare-screen').classList.remove('active');
+  $('compare-slide-panel').style.transform = 'translateX(100%)';
+  $('compare-slide-panel').style.pointerEvents = 'none';
+  $('compare-slide-overlay').style.opacity = '0';
+  $('compare-slide-overlay').style.display = 'none';
   $('lightbox').classList.remove('active');
+  updateCompareFloat();
   showScreen('screen-home');
   renderHome();
 });
 
 $('compare-screen-close').addEventListener('click', () => {
+  // 比較画面を閉じる
   $('compare-screen').classList.remove('active');
+  // スライドパネルも閉じる
+  $('compare-slide-panel').style.transform = 'translateX(100%)';
+  $('compare-slide-panel').style.pointerEvents = 'none';
+  $('compare-slide-overlay').style.opacity = '0';
+  $('compare-slide-overlay').style.display = 'none';
+  // ライトボックスも閉じる
   $('lightbox').classList.remove('active');
   updateCompareFloat();
   showScreen('screen-home');
