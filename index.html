@@ -4132,10 +4132,14 @@ $('compare-clear-all').addEventListener('click', () => {
   compareList = [];
   updateCompareFloat();
   closeCompareSlidePanel();
+  $('lightbox').classList.remove('active');
+  showScreen('screen-home');
+  renderHome();
 });
 
 $('compare-screen-close').addEventListener('click', () => {
   $('compare-screen').classList.remove('active');
+  $('lightbox').classList.remove('active');
   updateCompareFloat();
   showScreen('screen-home');
   renderHome();
