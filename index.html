@@ -1616,6 +1616,36 @@
   <div id="compare-panels" style="flex:1;display:flex;flex-direction:column;overflow:hidden;"></div>
 </div>
 
+<!-- 用例コピーモーダル -->
+<div id="usage-copy-modal" style="display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,0.45);align-items:flex-end;justify-content:center;">
+  <div style="background:var(--c-bg);border-radius:24px 24px 0 0;width:100%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;">
+    <!-- ヘッダー -->
+    <div style="padding:20px 20px 0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <div style="font-size:17px;font-weight:700;">用例をコピー</div>
+      <button id="usage-copy-modal-close" style="background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;color:var(--c-text-sub);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <!-- スクロール領域 -->
+    <div style="flex:1;overflow-y:auto;padding:16px 20px 24px;">
+      <!-- コピー先フォント選択 -->
+      <div style="font-size:13px;font-weight:700;color:var(--c-text-sub);margin-bottom:8px;letter-spacing:0.05em;">コピー先フォント</div>
+      <div class="search-box" style="margin-bottom:10px;">
+        <span class="search-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
+        <input type="text" id="usage-copy-font-search" placeholder="フォント名で検索">
+      </div>
+      <div id="usage-copy-font-list" style="max-height:220px;overflow-y:auto;border:1px solid var(--c-border);border-radius:var(--radius-sm);margin-bottom:20px;"></div>
+      <!-- 写真チェック -->
+      <div style="font-size:13px;font-weight:700;color:var(--c-text-sub);margin-bottom:10px;letter-spacing:0.05em;">コピーする写真</div>
+      <div id="usage-copy-photos" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
+    </div>
+    <!-- 下部ボタン -->
+    <div style="padding:14px 20px 32px;border-top:1px solid var(--c-border);flex-shrink:0;">
+      <button id="usage-copy-submit" style="width:100%;background:linear-gradient(135deg,#9b7fe8,#5aaae8);border:none;border-radius:100px;padding:15px;font-size:16px;font-weight:700;color:white;cursor:pointer;font-family:inherit;">コピーする</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div id="toast"></div>
 
@@ -3307,7 +3337,18 @@ function openUsageDetail(fontId, usageId, usages) {
     <div class="detail-body">
       <div style="font-size: 15px;color:var(--c-text-sub);">登録日：${u.date||'-'}</div>
       <div class="detail-title" style="font-size: 20px;margin-top:4px;">${u.place||'場所未記入'}</div>
-      ${f?`<div class="detail-maker" style="margin-top:4px;">${f.name}</div>`:''}
+      ${f?`<div class="detail-maker" style="margin-top:4px;cursor:pointer;" id="usage-detail-font-link">${f.name}</div>`:''}
+      ${(u.relatedUsages||[]).length > 0 ? `
+      <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
+        <span style="font-size:13px;color:var(--c-text-sub);">関連：</span>
+        ${(u.relatedUsages||[]).map(r=>`
+          <button class="usage-related-link" data-font-id="${r.fontId}" data-usage-id="${r.usageId}" style="background:var(--c-lavender);border:none;border-radius:20px;padding:4px 12px;font-size:13px;font-weight:600;color:var(--c-text);cursor:pointer;font-family:inherit;">${r.fontName}</button>
+        `).join('')}
+      </div>` : ''}
+      <button id="usage-copy-btn" style="margin-top:16px;display:flex;align-items:center;gap:6px;background:none;border:1.5px solid var(--c-border);border-radius:100px;padding:8px 16px;font-size:13px;color:var(--c-text-sub);cursor:pointer;font-family:inherit;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        用例をコピー
+      </button>
       ${photos.length?`
         <div class="detail-section">
           <h3>PHOTOS</h3>
@@ -3548,6 +3589,22 @@ function openUsageDetail(fontId, usageId, usages) {
   }
 
   $('usage-detail-edit-btn').onclick = () => openEditUsage(fontId, u);
+
+  // フォント名クリック → フォント詳細へ
+  const fontLink = $('usage-detail-content').querySelector('#usage-detail-font-link');
+  if (fontLink) fontLink.addEventListener('click', () => openDetail(fontId));
+
+  // 関連リンク
+  $('usage-detail-content').querySelectorAll('.usage-related-link').forEach(btn => {
+    btn.addEventListener('click', () => {
+      openDetail(btn.dataset.fontId);
+    });
+  });
+
+  // 用例コピーボタン
+  const copyBtn = $('usage-detail-content').querySelector('#usage-copy-btn');
+  if (copyBtn) copyBtn.addEventListener('click', () => openUsageCopyModal(fontId, usageId, u));
+
   showScreen('screen-usage-detail');
 }
 
@@ -3556,7 +3613,122 @@ $('usage-detail-back').addEventListener('click', () => navLock(() => {
   else showScreen('screen-home');
 }));
 
-// ── Confirm Dialog ─────────────────────────
+// ── Usage Copy Modal ───────────────────────
+let copySourceFontId = null;
+let copySourceUsageId = null;
+let copySourceUsage = null;
+let copyTargetFontId = null;
+let copyPhotoChecks = [];
+
+function openUsageCopyModal(fontId, usageId, u) {
+  copySourceFontId = fontId;
+  copySourceUsageId = usageId;
+  copySourceUsage = u;
+  copyTargetFontId = null;
+  copyPhotoChecks = (u.photos||[]).map((_,i) => i); // 全チェック
+
+  // フォントリスト描画
+  renderCopyFontList('');
+  $('usage-copy-font-search').value = '';
+  $('usage-copy-font-search').oninput = () => renderCopyFontList($('usage-copy-font-search').value);
+
+  // 写真チェック描画
+  renderCopyPhotos();
+
+  $('usage-copy-modal').style.display = 'flex';
+}
+
+function renderCopyFontList(q) {
+  const wrap = $('usage-copy-font-list');
+  let list = fonts.filter(f => f.id !== copySourceFontId);
+  if (q) list = list.filter(f => (f.name||'').toLowerCase().includes(q.toLowerCase()));
+  if (!list.length) {
+    wrap.innerHTML = `<div style="padding:14px;color:var(--c-text-sub);font-size:14px;text-align:center;">見つかりません</div>`;
+    return;
+  }
+  wrap.innerHTML = list.map(f => `
+    <div class="copy-font-item" data-id="${f.id}" style="display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--c-border);${copyTargetFontId===f.id?'background:rgba(211,195,252,0.3);':''}">
+      <div style="flex:1;font-size:14px;font-weight:${copyTargetFontId===f.id?'700':'400'};">${f.name}</div>
+      ${copyTargetFontId===f.id?`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9b7fe8" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>`:''}
+    </div>`).join('');
+  wrap.querySelectorAll('.copy-font-item').forEach(el => {
+    el.addEventListener('click', () => {
+      copyTargetFontId = el.dataset.id;
+      renderCopyFontList($('usage-copy-font-search').value);
+    });
+  });
+}
+
+function renderCopyPhotos() {
+  const photos = copySourceUsage.photos || [];
+  $('usage-copy-photos').innerHTML = photos.map((p, i) => `
+    <div style="position:relative;cursor:pointer;" data-photo-idx="${i}">
+      <img src="${p.url}" style="width:90px;height:90px;object-fit:cover;border-radius:10px;border:2.5px solid ${copyPhotoChecks.includes(i)?'#9b7fe8':'var(--c-border)'};display:block;">
+      <div style="position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:50%;background:${copyPhotoChecks.includes(i)?'#9b7fe8':'rgba(255,255,255,0.8)'};border:2px solid ${copyPhotoChecks.includes(i)?'#9b7fe8':'#ccc'};display:flex;align-items:center;justify-content:center;">
+        ${copyPhotoChecks.includes(i)?`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>`:''}
+      </div>
+    </div>`).join('');
+  $('usage-copy-photos').querySelectorAll('[data-photo-idx]').forEach(el => {
+    el.addEventListener('click', () => {
+      const i = parseInt(el.dataset.photoIdx);
+      if (copyPhotoChecks.includes(i)) copyPhotoChecks = copyPhotoChecks.filter(x=>x!==i);
+      else copyPhotoChecks.push(i);
+      renderCopyPhotos();
+    });
+  });
+}
+
+$('usage-copy-modal-close').addEventListener('click', () => {
+  $('usage-copy-modal').style.display = 'none';
+});
+
+$('usage-copy-modal').addEventListener('click', e => {
+  if (e.target === $('usage-copy-modal')) $('usage-copy-modal').style.display = 'none';
+});
+
+$('usage-copy-submit').addEventListener('click', async () => {
+  if (!copyTargetFontId) { showToast('コピー先のフォントを選んでください'); return; }
+  if (copyPhotoChecks.length === 0) { showToast('写真を1枚以上選んでください'); return; }
+
+  $('usage-copy-submit').disabled = true;
+  $('usage-copy-submit').textContent = 'コピー中…';
+  try {
+    const u = copySourceUsage;
+    const allPhotos = u.photos || [];
+    const selectedPhotos = copyPhotoChecks.sort().map(i => allPhotos[i]);
+    const targetFont = fonts.find(f => f.id === copyTargetFontId);
+
+    // コピー先に用例を追加
+    const newUsageRef = await addDoc(collection(db,'fonts',copyTargetFontId,'usages'), {
+      date: u.date || '',
+      place: u.place || '',
+      photos: selectedPhotos,
+      createdAt: serverTimestamp(),
+      relatedUsages: [{ fontId: copySourceFontId, usageId: copySourceUsageId, fontName: fonts.find(f=>f.id===copySourceFontId)?.name||'' }]
+    });
+
+    // コピー元の relatedUsages に追記
+    const existing = u.relatedUsages || [];
+    const updated = [...existing, { fontId: copyTargetFontId, usageId: newUsageRef.id, fontName: targetFont?.name||'' }];
+    await updateDoc(doc(db,'fonts',copySourceFontId,'usages',copySourceUsageId), { relatedUsages: updated });
+    u.relatedUsages = updated;
+
+    showToast(`${targetFont?.name||''}にコピーしました！`);
+    $('usage-copy-modal').style.display = 'none';
+
+    // 詳細画面を再描画して関連リンクを反映
+    const snap = await getDocs(collection(db,'fonts',copySourceFontId,'usages'));
+    const usages = snap.docs.map(d=>({id:d.id,...d.data()}));
+    openUsageDetail(copySourceFontId, copySourceUsageId, usages);
+  } catch(e) {
+    console.error(e); showToast('エラーが発生しました');
+  } finally {
+    $('usage-copy-submit').disabled = false;
+    $('usage-copy-submit').textContent = 'コピーする';
+  }
+});
+
+
 let confirmCallback = null;
 function showConfirm(title, msg, onOk) {
   $('confirm-title').textContent = title;
