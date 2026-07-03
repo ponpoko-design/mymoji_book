@@ -1593,6 +1593,20 @@
   <span id="compare-count-badge">0</span>
 </div>
 
+<!-- 比較スライドインパネル -->
+<div id="compare-slide-panel" style="position:fixed;top:0;right:0;width:min(340px,100vw);height:100%;z-index:650;background:var(--c-bg);box-shadow:-4px 0 24px rgba(0,0,0,0.18);display:flex;flex-direction:column;transform:translateX(100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);pointer-events:none;">
+  <div style="padding:20px 20px 0;border-bottom:1px solid var(--c-border);padding-bottom:16px;">
+    <div style="font-size:16px;font-weight:700;color:var(--c-text);">比較リスト</div>
+  </div>
+  <div id="compare-slide-list" style="flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:10px;"></div>
+  <div style="padding:16px 20px;border-top:1px solid var(--c-border);display:flex;gap:10px;align-items:center;">
+    <button id="compare-slide-back" style="flex:0 0 auto;background:none;border:1.5px solid var(--c-border);border-radius:20px;padding:10px 18px;font-size:14px;color:var(--c-text-sub);cursor:pointer;font-family:inherit;white-space:nowrap;">もどる</button>
+    <button id="compare-slide-go" style="flex:1;background:var(--c-lavender);border:none;border-radius:20px;padding:12px;font-size:15px;font-weight:700;color:var(--c-text);cursor:pointer;font-family:inherit;">比較する</button>
+  </div>
+</div>
+<!-- スライドパネル背景 -->
+<div id="compare-slide-overlay" style="position:fixed;inset:0;z-index:640;background:rgba(0,0,0,0.3);display:none;opacity:0;transition:opacity 0.28s;"></div>
+
 <!-- 比較画面 -->
 <div id="compare-screen" style="display:none;position:fixed;inset:0;z-index:600;background:#111;flex-direction:column;">
   <div id="compare-panels" style="flex:1;display:flex;flex-direction:column;overflow:hidden;"></div>
@@ -4035,10 +4049,87 @@ let compareList = []; // [{url, memo}]
 function updateCompareFloat() {
   const btn = $('compare-float-btn');
   $('compare-count-badge').textContent = compareList.length;
-  // 比較画面が開いているときは非表示
+  // 比較画面 or スライドパネルが開いているときは非表示
   const compareScreenActive = $('compare-screen').classList.contains('active');
-  btn.style.display = (compareList.length >= 2 && !compareScreenActive) ? 'flex' : 'none';
+  const slideOpen = $('compare-slide-panel').style.transform === 'translateX(0%)';
+  btn.style.display = (compareList.length >= 1 && !compareScreenActive && !slideOpen) ? 'flex' : 'none';
 }
+
+function openCompareSlidePanel() {
+  const panel = $('compare-slide-panel');
+  const overlay = $('compare-slide-overlay');
+  const list = $('compare-slide-list');
+
+  // リスト描画
+  list.innerHTML = compareList.length === 0
+    ? `<div style="color:var(--c-text-sub);font-size:14px;">選択なし</div>`
+    : compareList.map(item => `
+        <div style="display:flex;align-items:center;gap:12px;background:var(--c-card);border-radius:var(--radius-sm);padding:10px 14px;border:1px solid var(--c-border);">
+          <img src="${item.url}" style="width:52px;height:52px;object-fit:cover;border-radius:8px;flex-shrink:0;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:14px;font-weight:700;color:var(--c-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.fontName||'不明'}</div>
+            ${item.memo ? `<div style="font-size:12px;color:var(--c-text-sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.memo}</div>` : ''}
+          </div>
+          <button data-remove-url="${item.url}" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--c-text-sub);display:flex;align-items:center;flex-shrink:0;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>`).join('');
+
+  list.querySelectorAll('[data-remove-url]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      compareList = compareList.filter(c => c.url !== btn.dataset.removeUrl);
+      if (compareList.length === 0) {
+        closeCompareSlidePanel();
+      } else {
+        openCompareSlidePanel(); // 再描画
+      }
+      updateCompareFloat();
+    });
+  });
+
+  panel.style.pointerEvents = 'auto';
+  overlay.style.display = 'block';
+  requestAnimationFrame(() => {
+    panel.style.transform = 'translateX(0%)';
+    overlay.style.opacity = '1';
+  });
+  updateCompareFloat();
+}
+
+function closeCompareSlidePanel() {
+  const panel = $('compare-slide-panel');
+  const overlay = $('compare-slide-overlay');
+  panel.style.transform = 'translateX(100%)';
+  overlay.style.opacity = '0';
+  setTimeout(() => {
+    overlay.style.display = 'none';
+    panel.style.pointerEvents = 'none';
+    updateCompareFloat();
+  }, 280);
+}
+
+$('compare-float-btn').addEventListener('click', () => {
+  openCompareSlidePanel();
+});
+
+$('compare-slide-back').addEventListener('click', () => {
+  closeCompareSlidePanel();
+});
+
+$('compare-slide-overlay').addEventListener('click', () => {
+  closeCompareSlidePanel();
+});
+
+$('compare-slide-go').addEventListener('click', () => {
+  if (compareList.length < 1) { showToast('比較する画像を選んでください'); return; }
+  closeCompareSlidePanel();
+  setTimeout(() => {
+    renderCompareScreen();
+    $('compare-screen').classList.add('active');
+    updateCompareFloat();
+  }, 100);
+});
 
 $('lightbox-compare-btn').addEventListener('click', () => {
   const url = lightboxCurrentUrl;
@@ -4055,12 +4146,6 @@ $('lightbox-compare-btn').addEventListener('click', () => {
     showToast(`比較に追加 (${compareList.length}/4)`);
   }
   updateCompareFloat();
-});
-
-$('compare-float-btn').addEventListener('click', () => {
-  renderCompareScreen();
-  $('compare-screen').classList.add('active');
-  updateCompareFloat(); // 比較画面開いたので非表示に
 });
 
 function renderCompareScreen() {
@@ -4411,9 +4496,11 @@ function renderSelectedFontTags() {
   wrap.innerHTML = selectedUsageFontIds.map(fid => {
     const f = fonts.find(x => x.id === fid);
     if (!f) return '';
-    return `<span data-tag-fid="${fid}" style="display:inline-flex;align-items:center;gap:5px;background:var(--c-lavender);color:var(--c-text);border-radius:20px;padding:4px 10px 4px 12px;font-size:13px;font-weight:600;">
-      ${f.name}
-      <button data-remove-fid="${fid}" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;padding:0;color:var(--c-text-sub);line-height:1;">
+    return `<span data-tag-fid="${fid}" style="display:inline-flex;align-items:center;gap:0;background:var(--c-lavender);color:var(--c-text);border-radius:20px;overflow:hidden;">
+      <button data-open-fid="${fid}" style="background:none;border:none;cursor:pointer;padding:8px 6px 8px 14px;font-size:13px;font-weight:600;color:var(--c-text);font-family:inherit;line-height:1.2;white-space:nowrap;">
+        ${f.name}
+      </button>
+      <button data-remove-fid="${fid}" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;padding:8px 12px 8px 4px;color:var(--c-text-sub);line-height:1;">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </span>`;
@@ -4424,6 +4511,12 @@ function renderSelectedFontTags() {
       const fid = btn.dataset.removeFid;
       selectedUsageFontIds = selectedUsageFontIds.filter(id => id !== fid);
       renderSelectedFontTags();
+    });
+  });
+  wrap.querySelectorAll('[data-open-fid]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      openDetail(btn.dataset.openFid);
     });
   });
 }
