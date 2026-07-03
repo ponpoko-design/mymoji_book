@@ -1609,6 +1609,9 @@
 
 <!-- 比較画面 -->
 <div id="compare-screen" style="display:none;position:fixed;inset:0;z-index:600;background:#111;flex-direction:column;">
+  <button id="compare-screen-close" style="position:absolute;top:14px;right:14px;z-index:10;width:40px;height:40px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#9b7fe8,#5aaae8);touch-action:manipulation;box-shadow:0 2px 10px rgba(0,0,0,0.4);">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
   <div id="compare-panels" style="flex:1;display:flex;flex-direction:column;overflow:hidden;"></div>
 </div>
 
@@ -3270,6 +3273,9 @@ $('detail-back').addEventListener('click', () => navLock(() => {
   if (quizPrevScreen === 'quiz') {
     quizPrevScreen = null;
     showScreen('screen-quiz');
+  } else if (addUsageFrom === 'add-usage') {
+    addUsageFrom = 'nav';
+    showScreen('screen-add-usage');
   } else {
     showScreen('screen-home');
   }
@@ -4121,6 +4127,13 @@ $('compare-slide-back').addEventListener('click', () => {
   closeCompareSlidePanel();
 });
 
+$('compare-screen-close').addEventListener('click', () => {
+  $('compare-screen').classList.remove('active');
+  updateCompareFloat();
+  showScreen('screen-home');
+  renderHome();
+});
+
 
 
 
@@ -4528,6 +4541,7 @@ function renderSelectedFontTags() {
   wrap.querySelectorAll('[data-open-fid]').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
+      addUsageFrom = 'add-usage';
       openDetail(btn.dataset.openFid);
     });
   });
