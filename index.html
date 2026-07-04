@@ -2900,14 +2900,9 @@ async function openDetail(id) {
         const fLocal = fonts.find(x=>x.id===id);
         if (fLocal) fLocal.coverPosition = null;
         f.coverPosition = null;
-        // transformをクリアしてcontain中央表示に戻す
-        coverImg.style.transform = '';
-        coverImg.style.position = '';
-        coverImg.style.top = '';
-        coverImg.style.left = '';
-        coverImg.style.width = '100%';
-        coverImg.style.height = '100%';
-        coverImg.style.objectFit = 'contain';
+        // 変数もリセットしてinitCoverSizeで正しく再計算
+        tx = 0; ty = 0; scale = 1;
+        initCoverSize();
         showToast('リセットしました');
       } catch(e2) { showToast('リセットに失敗しました'); }
     });
@@ -3469,8 +3464,8 @@ function openUsageDetail(fontId, usageId, usages) {
       try {
         await updateDoc(doc(db,'fonts',fontId,'usages',usageId), { coverPosition: null });
         u.coverPosition = null;
-        usageCoverImg.style.cssText = 'width:100%;height:100%;object-fit:contain;';
         utx = 0; uty = 0; uscale = 1;
+        initUsageCoverSize();
         showToast('リセットしました');
       } catch(e2) { showToast('リセットに失敗しました'); }
     });
