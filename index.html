@@ -4874,11 +4874,24 @@ $('au-submit').addEventListener('click', async () => {
       // 写真は1回だけアップロード（最初のフォントのパスで）
       const photos = await uploadPhotos(`fonts/${selectedUsageFontIds[0]}/usages`, auPhotoFiles, auPhotoMemos);
       const usageData = { date, place: $('au-place').value.trim(), photos, createdAt: serverTimestamp() };
-      // 全フォントに同じ用例を登録
-      await Promise.all(selectedUsageFontIds.map(fid =>
+
+      // 全フォントに用例を登録し、それぞれのdocRefを取得
+      const refs = await Promise.all(selectedUsageFontIds.map(fid =>
         addDoc(collection(db,'fonts',fid,'usages'), usageData)
       ));
+
+      // 複数フォントの場合は相互にrelatedUsagesを書き込む
       if (selectedUsageFontIds.length > 1) {
+        await Promise.all(selectedUsageFontIds.map((fid, i) => {
+          const relatedUsages = selectedUsageFontIds
+            .map((otherFid, j) => ({
+              fontId: otherFid,
+              usageId: refs[j].id,
+              fontName: fonts.find(f => f.id === otherFid)?.name || ''
+            }))
+            .filter((_, j) => j !== i); // 自分自身を除く
+          return updateDoc(refs[i], { relatedUsages });
+        }));
         showToast(`${selectedUsageFontIds.length}件のフォントに用例を登録しました！`);
       } else {
         showToast('用例を登録しました！');
