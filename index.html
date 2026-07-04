@@ -2343,7 +2343,7 @@ const showToast = msg => {
 const hideLoading = () => $('loading').style.display = 'none';
 // navLock: タイムスタンプベースのdebounce（ロック状態を持たない）
 let _lastNavTime = 0;
-function navLock(fn, delay = 250) {
+function navLock(fn, delay = 150) {
   const now = Date.now();
   if (now - _lastNavTime < delay) return;
   _lastNavTime = now;
