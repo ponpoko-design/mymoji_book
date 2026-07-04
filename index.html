@@ -3040,7 +3040,7 @@ async function openDetail(id) {
           ...(hasOriginal ? [{ action: 'revert', icon: '↩️', label: '元の写真に戻す' }] : []),
         ];
         const action = await showContextMenu(e.clientX, e.clientY, items);
-        if (action === 'view') openLightbox(el.dataset.url, el.dataset.memo);
+        if (action === 'view') openLightbox(el.dataset.url, el.dataset.memo, null, f.name, null, id);
         if (action === 'cover') {
           if (!f2?.photos) return;
           const newPhotos = [...f2.photos];
@@ -3115,10 +3115,10 @@ async function openDetail(id) {
                 openDetail(id);
               }
             } catch(e2) { showToast('保存に失敗しました'); }
-          }, () => openLightbox(p.url, p.memo || '', null, f.name), origUrl);
+          }, () => openLightbox(p.url, p.memo || '', null, f.name, null, id), origUrl);
         }
       }));
-      openLightbox(url, memo, null, f.name, photosArr);
+      openLightbox(url, memo, null, f.name, photosArr, id);
     });
   });
   $('detail-content').querySelectorAll('.usage-card').forEach(el => {
@@ -3406,10 +3406,10 @@ function openUsageDetail(fontId, usageId, usages) {
               showToast('保存しました');
               openUsageDetail(fontId, usageId, usages);
             } catch(e2) { showToast('保存に失敗しました'); }
-          }, () => openLightbox(p.url, p.memo || '', null, f ? f.name : ''), origUrl);
+          }, () => openLightbox(p.url, p.memo || '', null, f ? f.name : '', null, fontId), origUrl);
         }
       }));
-      openLightbox(url, memo, null, f ? f.name : '', photosArr);
+      openLightbox(url, memo, null, f ? f.name : '', photosArr, fontId);
     });
   });
 
@@ -4045,17 +4045,17 @@ let lightboxCurrentFontId = '';
 let lightboxPhotos = [];   // [{url, memo, onEdit}]
 let lightboxIndex = 0;
 
-function openLightbox(url, memo, onEdit, fontName, photosArr) {
-  // photosArr: [{url, memo, onEdit}] が渡されればスワイプ対応
+function openLightbox(url, memo, onEdit, fontName, photosArr, fontId) {
   if (photosArr && photosArr.length > 0) {
     lightboxPhotos = photosArr;
     lightboxIndex = photosArr.findIndex(p => p.url === url);
     if (lightboxIndex < 0) lightboxIndex = 0;
   } else {
-    lightboxPhotos = [{ url, memo, onEdit }];
+    lightboxPhotos = [{ url, memo, onEdit, fontId: fontId || '', fontName: fontName || '' }];
     lightboxIndex = 0;
   }
   if (fontName !== undefined) lightboxCurrentFontName = fontName || '';
+  if (fontId !== undefined) lightboxCurrentFontId = fontId || '';
   _lightboxShow();
 }
 
