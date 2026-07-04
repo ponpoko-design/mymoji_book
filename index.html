@@ -2852,6 +2852,15 @@ async function openDetail(id) {
     }
 
     function applyTransform() {
+      coverImg.style.position = 'absolute';
+      coverImg.style.top = '50%';
+      coverImg.style.left = '50%';
+      coverImg.style.width = 'auto';
+      coverImg.style.height = 'auto';
+      coverImg.style.maxWidth = 'none';
+      coverImg.style.maxHeight = 'none';
+      coverImg.style.objectFit = 'unset';
+      coverImg.style.transformOrigin = 'center center';
       coverImg.style.transform = `translate(-50%,-50%) translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${scale.toFixed(3)})`;
     }
 
@@ -2864,12 +2873,9 @@ async function openDetail(id) {
       if (!iw || !ih) return;
       const containScale = Math.min(hw / iw, hh / ih);
       if (!f.coverPosition) {
-        // coverPositionなし → contain
         scale = containScale;
         tx = 0; ty = 0;
       } else {
-        // coverPositionあり → パース済みのtx/ty/scaleをそのまま使うが
-        // scaleがcontainより小さい場合（画像が枠より小さくなる）はcontainに補正
         if (scale < containScale * 0.5) {
           scale = containScale;
           tx = 0; ty = 0;
@@ -3139,7 +3145,7 @@ async function openDetail(id) {
         if (!file) { document.body.removeChild(input); return; }
         photoAddBtn.style.opacity = '0.4';
         try {
-          const compressed = await compressImage(file, 900, 0.75);
+          const compressed = await compressImage(file, 2400, 0.92);
           const storageRef = ref(storage, `fonts/${Date.now()}_${file.name}`);
           await uploadBytes(storageRef, compressed);
           const url = await getDownloadURL(storageRef);
@@ -5025,7 +5031,7 @@ async function uploadPhotos(pathPrefix, filesArr, memosArr) {
     const memo = memosArr[i] || '';
     const idx = i;
     tasks.push(
-      compressImage(file, 900, 0.75).then(async compressed => {
+      compressImage(file, 2400, 0.92).then(async compressed => {
         const storageRef = ref(storage, `${pathPrefix}/${Date.now()}_${idx}_${file.name}`);
         await uploadBytes(storageRef, compressed);
         const url = await getDownloadURL(storageRef);
@@ -5038,7 +5044,6 @@ async function uploadPhotos(pathPrefix, filesArr, memosArr) {
   return results.sort((a, b) => a.idx - b.idx).map(r => ({ url: r.url, memo: r.memo }));
 }
 
-// ── Image compress ─────────────────────────
 function compressImage(file, maxSize, quality) {
   return new Promise(resolve => {
     const img = new Image();
@@ -5401,7 +5406,7 @@ $('pe-apply').addEventListener('click', async () => {
       if (peOnApply) peOnApply(resultBlob);
       $('photo-editor').classList.remove('active');
       if (peOnClose) peOnClose();
-    }, 'image/jpeg', 0.88);
+    }, 'image/jpeg', 0.95);
 
   } catch(err) {
     console.error('pe-apply error:', err);
