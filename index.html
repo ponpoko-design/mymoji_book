@@ -215,6 +215,11 @@
     font-family: var(--mihon-font, inherit) !important;
   }
   .mihon-custom-input:focus { border-color: var(--c-lavender); }
+  .mihon-custom-input:empty:before {
+    content: attr(data-placeholder);
+    color: var(--c-text-sub);
+    pointer-events: none;
+  }
   .mihon-custom-display {
     width: 100%; min-height: 56px; padding: 10px 14px;
     border-radius: var(--radius-sm); border: 1.5px solid var(--c-border);
@@ -1373,7 +1378,7 @@
       <!-- 自由入力 -->
       <div class="mihon-custom-wrap">
         <span class="mihon-custom-label">自由入力</span>
-        <textarea class="mihon-custom-input" id="mihon-custom-input" rows="2" placeholder="ここに文字を入力…"></textarea>
+        <div class="mihon-custom-input" id="mihon-custom-input" contenteditable="true" data-placeholder="ここに文字を入力…"></div>
         <div class="mihon-custom-display" id="mihon-custom-display" style="display:none;"></div>
       </div>
     </div>
@@ -6933,7 +6938,7 @@ function applyMihonFont(fontValue) {
   if (customDisplay) customDisplay.style.fontFamily = fontValue;
   if (customInput) {
     customInput.style.fontFamily = fontValue;
-    customInput.placeholder = isEnFont(fontValue) ? 'Type here...' : 'ここに文字を入力…';
+    customInput.dataset.placeholder = isEnFont(fontValue) ? 'Type here...' : 'ここに文字を入力…';
   }
 }
 
@@ -7102,27 +7107,7 @@ function initMihonScreen() {
   });
 }
 
-const mihonCustomInput = $('mihon-custom-input');
-const mihonCustomDisplay = $('mihon-custom-display');
-if (mihonCustomInput && mihonCustomDisplay) {
-  mihonCustomInput.addEventListener('input', () => {
-    const val = mihonCustomInput.value;
-    if (val) {
-      mihonCustomDisplay.textContent = val;
-      mihonCustomDisplay.style.fontFamily = mihonSelect.value;
-      mihonCustomDisplay.style.display = 'block';
-      mihonCustomInput.style.display = 'none';
-    } else {
-      mihonCustomDisplay.style.display = 'none';
-      mihonCustomInput.style.display = 'block';
-    }
-  });
-  mihonCustomDisplay.addEventListener('click', () => {
-    mihonCustomDisplay.style.display = 'none';
-    mihonCustomInput.style.display = 'block';
-    mihonCustomInput.focus();
-  });
-}
+// contenteditable divなのでcustom-displayは不要、そのままフォントが適用される
 
 </script>
 </body>
