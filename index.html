@@ -6687,21 +6687,9 @@ function initMihonScreen() {
   if (!mihonInitialized) {
     mihonInitialized = true;
     if (sel) {
-      sel.addEventListener('change', () => {
-        applyMihonFont(sel.value);
-        // フォント切り替え時もreload→完了後に再適用
-        if (window.FONTPLUS) {
-          FONTPLUS.attachCompleteEvent(() => applyMihonFont(sel.value));
-          FONTPLUS.reload();
-        }
-      });
-      sel.addEventListener('input', () => {
-        applyMihonFont(sel.value);
-        if (window.FONTPLUS) {
-          FONTPLUS.attachCompleteEvent(() => applyMihonFont(sel.value));
-          FONTPLUS.reload();
-        }
-      });
+      // 切り替え時はreload不要（全フォント一括読み込み済みのため）
+      sel.addEventListener('change', () => applyMihonFont(sel.value));
+      sel.addEventListener('input', () => applyMihonFont(sel.value));
     }
     if (slider) {
       slider.addEventListener('input', () => {
@@ -6716,7 +6704,30 @@ function initMihonScreen() {
     }
   }
 
-  // 初期表示：reload完了後にフォントを適用
+  // 全フォントを非表示divに書き込んでサブセット化→1回のreloadで全部読み込む
+  const allFonts = [
+    "'FOT-ニューシネマA Std D'","'FOT-ハミング Std D'","'FOT-筑紫Aオールド明朝 Pr6 L'",
+    "'FOT-ユールカ Std UB'","'丸明オールド StdN R'","'FOT-ベビポップ Std EB'",
+    "'FP-こぶりなゴシック StdN W3'","'FOT-つばめ Std R'","'FOT-筑紫Q明朝L Std L'",
+    "'FOT-クックハンド Std R'","'TazuganeGothicStdN-Book'","'FOT-カッコウ Std B'",
+    "'FOT-筑紫オールドゴシック Std R'","'FOT-筑紫オールドゴシック Std M'","'筑紫AN丸ゴOV StdN U'",
+    "'AvenirLTPro-Book'","'CochinLTPro'","'GillSansMTPro-Book'","'NeueFrutigerWorld-Book'",
+    "'AGaramondPro-Regular'","'LinoscriptStd'","'MinionPro-Regular'","'MistralStd'",
+    "'SabonLTPro-Roman'","'ZapfinoExtraLTPro'","'BookmanOldStyle'","'Swiss721BT-Regular'",
+    "'Mt-OTF MaryScript Std Regular'"
+  ];
+  let preload = $('mihon-font-preload');
+  if (!preload) {
+    preload = document.createElement('div');
+    preload.id = 'mihon-font-preload';
+    preload.style.cssText = 'position:absolute;opacity:0;pointer-events:none;font-size:1px;height:1px;overflow:hidden;';
+    preload.innerHTML = allFonts.map(f =>
+      `<span style="font-family:${f};">あいうえおABCabc123</span>`
+    ).join('');
+    document.body.appendChild(preload);
+  }
+
+  // reload完了後に初期フォントを適用
   if (window.FONTPLUS) {
     FONTPLUS.attachCompleteEvent(() => { if (sel) applyMihonFont(sel.value); });
     FONTPLUS.reload();
