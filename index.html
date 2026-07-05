@@ -4008,6 +4008,7 @@ function openEditFont(id) {
   $('ef-maker').value = f.maker||'';
   $('ef-memo').value = f.memo||'';
   // 言語をセット
+  console.log('[openEditFont] id:', id, 'name:', f.name, 'lang:', f.lang, 'category:', f.category);
   const lang = f.lang || 'ja';
   // 全ラジオをリセット
   document.querySelectorAll('input[name="ef-lang"]').forEach(r => r.checked = false);
