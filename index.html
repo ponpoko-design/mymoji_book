@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>MyMoji Book</title>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://webfont.fontplus.jp/accessor/script/fontplus.js?ZJD2U0NatP4%3D&box=hAVwcgCSHLs%3D&pm=1&aa=1&ab=1"></script>
 <style>
   :root {
     --c-lavender: #d3c3fc;
@@ -120,6 +121,46 @@
   /* ヘッダー分のpadding-topをscreenに追加 */
   .screen { padding-top: var(--header-h); }
   #screen-quiz { padding-top: 0; }
+
+  /* ── 見本画面 ── */
+  #screen-mihon { padding: var(--header-h) 0 calc(var(--nav-h) + 12px); }
+  .mihon-inner { padding: 12px 16px 0; }
+
+  .mihon-font-select-wrap { position: relative; margin-bottom: 12px; }
+  .mihon-font-select {
+    width: 100%; padding: 11px 40px 11px 16px;
+    border-radius: var(--radius-sm); border: 1.5px solid var(--c-border);
+    background: var(--c-card); font-family: 'Zen Maru Gothic', sans-serif;
+    font-size: 15px; color: var(--c-text);
+    appearance: none; -webkit-appearance: none; cursor: pointer; outline: none;
+  }
+  .mihon-font-select:focus { border-color: var(--c-lavender); }
+  .mihon-select-arrow {
+    position: absolute; right: 14px; top: 50%;
+    transform: translateY(-50%); pointer-events: none; color: var(--c-text-sub);
+  }
+  .mihon-text-display {
+    background: var(--c-card); border-radius: var(--radius);
+    border: 1.5px solid var(--c-border); padding: 14px 12px;
+    margin-bottom: 10px; line-height: 1.65; word-break: break-all; letter-spacing: 0.04em;
+  }
+  .mihon-text-display p { margin: 0 0 2px; font-size: clamp(16px, 4.5vw, 22px); }
+  .mihon-text-display p:last-child { margin-bottom: 0; }
+  .mihon-custom-wrap { margin-top: 2px; }
+  .mihon-custom-label { font-size: 12px; color: var(--c-text-sub); margin-bottom: 5px; display: block; }
+  .mihon-custom-input {
+    width: 100%; padding: 10px 14px;
+    border-radius: var(--radius-sm); border: 1.5px solid var(--c-border);
+    background: var(--c-card); font-size: clamp(16px, 4.5vw, 22px);
+    color: var(--c-text); line-height: 1.6; resize: none; outline: none; font-family: inherit;
+  }
+  .mihon-custom-input:focus { border-color: var(--c-lavender); }
+  .mihon-custom-display {
+    width: 100%; min-height: 56px; padding: 10px 14px;
+    border-radius: var(--radius-sm); border: 1.5px solid var(--c-border);
+    background: var(--c-card); font-size: clamp(16px, 4.5vw, 22px);
+    color: var(--c-text); line-height: 1.6; word-break: break-all; letter-spacing: 0.04em;
+  }
   .app-header h1 {
     font-size: 27px;
     font-weight: 800;
@@ -1212,6 +1253,44 @@
     </div>
   </div>
   <!-- ===== QUIZ ===== -->
+  <!-- 見本画面 -->
+  <div id="screen-mihon" class="screen">
+    <div class="app-header">
+      <h1>見本</h1>
+    </div>
+    <div class="mihon-inner">
+      <!-- フォント選択 -->
+      <div class="mihon-font-select-wrap">
+        <select class="mihon-font-select" id="mihon-font-select">
+          <option value="'FOT-ハミング Std D'">ハミング Std D</option>
+          <option value="'FOT-ユールカ Std UB'">ユールカ Std UB</option>
+          <option value="'FOT-筑紫Q明朝L Std L'">筑紫Q明朝L Std L</option>
+          <option value="'FOT-筑紫オールドゴシック Std M'">筑紫オールドゴシック Std M</option>
+          <option value="'筑紫AN丸ゴOV StdN U'">筑紫AN丸ゴOV StdN U</option>
+        </select>
+        <span class="mihon-select-arrow">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
+      </div>
+      <!-- 固定文字表示 -->
+      <div class="mihon-text-display" id="mihon-text-display">
+        <p>あいうえおかきくけこさしすせそ</p>
+        <p>たちつてとなにぬねのはひふへほ</p>
+        <p>まみむめもやゆよらりるれろわをん</p>
+        <p>アイウエオカキクケコサシスセソ</p>
+        <p>タチツテトナニヌネノハヒフヘホ</p>
+        <p>マミムメモヤユヨラリルレロワヲン</p>
+        <p>1234567890　？！　「」（）</p>
+      </div>
+      <!-- 自由入力 -->
+      <div class="mihon-custom-wrap">
+        <span class="mihon-custom-label">自由入力</span>
+        <textarea class="mihon-custom-input" id="mihon-custom-input" rows="2" placeholder="ここに文字を入力…"></textarea>
+        <div class="mihon-custom-display" id="mihon-custom-display" style="display:none;"></div>
+      </div>
+    </div>
+  </div>
+
   <div id="screen-quiz" class="screen">
     <div class="app-header">
       <button class="back-btn" id="quiz-header-back" style="display:none;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
@@ -1383,6 +1462,17 @@
         </svg>
       </span>
       <span>用例採集</span>
+    </button>
+    <button class="nav-btn" id="nav-mihon" data-screen="mihon">
+      <span class="icon">
+        <svg class="icon-outline" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 8h10M7 12h10M7 16h6"/></svg>
+        <svg class="icon-filled" width="26" height="26" viewBox="0 0 24 24" fill="none">
+          <defs><linearGradient id="ng5" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#b8a0f0"/><stop offset="100%" stop-color="#7ab8f5"/></linearGradient></defs>
+          <rect x="3" y="3" width="18" height="18" rx="3" fill="url(#ng5)"/>
+          <path d="M7 8h10M7 12h10M7 16h6" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span>見本</span>
     </button>
     <button class="nav-btn" id="nav-quiz" data-screen="quiz">
       <span class="icon">
@@ -4615,6 +4705,7 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
       if (s === 'home') { showScreen('screen-home'); renderHome(); }
       else if (s === 'add-font') { initAddFont(); showScreen('screen-add-font'); }
       else if (s === 'add-usage') { addUsageFrom = 'nav'; initAddUsage(); showScreen('screen-add-usage'); }
+      else if (s === 'mihon') { showScreen('screen-mihon'); }
       else if (s === 'quiz') { showScreen('screen-quiz'); }
     });
   };
@@ -6509,6 +6600,52 @@ function initCmpPinch() {
 }
 function quizResetZoom() { if (quizPinch) quizPinch.reset(); }
 function cmpResetZoom()  { if (cmpPinchA) cmpPinchA.reset(); if (cmpPinchB) cmpPinchB.reset(); }
+
+
+// ══════════════════════════════════════════
+//  見本画面
+// ══════════════════════════════════════════
+function applyMihonFont(fontValue) {
+  const display = $('mihon-text-display');
+  const customDisplay = $('mihon-custom-display');
+  const customInput = $('mihon-custom-input');
+  if (display) display.style.fontFamily = fontValue;
+  if (customDisplay) customDisplay.style.fontFamily = fontValue;
+  if (customInput) customInput.style.fontFamily = fontValue;
+  // FONT PLUSのフォントを再描画
+  if (window.FONTPLUS && window.FONTPLUS.reload) window.FONTPLUS.reload();
+}
+
+const mihonSelect = $('mihon-font-select');
+if (mihonSelect) {
+  mihonSelect.addEventListener('change', () => {
+    applyMihonFont(mihonSelect.value);
+  });
+  // 初期適用
+  applyMihonFont(mihonSelect.value);
+}
+
+const mihonCustomInput = $('mihon-custom-input');
+const mihonCustomDisplay = $('mihon-custom-display');
+if (mihonCustomInput && mihonCustomDisplay) {
+  mihonCustomInput.addEventListener('input', () => {
+    const val = mihonCustomInput.value;
+    if (val) {
+      mihonCustomDisplay.textContent = val;
+      mihonCustomDisplay.style.fontFamily = mihonSelect.value;
+      mihonCustomDisplay.style.display = 'block';
+      mihonCustomInput.style.display = 'none';
+    } else {
+      mihonCustomDisplay.style.display = 'none';
+      mihonCustomInput.style.display = 'block';
+    }
+  });
+  mihonCustomDisplay.addEventListener('click', () => {
+    mihonCustomDisplay.style.display = 'none';
+    mihonCustomInput.style.display = 'block';
+    mihonCustomInput.focus();
+  });
+}
 
 </script>
 </body>
