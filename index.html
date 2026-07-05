@@ -1623,19 +1623,25 @@
         <span id="pe-contrast-val">0</span>
       </div>
       <div class="pe-slider-row">
-        <label>彩度</label>
-        <input type="range" id="pe-saturation" min="-100" max="100" value="0" step="1">
-        <span id="pe-saturation-val">0</span>
-      </div>
-      <div class="pe-slider-row">
         <label>黒レベル</label>
         <input type="range" id="pe-blacks" min="-100" max="100" value="0" step="1">
         <span id="pe-blacks-val">0</span>
       </div>
-      <div class="pe-slider-row">
-        <label>色温度</label>
-        <input type="range" id="pe-temp" min="-100" max="100" value="0" step="1">
-        <span id="pe-temp-val">0</span>
+      <!-- アコーディオン：その他 -->
+      <button id="pe-accordion-btn" style="background:none;border:none;color:rgba(255,255,255,0.55);font-size:12px;cursor:pointer;padding:4px 0;display:flex;align-items:center;gap:4px;font-family:inherit;touch-action:manipulation;">
+        <span id="pe-accordion-arrow" style="transition:transform 0.2s;display:inline-block;">▶</span> その他
+      </button>
+      <div id="pe-accordion-body" style="display:none;width:100%;">
+        <div class="pe-slider-row">
+          <label>色温度</label>
+          <input type="range" id="pe-temp" min="-100" max="100" value="0" step="1">
+          <span id="pe-temp-val">0</span>
+        </div>
+        <div class="pe-slider-row">
+          <label>彩度</label>
+          <input type="range" id="pe-saturation" min="-100" max="100" value="0" step="1">
+          <span id="pe-saturation-val">0</span>
+        </div>
       </div>
     </div>
 
@@ -1652,10 +1658,13 @@
 
     <div class="pe-panel" id="pe-panel-crop">
       <div style="color:rgba(255,255,255,0.6);font-size:13px;text-align:center;">写真の上をドラッグして範囲を選択</div>
-      <button class="editor-btn editor-btn-primary" id="pe-crop-apply">クロップを適用</button>
+      <div class="pe-btn-row" style="margin-top:0;">
+        <button class="editor-btn" id="pe-crop-skip">クロップなし</button>
+        <button class="editor-btn editor-btn-primary" id="pe-crop-apply">クロップを適用</button>
+      </div>
     </div>
 
-    <div class="pe-btn-row">
+    <div class="pe-btn-row" id="pe-adjust-btn-row" style="display:none;">
       <button class="editor-btn" id="pe-reset">リセット</button>
       <button class="editor-btn" id="pe-revert" style="display:none;">元に戻す</button>
       <button class="editor-btn editor-btn-primary" id="pe-apply">完了</button>
@@ -5349,7 +5358,7 @@ function openPhotoEditor(src, onApply, onClose, originalUrl) {
   const img = $('photo-editor-img');
   img.style.transform = '';
   img.style.filter = '';
-  peSetTab('adjust');
+  peSetTab('crop');
   $('photo-editor').classList.add('active');
 
   // 完了ボタンをロード中にdisabled
@@ -5412,11 +5421,28 @@ function peSetTab(tab) {
   });
   const isCrop = tab === 'crop';
   $('pe-crop-ui').style.display = isCrop ? 'block' : 'none';
+  const adjustBtnRow = $('pe-adjust-btn-row');
+  if (adjustBtnRow) adjustBtnRow.style.display = isCrop ? 'none' : 'flex';
   if (isCrop) peSetupCrop();
 }
 
 ['adjust','rotate','crop'].forEach(t => {
   $('pe-tab-'+t).addEventListener('click', () => peSetTab(t));
+});
+
+// クロップなし → 調整画面へ
+$('pe-crop-skip').addEventListener('click', () => {
+  peCropRect = null; // クロップなし
+  peSetTab('adjust');
+});
+
+// アコーディオン
+$('pe-accordion-btn').addEventListener('click', () => {
+  const body = $('pe-accordion-body');
+  const arrow = $('pe-accordion-arrow');
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  arrow.style.transform = open ? '' : 'rotate(90deg)';
 });
 
 // スライダー
