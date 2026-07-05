@@ -7053,16 +7053,16 @@ function initMihonScreen() {
     "'SabonLTPro-Roman'","'ZapfinoExtraLTPro'","'BookmanOldStyle'","'Swiss721BT-Regular'",
     "'Mt-OTF MaryScript Std Regular'"
   ];
+  // preloadは毎回作り直す（フォントリスト変更に対応）
   let preload = $('mihon-font-preload');
-  if (!preload) {
-    preload = document.createElement('div');
-    preload.id = 'mihon-font-preload';
-    preload.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0.01;pointer-events:none;font-size:16px;line-height:1;';
-    preload.innerHTML = allFonts.map(f =>
-      `<div style="font-family:${f};">${MIHON_TEXT_JA}${MIHON_TEXT_EN}</div>`
-    ).join('');
-    document.body.appendChild(preload);
-  }
+  if (preload) preload.remove();
+  preload = document.createElement('div');
+  preload.id = 'mihon-font-preload';
+  preload.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0.01;pointer-events:none;font-size:16px;line-height:1;';
+  preload.innerHTML = allFonts.map(f =>
+    `<div style="font-family:${f};">${MIHON_TEXT_JA}${MIHON_TEXT_EN}</div>`
+  ).join('');
+  document.body.appendChild(preload);
 
   // preloadがDOMに反映されるのを待ってからreload
   requestAnimationFrame(() => {
