@@ -6687,8 +6687,21 @@ function initMihonScreen() {
   if (!mihonInitialized) {
     mihonInitialized = true;
     if (sel) {
-      sel.addEventListener('change', () => applyMihonFont(sel.value));
-      sel.addEventListener('input', () => applyMihonFont(sel.value));
+      sel.addEventListener('change', () => {
+        applyMihonFont(sel.value);
+        // フォント切り替え時もreload→完了後に再適用
+        if (window.FONTPLUS) {
+          FONTPLUS.attachCompleteEvent(() => applyMihonFont(sel.value));
+          FONTPLUS.reload();
+        }
+      });
+      sel.addEventListener('input', () => {
+        applyMihonFont(sel.value);
+        if (window.FONTPLUS) {
+          FONTPLUS.attachCompleteEvent(() => applyMihonFont(sel.value));
+          FONTPLUS.reload();
+        }
+      });
     }
     if (slider) {
       slider.addEventListener('input', () => {
@@ -6703,11 +6716,13 @@ function initMihonScreen() {
     }
   }
 
-  // 初期表示を適用
-  if (sel) applyMihonFont(sel.value);
-
-  // 見本ページを開いたとき1回だけreload（PV節約）
-  if (window.FONTPLUS && window.FONTPLUS.reload) window.FONTPLUS.reload();
+  // 初期表示：reload完了後にフォントを適用
+  if (window.FONTPLUS) {
+    FONTPLUS.attachCompleteEvent(() => { if (sel) applyMihonFont(sel.value); });
+    FONTPLUS.reload();
+  } else {
+    if (sel) applyMihonFont(sel.value);
+  }
 }
 
 const mihonCustomInput = $('mihon-custom-input');
