@@ -1014,6 +1014,8 @@
       <button class="cat-chip" data-cat="セリフ">セリフ</button>
       <button class="cat-chip" data-cat="サンセリフ">サンセリフ</button>
       <button class="cat-chip" data-cat="UD">UD</button>
+      <button class="cat-chip" data-cat="スクリプト">スクリプト</button>
+      <button class="cat-chip" data-cat="ブラックレター">ブラックレター</button>
       <button class="cat-chip" data-cat="その他">その他</button>
     </div>
 
@@ -1101,6 +1103,8 @@
           <label class="radio-label"><input type="radio" name="af-cat" value="セリフ"> セリフ</label>
           <label class="radio-label"><input type="radio" name="af-cat" value="サンセリフ"> サンセリフ</label>
           <label class="radio-label"><input type="radio" name="af-cat" value="UD"> UD</label>
+          <label class="radio-label"><input type="radio" name="af-cat" value="スクリプト"> スクリプト</label>
+          <label class="radio-label"><input type="radio" name="af-cat" value="ブラックレター"> ブラックレター</label>
           <label class="radio-label"><input type="radio" name="af-cat" value="その他"> その他</label>
         </div>
       </div>
@@ -1142,6 +1146,8 @@
           <button class="cat-chip" data-ucat="セリフ">セリフ</button>
           <button class="cat-chip" data-ucat="サンセリフ">サンセリフ</button>
           <button class="cat-chip" data-ucat="UD">UD</button>
+          <button class="cat-chip" data-ucat="スクリプト">スクリプト</button>
+          <button class="cat-chip" data-ucat="ブラックレター">ブラックレター</button>
           <button class="cat-chip" data-ucat="その他">その他</button>
           <button class="cat-chip" data-ucat="__fav__">♡ お気に入り</button>
         </div>
@@ -1251,6 +1257,8 @@
           <label class="radio-label"><input type="radio" name="ef-cat" value="セリフ"> セリフ</label>
           <label class="radio-label"><input type="radio" name="ef-cat" value="サンセリフ"> サンセリフ</label>
           <label class="radio-label"><input type="radio" name="ef-cat" value="UD"> UD</label>
+          <label class="radio-label"><input type="radio" name="ef-cat" value="スクリプト"> スクリプト</label>
+          <label class="radio-label"><input type="radio" name="ef-cat" value="ブラックレター"> ブラックレター</label>
           <label class="radio-label"><input type="radio" name="ef-cat" value="その他"> その他</label>
         </div>
       </div>
@@ -2758,13 +2766,13 @@ $('sort-btn').addEventListener('click', () => {
 
 // ── Cat chips per lang ────────────────────
 const CAT_CHIPS = {
-  '':   ['すべて', 'ゴシック', '明朝', '丸ゴ', 'セリフ', 'サンセリフ', 'UD', 'その他'],
+  '':   ['すべて', 'ゴシック', '明朝', '丸ゴ', 'セリフ', 'サンセリフ', 'UD', 'スクリプト', 'ブラックレター', 'その他'],
   'ja': ['すべて', 'ゴシック', '明朝', '丸ゴ', 'UD', 'その他'],
-  'en': ['すべて', 'セリフ', 'サンセリフ', 'UD', 'その他'],
+  'en': ['すべて', 'セリフ', 'サンセリフ', 'スクリプト', 'ブラックレター', 'その他'],
 };
 const CAT_VALUES = {
   'すべて': '', 'ゴシック': 'ゴシック', '明朝': '明朝', '丸ゴ': '丸ゴ',
-  'セリフ': 'セリフ', 'サンセリフ': 'サンセリフ', 'UD': 'UD', 'その他': 'その他',
+  'セリフ': 'セリフ', 'サンセリフ': 'サンセリフ', 'UD': 'UD', 'スクリプト': 'スクリプト', 'ブラックレター': 'ブラックレター', 'その他': 'その他',
 };
 
 function updateCatChips(lang) {
@@ -3284,6 +3292,13 @@ async function openDetail(id) {
                   const orig2 = origUrl || f2.photos[idx2].originalUrl || f2.photos[idx2].url;
                   f2.photos[idx2] = { ...f2.photos[idx2], url: blobUrl, originalUrl: orig2 };
                 }
+                // ライトボックスが開いていれば画像を即時更新
+                const lbImg = $('lightbox-img');
+                if (lbImg && lbImg.src && lightboxPhotos[lightboxIndex]) {
+                  lightboxPhotos[lightboxIndex] = { ...lightboxPhotos[lightboxIndex], url: blobUrl };
+                  lightboxCurrentUrl = blobUrl;
+                  lbImg.src = blobUrl;
+                }
                 openDetail(id);
               }
               // ② バックグラウンドでFirebaseにアップロード
@@ -3583,6 +3598,13 @@ function openUsageDetail(fontId, usageId, usages) {
                 newPhotos[pi] = { ...newPhotos[pi], url: blobUrl, originalUrl: orig };
               }
               u.photos = newPhotos;
+              // ライトボックスが開いていれば画像を即時更新
+              const lbImg = $('lightbox-img');
+              if (lbImg && lbImg.src && lightboxPhotos[lightboxIndex]) {
+                lightboxPhotos[lightboxIndex] = { ...lightboxPhotos[lightboxIndex], url: blobUrl };
+                lightboxCurrentUrl = blobUrl;
+                lbImg.src = blobUrl;
+              }
               openUsageDetail(fontId, usageId, usages);
               // ② バックグラウンドでFirebaseにアップロード
               try {
