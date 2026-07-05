@@ -6928,9 +6928,9 @@ function applyMihonFont(fontValue) {
   const display = $('mihon-text-display');
   const customDisplay = $('mihon-custom-display');
   const customInput = $('mihon-custom-input');
-  const inner = $('mihon-inner') || document.querySelector('.mihon-inner');
-  // CSS変数でfont-familyをセット（iOSのtextareaにも効く）
-  if (inner) inner.style.setProperty('--mihon-font', fontValue);
+  // CSS変数をscreen-mihon全体にセット
+  const screenMihon = $('screen-mihon');
+  if (screenMihon) screenMihon.style.setProperty('--mihon-font', fontValue);
   if (display) {
     display.style.fontFamily = fontValue;
     display.textContent = isEnFont(fontValue) ? MIHON_TEXT_EN : MIHON_TEXT_JA;
@@ -7080,8 +7080,6 @@ function initMihonScreen() {
   preload.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0.01;pointer-events:none;font-size:16px;line-height:1;';
   preload.innerHTML = allFonts.map(f =>
     `<div style="font-family:${f};">${MIHON_TEXT_JA}${MIHON_TEXT_EN}</div>`
-  ).join('');
-    `<div style="font-family:${f};">${MIHON_TEXT_JA}${MIHON_TEXT_EN}${MIHON_KANJI}</div>`
   ).join('');
   document.body.appendChild(preload);
 
