@@ -3275,22 +3275,29 @@ async function openDetail(id) {
                 }
                 return;
               }
-              const storageRef = ref(storage, `fonts/${Date.now()}_edited.jpg`);
-              await uploadBytes(storageRef, blob);
-              const newUrl = await getDownloadURL(storageRef);
-              const noCacheUrl = newUrl + '&t=' + Date.now();
+              // ① blobURLで即時表示
+              const blobUrl = URL.createObjectURL(blob);
               const f2 = fonts.find(x => x.id === id);
               if (f2?.photos) {
                 const idx2 = f2.photos.findIndex(ph => ph.url === p.url);
                 if (idx2 >= 0) {
                   const orig2 = origUrl || f2.photos[idx2].originalUrl || f2.photos[idx2].url;
-                  f2.photos[idx2] = { ...f2.photos[idx2], url: noCacheUrl, originalUrl: orig2 };
+                  f2.photos[idx2] = { ...f2.photos[idx2], url: blobUrl, originalUrl: orig2 };
                 }
-                await updateDoc(doc(db,'fonts',id), { photos: f2.photos });
-                showToast('保存しました');
                 openDetail(id);
               }
-            } catch(e2) { showToast('保存に失敗しました'); }
+              // ② バックグラウンドでFirebaseにアップロード
+              try {
+                const storageRef = ref(storage, `fonts/${Date.now()}_edited.jpg`);
+                await uploadBytes(storageRef, blob);
+                const newUrl = await getDownloadURL(storageRef) + '&t=' + Date.now();
+                if (f2?.photos) {
+                  const idx2 = f2.photos.findIndex(ph => ph.url === blobUrl);
+                  if (idx2 >= 0) f2.photos[idx2] = { ...f2.photos[idx2], url: newUrl };
+                  await updateDoc(doc(db,'fonts',id), { photos: f2.photos });
+                }
+              } catch(e2) { showToast('保存に失敗しました'); }
+            } catch(e2) { showToast('エラーが発生しました'); }
           }, () => openLightbox(p.url, p.memo || '', null, f.name, null, id), origUrl);
         }
       }));
@@ -3567,21 +3574,26 @@ function openUsageDetail(fontId, usageId, usages) {
                 openUsageDetail(fontId, usageId, usages);
                 return;
               }
-              const storageRef = ref(storage, `fonts/${fontId}/usages/${Date.now()}_edited.jpg`);
-              await uploadBytes(storageRef, blob);
-              const rawUrl2 = await getDownloadURL(storageRef);
-              const newUrl = rawUrl2 + '&t=' + Date.now();
+              // ① blobURLで即時表示
+              const blobUrl = URL.createObjectURL(blob);
               const newPhotos = [...(u.photos||[])];
               const pi = newPhotos.findIndex(ph => ph.url === p.url);
               if (pi >= 0) {
                 const orig = origUrl || newPhotos[pi].originalUrl || newPhotos[pi].url;
-                newPhotos[pi] = { ...newPhotos[pi], url: newUrl, originalUrl: orig };
+                newPhotos[pi] = { ...newPhotos[pi], url: blobUrl, originalUrl: orig };
               }
-              await updateDoc(doc(db,'fonts',fontId,'usages',usageId), { photos: newPhotos });
               u.photos = newPhotos;
-              showToast('保存しました');
               openUsageDetail(fontId, usageId, usages);
-            } catch(e2) { showToast('保存に失敗しました'); }
+              // ② バックグラウンドでFirebaseにアップロード
+              try {
+                const storageRef = ref(storage, `fonts/${fontId}/usages/${Date.now()}_edited.jpg`);
+                await uploadBytes(storageRef, blob);
+                const newUrl = await getDownloadURL(storageRef) + '&t=' + Date.now();
+                const pi2 = u.photos.findIndex(ph => ph.url === blobUrl);
+                if (pi2 >= 0) u.photos[pi2] = { ...u.photos[pi2], url: newUrl };
+                await updateDoc(doc(db,'fonts',fontId,'usages',usageId), { photos: u.photos });
+              } catch(e2) { showToast('保存に失敗しました'); }
+            } catch(e2) { showToast('エラーが発生しました'); }
           }, () => openLightbox(p.url, p.memo || '', null, f ? f.name : '', null, fontId), origUrl);
         }
       }));
@@ -5200,18 +5212,26 @@ function openUnassignedDetail(id) {
       openLightbox(url, memo, () => {
         openPhotoEditor(url, async blob => {
           try {
-            const storageRef = ref(storage, `unassigned_usages/${Date.now()}_edited.jpg`);
-            await uploadBytes(storageRef, blob);
-            const newUrl = await getDownloadURL(storageRef);
+            // ① blobURLで即時表示
+            const blobUrl = URL.createObjectURL(blob);
             const uData = unassignedUsages.find(x => x.id === id);
             if (uData?.photos) {
               const pi = uData.photos.findIndex(p => p.url === url);
-              if (pi >= 0) uData.photos[pi] = { ...uData.photos[pi], url: newUrl };
-              await updateDoc(doc(db,'unassigned_usages',id), { photos: uData.photos });
-              showToast('保存しました');
+              if (pi >= 0) uData.photos[pi] = { ...uData.photos[pi], url: blobUrl };
               openUnassignedDetail(id);
             }
-          } catch(e2) { showToast('保存に失敗しました'); }
+            // ② バックグラウンドでFirebaseにアップロード
+            try {
+              const storageRef = ref(storage, `unassigned_usages/${Date.now()}_edited.jpg`);
+              await uploadBytes(storageRef, blob);
+              const newUrl = await getDownloadURL(storageRef);
+              if (uData?.photos) {
+                const pi2 = uData.photos.findIndex(p => p.url === blobUrl);
+                if (pi2 >= 0) uData.photos[pi2] = { ...uData.photos[pi2], url: newUrl };
+                await updateDoc(doc(db,'unassigned_usages',id), { photos: uData.photos });
+              }
+            } catch(e2) { showToast('保存に失敗しました'); }
+          } catch(e2) { showToast('エラーが発生しました'); }
         }, () => openLightbox(url, memo));
       });
     });
