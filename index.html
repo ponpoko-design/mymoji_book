@@ -2698,6 +2698,15 @@ function renderFontList() {
       (f.maker||'').toLowerCase().includes(q) ||
       (f.memo||'').toLowerCase().includes(q)
     );
+    // フォント名に含まれるものを上位に、同グループ内は更新日（lastUsageAt or createdAt）の新しい順
+    list.sort((a, b) => {
+      const aNameMatch = (a.name||'').toLowerCase().includes(q) ? 0 : 1;
+      const bNameMatch = (b.name||'').toLowerCase().includes(q) ? 0 : 1;
+      if (aNameMatch !== bNameMatch) return aNameMatch - bNameMatch;
+      const ta = a.lastUsageAt ? a.lastUsageAt.toMillis() : (a.createdAt ? a.createdAt.toMillis() : 0);
+      const tb = b.lastUsageAt ? b.lastUsageAt.toMillis() : (b.createdAt ? b.createdAt.toMillis() : 0);
+      return tb - ta;
+    });
   }
   if (categoryFilter) {
     list = list.filter(f => f.category === categoryFilter);
