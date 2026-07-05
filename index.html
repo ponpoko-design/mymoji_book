@@ -7068,10 +7068,16 @@ function initMihonScreen() {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       if (window.FONTPLUS) {
-        FONTPLUS.attachCompleteEvent(() => {
+        // attachCompleteEventのコールバックが積み重ならないようフラグ管理
+        window._mihonCompleteHandler = () => {
           applyMihonFont(mihonSelectedValue);
           if (display) display.style.opacity = '1';
           if (customInput) customInput.style.opacity = '1';
+        };
+        FONTPLUS.attachCompleteEvent((...args) => {
+          if (window._mihonCompleteHandler) {
+            window._mihonCompleteHandler(...args);
+          }
         });
         FONTPLUS.reload();
       } else {
