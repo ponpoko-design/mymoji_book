@@ -139,26 +139,41 @@
     position: absolute; right: 14px; top: 50%;
     transform: translateY(-50%); pointer-events: none; color: var(--c-text-sub);
   }
+  .mihon-slider-wrap {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+  }
+  .mihon-slider-label { color: var(--c-text-sub); line-height: 1; flex-shrink: 0; font-size: 14px; }
+  .mihon-slider {
+    flex: 1; -webkit-appearance: none; appearance: none;
+    height: 4px; border-radius: 2px;
+    background: linear-gradient(to right, #b8a0f0, #7ab8f5);
+    outline: none; cursor: pointer;
+  }
+  .mihon-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 20px; height: 20px;
+    border-radius: 50%; background: white;
+    border: 2px solid #b8a0f0; box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  }
   .mihon-text-display {
     background: var(--c-card); border-radius: var(--radius);
     border: 1.5px solid var(--c-border); padding: 14px 12px;
-    margin-bottom: 10px; line-height: 1.65; word-break: break-all; letter-spacing: 0.04em;
+    margin-bottom: 10px; line-height: 1.65;
+    word-break: break-all; letter-spacing: 0.04em;
+    font-size: 16px;
   }
-  .mihon-text-display p { margin: 0 0 2px; font-size: clamp(16px, 4.5vw, 22px); }
-  .mihon-text-display p:last-child { margin-bottom: 0; }
   .mihon-custom-wrap { margin-top: 2px; }
   .mihon-custom-label { font-size: 12px; color: var(--c-text-sub); margin-bottom: 5px; display: block; }
   .mihon-custom-input {
     width: 100%; padding: 10px 14px;
     border-radius: var(--radius-sm); border: 1.5px solid var(--c-border);
-    background: var(--c-card); font-size: clamp(16px, 4.5vw, 22px);
+    background: var(--c-card); font-size: 16px;
     color: var(--c-text); line-height: 1.6; resize: none; outline: none; font-family: inherit;
   }
   .mihon-custom-input:focus { border-color: var(--c-lavender); }
   .mihon-custom-display {
     width: 100%; min-height: 56px; padding: 10px 14px;
     border-radius: var(--radius-sm); border: 1.5px solid var(--c-border);
-    background: var(--c-card); font-size: clamp(16px, 4.5vw, 22px);
+    background: var(--c-card); font-size: 16px;
     color: var(--c-text); line-height: 1.6; word-break: break-all; letter-spacing: 0.04em;
   }
   .app-header h1 {
@@ -1256,7 +1271,7 @@
   <!-- 見本画面 -->
   <div id="screen-mihon" class="screen">
     <div class="app-header">
-      <h1>見本</h1>
+      <h1>フォント見本</h1>
     </div>
     <div class="mihon-inner">
       <!-- フォント選択 -->
@@ -1272,16 +1287,14 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </span>
       </div>
-      <!-- 固定文字表示 -->
-      <div class="mihon-text-display" id="mihon-text-display">
-        <p>あいうえおかきくけこさしすせそ</p>
-        <p>たちつてとなにぬねのはひふへほ</p>
-        <p>まみむめもやゆよらりるれろわをん</p>
-        <p>アイウエオカキクケコサシスセソ</p>
-        <p>タチツテトナニヌネノハヒフヘホ</p>
-        <p>マミムメモヤユヨラリルレロワヲン</p>
-        <p>1234567890　？！　「」（）</p>
+      <!-- 文字サイズスライダー -->
+      <div class="mihon-slider-wrap">
+        <span class="mihon-slider-label">あ</span>
+        <input type="range" id="mihon-size-slider" min="16" max="72" value="16" step="1" class="mihon-slider">
+        <span class="mihon-slider-label" style="font-size:22px;">あ</span>
       </div>
+      <!-- 固定文字表示 -->
+      <div class="mihon-text-display" id="mihon-text-display">あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン1234567890　？！　「」（）</div>
       <!-- 自由入力 -->
       <div class="mihon-custom-wrap">
         <span class="mihon-custom-label">自由入力</span>
@@ -1628,10 +1641,13 @@
       <div style="font-size:13px;color:var(--c-text-sub);line-height:1.7;padding:8px 4px 0;">⚠️ 端末を返却・譲渡する際は、必ず「Dropbox連携を解除」してください。解除するとこの端末からDropboxへのアクセス情報が削除されます。</div>
     </div>
   </div>
+  <!-- フォント見本 -->
+  <div style="padding:16px 20px;border-top:1px solid var(--c-border);border-bottom:1px solid var(--c-border);">
+    <button id="menu-mihon" style="padding:10px 16px;border-radius:50px;border:1.5px solid var(--c-border);background:none;font-size:14px;color:var(--c-text);cursor:pointer;font-family:inherit;touch-action:manipulation;text-align:left;width:100%;">フォント見本</button>
+  </div>
   <!-- アカウントセクション -->
   <div style="padding:20px;">
     <div style="font-size:12px;font-weight:700;color:var(--c-text-sub);letter-spacing:0.08em;margin-bottom:12px;">ACCOUNT</div>
-    <button id="menu-mihon" style="padding:10px 16px;border-radius:50px;border:1.5px solid var(--c-border);background:none;font-size:14px;color:var(--c-text);cursor:pointer;font-family:inherit;touch-action:manipulation;text-align:left;width:100%;margin-bottom:8px;">フォント見本</button>
     <button id="menu-logout" style="padding:10px 16px;border-radius:50px;border:1.5px solid var(--c-border);background:none;font-size:14px;color:#e05c7a;cursor:pointer;font-family:inherit;touch-action:manipulation;text-align:left;width:100%;">ログアウト</button>
   </div>
 </div>
@@ -6614,8 +6630,23 @@ if (mihonSelect) {
   mihonSelect.addEventListener('change', () => {
     applyMihonFont(mihonSelect.value);
   });
-  // 初期適用
   applyMihonFont(mihonSelect.value);
+}
+
+// 文字サイズスライダー
+const mihonSlider = $('mihon-size-slider');
+function applyMihonSize(px) {
+  const display = $('mihon-text-display');
+  const customDisplay = $('mihon-custom-display');
+  const customInput = $('mihon-custom-input');
+  if (display) display.style.fontSize = px + 'px';
+  if (customDisplay) customDisplay.style.fontSize = px + 'px';
+  if (customInput) customInput.style.fontSize = px + 'px';
+}
+if (mihonSlider) {
+  mihonSlider.addEventListener('input', () => {
+    applyMihonSize(mihonSlider.value);
+  });
 }
 
 const mihonCustomInput = $('mihon-custom-input');
