@@ -2465,7 +2465,7 @@ async function loadFonts() {
 
 // ── 既存用例のlastUsageAt一括マイグレーション（初回1回のみ）──
 async function migrateLastUsageAt() {
-  const FLAG = 'lastUsageAt_migrated_v1';
+  const FLAG = 'lastUsageAt_migrated_v2';
   if (localStorage.getItem(FLAG)) return;
   try {
     const targets = fonts.filter(f => !f.lastUsageAt);
@@ -4732,7 +4732,9 @@ function initAddUsage() {
   usageCatFilter = '';
   // フィルターチップをリセット
   document.querySelectorAll('[data-ucat]').forEach(b => b.classList.toggle('active', b.dataset.ucat === ''));
-  const today = new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const today = jst.toISOString().split('T')[0];
   $('au-date').value = today;
   $('au-place').value = '';
   auPhotoFiles = [null,null,null,null,null];
