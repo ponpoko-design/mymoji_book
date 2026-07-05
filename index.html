@@ -7078,8 +7078,9 @@ function initMihonScreen() {
   preload = document.createElement('div');
   preload.id = 'mihon-font-preload';
   preload.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0.01;pointer-events:none;font-size:16px;line-height:1;';
+  const placeholderText = 'ここに文字を入力…';
   preload.innerHTML = allFonts.map(f =>
-    `<div style="font-family:${f};">${MIHON_TEXT_JA}${MIHON_TEXT_EN}</div>`
+    `<div style="font-family:${f};">${MIHON_TEXT_JA}${MIHON_TEXT_EN}${placeholderText}</div>`
   ).join('');
   document.body.appendChild(preload);
 
@@ -7107,7 +7108,36 @@ function initMihonScreen() {
   });
 }
 
-// contenteditable divなのでcustom-displayは不要、そのままフォントが適用される
+// 自由入力：入力した文字をpreloadに追加してFONT PLUSで再レンダリング
+const mihonCustomInput = $('mihon-custom-input');
+if (mihonCustomInput) {
+  let mihonReloadTimer = null;
+  mihonCustomInput.addEventListener('input', () => {
+    // 入力が止まって300ms後にreload（連打防止）
+    clearTimeout(mihonReloadTimer);
+    mihonReloadTimer = setTimeout(() => {
+      const text = mihonCustomInput.textContent || '';
+      if (!text.trim() || !window.FONTPLUS) return;
+      // 入力テキストをpreloadに追加
+      const preload = $('mihon-font-preload');
+      if (preload) {
+        const extra = document.createElement('div');
+        extra.style.fontFamily = mihonSelectedValue;
+        extra.style.position = 'absolute';
+        extra.style.opacity = '0.01';
+        extra.style.fontSize = '16px';
+        extra.style.pointerEvents = 'none';
+        extra.textContent = text;
+        preload.appendChild(extra);
+      }
+      window._mihonCompleteHandler = () => {};
+      FONTPLUS.attachCompleteEvent((...args) => {
+        if (window._mihonCompleteHandler) window._mihonCompleteHandler(...args);
+      });
+      FONTPLUS.reload();
+    }, 300);
+  });
+}
 
 </script>
 </body>
