@@ -6651,13 +6651,31 @@ $('menu-mihon').addEventListener('click', () => {
   showScreen('screen-mihon');
   initMihonScreen();
 });
+const MIHON_TEXT_JA = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン1234567890　？！　「」（）';
+const MIHON_TEXT_EN = `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz&fi fl0123456789!?().,-:;" ' $%@*˜*{}[]`;
+const EN_FONTS = new Set([
+  'AvenirLTPro-Book','CochinLTPro','GillSansMTPro-Book','NeueFrutigerWorld-Book',
+  'AGaramondPro-Regular','LinoscriptStd','MinionPro-Regular','MistralStd',
+  'SabonLTPro-Roman','ZapfinoExtraLTPro','BookmanOldStyle','Swiss721BT-Regular',
+  'Mt-OTF MaryScript Std Regular'
+]);
+function isEnFont(fontValue) {
+  const name = fontValue.replace(/['"]/g, '').trim();
+  return EN_FONTS.has(name);
+}
 function applyMihonFont(fontValue) {
   const display = $('mihon-text-display');
   const customDisplay = $('mihon-custom-display');
   const customInput = $('mihon-custom-input');
-  if (display) display.style.fontFamily = fontValue;
+  if (display) {
+    display.style.fontFamily = fontValue;
+    display.textContent = isEnFont(fontValue) ? MIHON_TEXT_EN : MIHON_TEXT_JA;
+  }
   if (customDisplay) customDisplay.style.fontFamily = fontValue;
-  if (customInput) customInput.style.fontFamily = fontValue;
+  if (customInput) {
+    customInput.style.fontFamily = fontValue;
+    customInput.placeholder = isEnFont(fontValue) ? 'Type here...' : 'ここに文字を入力…';
+  }
 }
 
 function initMihonScreen() {
@@ -6669,9 +6687,9 @@ function initMihonScreen() {
 
 const mihonSelect = $('mihon-font-select');
 if (mihonSelect) {
-  mihonSelect.addEventListener('change', () => {
-    applyMihonFont(mihonSelect.value);
-  });
+  const onMihonFontChange = () => applyMihonFont(mihonSelect.value);
+  mihonSelect.addEventListener('change', onMihonFontChange);
+  mihonSelect.addEventListener('input', onMihonFontChange);
 }
 
 // 文字サイズスライダー
