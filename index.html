@@ -1079,6 +1079,10 @@
         <label>フォント名 *</label>
         <input type="text" id="af-name" placeholder="フォント名を入力して検索" autocomplete="off">
         <div id="af-suggestions" class="suggestions-box"></div>
+        <div id="af-similar-warn" style="display:none;margin-top:6px;font-size:12px;color:#e05c7a;">
+          似たフォントがあります
+          <div id="af-similar-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;"></div>
+        </div>
       </div>
       <div class="form-group">
         <label>読み方</label>
@@ -4764,6 +4768,7 @@ function initAddFont() {
   document.querySelector('input[name="af-lang"][value="ja"]').checked = true;
   $('af-suggestions').classList.remove('open');
   $('af-suggestions').innerHTML = '';
+  const simWarn = $('af-similar-warn'); if (simWarn) simWarn.style.display = 'none';
   afPhotoFiles = [null,null,null,null,null];
   afPhotoMemos = ['','','','',''];
   buildPhotoSlots('af-photos','af-photo-memos-wrap',afPhotoFiles,afPhotoMemos);
@@ -4813,6 +4818,37 @@ document.addEventListener('click', e => {
   if (!e.target.closest('#af-suggestions') && e.target !== $('af-name')) {
     $('af-suggestions').classList.remove('open');
   }
+});
+
+// 似たフォント判定
+function checkSimilarFonts(name) {
+  const warn = $('af-similar-warn');
+  const chips = $('af-similar-chips');
+  if (!name || !warn || !chips) return;
+  const q = name.toLowerCase();
+  const similar = fonts.filter(f => {
+    const fn = f.name.toLowerCase();
+    return fn.includes(q) || q.includes(fn.split(/[\s　]/)[0]); // 最初の単語で部分一致
+  });
+  if (!similar.length) {
+    warn.style.display = 'none';
+    return;
+  }
+  warn.style.display = 'block';
+  chips.innerHTML = similar.map(f =>
+    `<button data-id="${f.id}" style="padding:5px 12px;border-radius:50px;border:1.5px solid #e05c7a;background:none;font-size:12px;color:#e05c7a;cursor:pointer;font-family:inherit;touch-action:manipulation;">${f.name}</button>`
+  ).join('');
+  chips.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const f = fonts.find(x => x.id === btn.dataset.id);
+      if (f) openFontDetail(f);
+    });
+  });
+}
+
+$('af-name').addEventListener('blur', () => {
+  const name = $('af-name').value.trim();
+  checkSimilarFonts(name);
 });
 
 $('af-submit').addEventListener('click', async () => {
