@@ -2635,6 +2635,26 @@ async function loadFonts() {
   }
 }
 
+// ── langフィールド一括マイグレーション（初回1回のみ）──
+async function migrateLangField() {
+  const FLAG = 'lang_migrated_v1';
+  if (localStorage.getItem(FLAG)) return;
+  try {
+    const EN_CATS = new Set(['セリフ','サンセリフ','スクリプト','ブラックレター']);
+    const enNames = new Set(FONT_DB.en.map(x => x.name));
+    const targets = fonts.filter(f => !f.lang);
+    if (!targets.length) { localStorage.setItem(FLAG, '1'); return; }
+    await Promise.all(targets.map(async f => {
+      const lang = enNames.has(f.name) ? 'en' : (EN_CATS.has(f.category) ? 'en' : 'ja');
+      try {
+        await updateDoc(doc(db,'fonts',f.id), { lang });
+        f.lang = lang;
+      } catch(e) {}
+    }));
+    localStorage.setItem(FLAG, '1');
+  } catch(e) { console.error('lang migration error', e); }
+}
+
 // ── 既存用例のlastUsageAt一括マイグレーション（初回1回のみ）──
 async function migrateLastUsageAt() {
   const FLAG = 'lastUsageAt_migrated_v2';
@@ -4008,8 +4028,10 @@ function openEditFont(id) {
   $('ef-maker').value = f.maker||'';
   $('ef-memo').value = f.memo||'';
   // 言語をセット
-  console.log('[openEditFont] id:', id, 'name:', f.name, 'lang:', f.lang, 'category:', f.category);
-  const lang = f.lang || 'ja';
+  // langフィールドがない場合はFONT_DBのen名前リストとカテゴリーで判定
+  const EN_CATS_EF = new Set(['セリフ','サンセリフ','スクリプト','ブラックレター']);
+  const _enNames = new Set(FONT_DB.en.map(x => x.name));
+  const lang = f.lang || (_enNames.has(f.name) ? 'en' : (EN_CATS_EF.has(f.category) ? 'en' : 'ja'));
   // 全ラジオをリセット
   document.querySelectorAll('input[name="ef-lang"]').forEach(r => r.checked = false);
   document.querySelectorAll('input[name="ef-cat"]').forEach(r => r.checked = false);
@@ -6149,6 +6171,7 @@ function renderBackupStatus() {
 async function loadFontsWithBackup() {
   await loadFonts();
   migrateLastUsageAt(); // 既存用例のlastUsageAt移行（初回1回のみ、バックグラウンドで実行）
+  migrateLangField(); // langフィールド移行（初回1回のみ、バックグラウンドで実行）
   renderBackupStatus();
   if (getDropboxToken()) {
     setTimeout(() => runBackup(true), 3000);
