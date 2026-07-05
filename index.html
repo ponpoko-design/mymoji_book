@@ -127,19 +127,48 @@
   #screen-mihon { padding: var(--header-h) 0 calc(var(--nav-h) + 12px); }
   .mihon-inner { padding: 12px 16px 0; }
 
-  .mihon-font-select-wrap { position: relative; margin-bottom: 12px; }
-  .mihon-font-select {
-    width: 100%; padding: 11px 40px 11px 16px;
-    border-radius: var(--radius-sm); border: 1.5px solid var(--c-border);
-    background: var(--c-card); font-family: 'Zen Maru Gothic', sans-serif;
+  .mihon-selector-box {
+    position: relative; margin-bottom: 12px;
+    border: 1.5px solid var(--c-border); border-radius: var(--radius-sm);
+    background: var(--c-card); overflow: visible; z-index: 50;
+  }
+  .mihon-selector-current {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 16px; cursor: pointer; user-select: none;
     font-size: 15px; color: var(--c-text);
-    appearance: none; -webkit-appearance: none; cursor: pointer; outline: none;
   }
-  .mihon-font-select:focus { border-color: var(--c-lavender); }
-  .mihon-select-arrow {
-    position: absolute; right: 14px; top: 50%;
-    transform: translateY(-50%); pointer-events: none; color: var(--c-text-sub);
+  .mihon-selector-arrow {
+    color: var(--c-text-sub); transition: transform 0.2s; font-size: 18px; line-height: 1;
   }
+  .mihon-selector-arrow.open { transform: rotate(180deg); }
+  .mihon-selector-dropdown {
+    display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: var(--c-card); border: 1.5px solid var(--c-border);
+    border-radius: var(--radius-sm); z-index: 200; overflow: hidden;
+  }
+  .mihon-selector-dropdown.open { display: block; }
+  .mihon-selector-search-wrap { padding: 8px 10px; border-bottom: 1px solid var(--c-border); }
+  .mihon-selector-search {
+    width: 100%; padding: 7px 10px; border: 1.5px solid var(--c-border);
+    border-radius: var(--radius-sm); font-size: 14px;
+    background: var(--c-bg); color: var(--c-text); outline: none;
+    font-family: 'Zen Maru Gothic', sans-serif;
+  }
+  .mihon-selector-search:focus { border-color: var(--c-lavender); }
+  .mihon-font-list { max-height: 240px; overflow-y: auto; }
+  .mihon-font-group-label {
+    font-size: 11px; color: var(--c-text-sub);
+    padding: 8px 14px 4px; letter-spacing: 0.08em;
+  }
+  .mihon-font-item {
+    padding: 10px 14px; font-size: 14px; color: var(--c-text);
+    cursor: pointer; display: flex; align-items: center; gap: 8px;
+  }
+  .mihon-font-item:hover { background: var(--c-bg); }
+  .mihon-font-item.selected { color: #9b7fe8; font-weight: 700; }
+  .mihon-font-item .mihon-check { font-size: 13px; opacity: 0; flex-shrink: 0; }
+  .mihon-font-item.selected .mihon-check { opacity: 1; }
+  .mihon-font-no-result { padding: 12px 14px; font-size: 14px; color: var(--c-text-sub); }
   .mihon-slider-wrap {
     display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
   }
@@ -1283,45 +1312,18 @@
       <h1>フォント見本</h1>
     </div>
     <div class="mihon-inner">
-      <!-- フォント選択 -->
-      <div class="mihon-font-select-wrap">
-        <select class="mihon-font-select" id="mihon-font-select">
-          <optgroup label="── 和文 ──────────────">
-          <option value="'FOT-ニューシネマA Std D'">ニューシネマA Std D</option>
-          <option value="'FOT-ハミング Std D'">ハミング Std D</option>
-          <option value="'FOT-筑紫Aオールド明朝 Pr6 L'">筑紫Aオールド明朝 Pr6 L</option>
-          <option value="'FOT-ユールカ Std UB'">ユールカ Std UB</option>
-          <option value="'丸明オールド StdN R'">丸明オールド StdN R</option>
-          <option value="'FOT-ベビポップ Std EB'">ベビポップ Std EB</option>
-          <option value="'FP-こぶりなゴシック StdN W3'">こぶりなゴシック StdN W3</option>
-          <option value="'FOT-つばめ Std R'">つばめ Std R</option>
-          <option value="'FOT-筑紫Q明朝L Std L'">筑紫Q明朝L Std L</option>
-          <option value="'FOT-クックハンド Std R'">クックハンド Std R</option>
-          <option value="'TazuganeGothicStdN-Book'">タズガネゴシック StdN Book</option>
-          <option value="'FOT-カッコウ Std B'">カッコウ Std B</option>
-          <option value="'FOT-筑紫オールドゴシック Std R'">筑紫オールドゴシック Std R</option>
-          <option value="'FOT-筑紫オールドゴシック Std M'">筑紫オールドゴシック Std M</option>
-          <option value="'筑紫AN丸ゴOV StdN U'">筑紫AN丸ゴOV StdN U</option>
-          </optgroup>
-          <optgroup label="── 欧文 ──────────────">
-          <option value="'AvenirLTPro-Book'">Avenir LT Pro Book</option>
-          <option value="'CochinLTPro'">Cochin LT Pro</option>
-          <option value="'GillSansMTPro-Book'">Gill Sans MT Pro Book</option>
-          <option value="'NeueFrutigerWorld-Book'">Neue Frutiger World Book</option>
-          <option value="'AGaramondPro-Regular'">Adobe Garamond Pro</option>
-          <option value="'LinoscriptStd'">Linoscript Std</option>
-          <option value="'MinionPro-Regular'">Minion Pro</option>
-          <option value="'MistralStd'">Mistral Std</option>
-          <option value="'SabonLTPro-Roman'">Sabon LT Pro</option>
-          <option value="'ZapfinoExtraLTPro'">Zapfino Extra LT Pro</option>
-          <option value="'BookmanOldStyle'">Bookman Old Style</option>
-          <option value="'Swiss721BT-Regular'">Swiss 721 BT</option>
-          <option value="'Mt-OTF MaryScript Std Regular'">Mary Script Std</option>
-          </optgroup>
-        </select>
-        <span class="mihon-select-arrow">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-        </span>
+      <!-- フォント選択カスタムドロップダウン -->
+      <div class="mihon-selector-box" id="mihon-selector-box">
+        <div class="mihon-selector-current" id="mihon-selector-current">
+          <span id="mihon-selector-label">ニューシネマA Std D</span>
+          <span class="mihon-selector-arrow" id="mihon-selector-arrow">▾</span>
+        </div>
+        <div class="mihon-selector-dropdown" id="mihon-selector-dropdown">
+          <div class="mihon-selector-search-wrap">
+            <input type="text" class="mihon-selector-search" id="mihon-selector-search" placeholder="フォント名で検索…" autocomplete="off">
+          </div>
+          <div class="mihon-font-list" id="mihon-font-list"></div>
+        </div>
       </div>
       <!-- 文字サイズスライダー -->
       <div class="mihon-slider-wrap">
@@ -6678,19 +6680,103 @@ function applyMihonFont(fontValue) {
   }
 }
 
+const MIHON_FONTS = [
+  { group: '和文', label: 'ニューシネマA Std D',       value: "'FOT-ニューシネマA Std D'" },
+  { group: '和文', label: 'ハミング Std D',             value: "'FOT-ハミング Std D'" },
+  { group: '和文', label: '筑紫Aオールド明朝 Pr6 L',   value: "'FOT-筑紫Aオールド明朝 Pr6 L'" },
+  { group: '和文', label: 'ユールカ Std UB',            value: "'FOT-ユールカ Std UB'" },
+  { group: '和文', label: '丸明オールド StdN R',        value: "'丸明オールド StdN R'" },
+  { group: '和文', label: 'ベビポップ Std EB',          value: "'FOT-ベビポップ Std EB'" },
+  { group: '和文', label: 'こぶりなゴシック StdN W3',  value: "'FP-こぶりなゴシック StdN W3'" },
+  { group: '和文', label: 'つばめ Std R',               value: "'FOT-つばめ Std R'" },
+  { group: '和文', label: '筑紫Q明朝L Std L',           value: "'FOT-筑紫Q明朝L Std L'" },
+  { group: '和文', label: 'クックハンド Std R',         value: "'FOT-クックハンド Std R'" },
+  { group: '和文', label: 'タズガネゴシック StdN Book', value: "'TazuganeGothicStdN-Book'" },
+  { group: '和文', label: 'カッコウ Std B',             value: "'FOT-カッコウ Std B'" },
+  { group: '和文', label: '筑紫オールドゴシック Std R', value: "'FOT-筑紫オールドゴシック Std R'" },
+  { group: '和文', label: '筑紫オールドゴシック Std M', value: "'FOT-筑紫オールドゴシック Std M'" },
+  { group: '和文', label: '筑紫AN丸ゴOV StdN U',       value: "'筑紫AN丸ゴOV StdN U'" },
+  { group: '欧文', label: 'Avenir LT Pro Book',         value: "'AvenirLTPro-Book'" },
+  { group: '欧文', label: 'Cochin LT Pro',              value: "'CochinLTPro'" },
+  { group: '欧文', label: 'Gill Sans MT Pro Book',      value: "'GillSansMTPro-Book'" },
+  { group: '欧文', label: 'Neue Frutiger World Book',   value: "'NeueFrutigerWorld-Book'" },
+  { group: '欧文', label: 'Adobe Garamond Pro',         value: "'AGaramondPro-Regular'" },
+  { group: '欧文', label: 'Linoscript Std',             value: "'LinoscriptStd'" },
+  { group: '欧文', label: 'Minion Pro',                 value: "'MinionPro-Regular'" },
+  { group: '欧文', label: 'Mistral Std',                value: "'MistralStd'" },
+  { group: '欧文', label: 'Sabon LT Pro',               value: "'SabonLTPro-Roman'" },
+  { group: '欧文', label: 'Zapfino Extra LT Pro',       value: "'ZapfinoExtraLTPro'" },
+  { group: '欧文', label: 'Bookman Old Style',          value: "'BookmanOldStyle'" },
+  { group: '欧文', label: 'Swiss 721 BT',               value: "'Swiss721BT-Regular'" },
+  { group: '欧文', label: 'Mary Script Std',            value: "'Mt-OTF MaryScript Std Regular'" },
+];
+let mihonSelectedValue = MIHON_FONTS[0].value;
+let mihonDropdownOpen = false;
+
+function mihonRenderList(q) {
+  const list = $('mihon-font-list');
+  if (!list) return;
+  const filtered = MIHON_FONTS.filter(f => f.label.toLowerCase().includes((q||'').toLowerCase()));
+  if (!filtered.length) {
+    list.innerHTML = '<div class="mihon-font-no-result">見つかりません</div>';
+    return;
+  }
+  let html = ''; let lastGroup = '';
+  filtered.forEach(f => {
+    if (f.group !== lastGroup) {
+      html += `<div class="mihon-font-group-label">${f.group}</div>`;
+      lastGroup = f.group;
+    }
+    const sel = f.value === mihonSelectedValue ? 'selected' : '';
+    html += `<div class="mihon-font-item ${sel}" data-value="${f.value}" data-label="${f.label}">
+      <span class="mihon-check">✓</span>${f.label}
+    </div>`;
+  });
+  list.innerHTML = html;
+  list.querySelectorAll('.mihon-font-item').forEach(el => {
+    el.addEventListener('click', () => {
+      mihonSelectedValue = el.dataset.value;
+      const lbl = $('mihon-selector-label');
+      if (lbl) lbl.textContent = el.dataset.label;
+      mihonCloseDropdown();
+      applyMihonFont(mihonSelectedValue);
+    });
+  });
+}
+
+function mihonOpenDropdown() {
+  mihonDropdownOpen = true;
+  const dd = $('mihon-selector-dropdown');
+  const arrow = $('mihon-selector-arrow');
+  if (dd) dd.classList.add('open');
+  if (arrow) arrow.classList.add('open');
+  const si = $('mihon-selector-search');
+  if (si) { si.value = ''; setTimeout(() => si.focus(), 50); }
+  mihonRenderList('');
+}
+
+function mihonCloseDropdown() {
+  mihonDropdownOpen = false;
+  const dd = $('mihon-selector-dropdown');
+  const arrow = $('mihon-selector-arrow');
+  if (dd) dd.classList.remove('open');
+  if (arrow) arrow.classList.remove('open');
+}
+
 let mihonInitialized = false;
 function initMihonScreen() {
-  const sel = $('mihon-font-select');
   const slider = $('mihon-size-slider');
 
-  // イベント登録は初回のみ
   if (!mihonInitialized) {
     mihonInitialized = true;
-    if (sel) {
-      // 切り替え時はreload不要（全フォント一括読み込み済みのため）
-      sel.addEventListener('change', () => applyMihonFont(sel.value));
-      sel.addEventListener('input', () => applyMihonFont(sel.value));
-    }
+    const cur = $('mihon-selector-current');
+    if (cur) cur.addEventListener('click', () => mihonDropdownOpen ? mihonCloseDropdown() : mihonOpenDropdown());
+    const si = $('mihon-selector-search');
+    if (si) si.addEventListener('input', () => mihonRenderList(si.value));
+    document.addEventListener('click', e => {
+      const box = $('mihon-selector-box');
+      if (box && !box.contains(e.target)) mihonCloseDropdown();
+    });
     if (slider) {
       slider.addEventListener('input', () => {
         const px = slider.value;
