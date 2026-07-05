@@ -1660,7 +1660,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut }
   from "https://www.gstatic.com/firebasejs/11.9.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp }
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp, Timestamp }
   from "https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL }
   from "https://www.gstatic.com/firebasejs/11.9.0/firebase-storage.js";
@@ -2460,6 +2460,35 @@ async function loadFonts() {
     renderHome();
   } catch(e) {
     console.error(e);
+  }
+}
+
+// ── 既存用例のlastUsageAt一括マイグレーション（初回1回のみ）──
+async function migrateLastUsageAt() {
+  const FLAG = 'lastUsageAt_migrated_v1';
+  if (localStorage.getItem(FLAG)) return;
+  try {
+    const targets = fonts.filter(f => !f.lastUsageAt);
+    if (!targets.length) { localStorage.setItem(FLAG, '1'); return; }
+    await Promise.all(targets.map(async f => {
+      try {
+        const usnap = await getDocs(collection(db,'fonts',f.id,'usages'));
+        if (!usnap.docs.length) return;
+        // dateフィールド（"YYYY-MM-DD"文字列）の最大値を取得
+        const maxDate = usnap.docs
+          .map(d => d.data().date || '')
+          .filter(Boolean)
+          .sort()
+          .pop();
+        if (!maxDate) return;
+        const ts = Timestamp.fromDate(new Date(maxDate + 'T00:00:00'));
+        await updateDoc(doc(db,'fonts',f.id), { lastUsageAt: ts });
+        f.lastUsageAt = ts;
+      } catch(e) { /* 個別失敗はスキップ */ }
+    }));
+    localStorage.setItem(FLAG, '1');
+  } catch(e) {
+    console.error('migration error', e);
   }
 }
 
@@ -4813,6 +4842,11 @@ function renderUsageFontList() {
   if (q) list = list.filter(f => (f.name||'').toLowerCase().includes(q) || (f.maker||'').toLowerCase().includes(q));
   if (usageCatFilter === '__fav__') list = list.filter(f => f.favorite);
   else if (usageCatFilter) list = list.filter(f => f.category === usageCatFilter);
+  list.sort((a, b) => {
+    const ta = a.lastUsageAt ? a.lastUsageAt.toMillis() : 0;
+    const tb = b.lastUsageAt ? b.lastUsageAt.toMillis() : 0;
+    return tb - ta;
+  });
   if (!list.length) {
     wrap.innerHTML = `<div style="color:var(--c-text-sub);font-size:15px;padding:12px 0;text-align:center;">見つかりません</div>`;
     return;
@@ -4879,6 +4913,15 @@ $('au-submit').addEventListener('click', async () => {
       const refs = await Promise.all(selectedUsageFontIds.map(fid =>
         addDoc(collection(db,'fonts',fid,'usages'), usageData)
       ));
+
+      // 各フォントのlastUsageAtを更新（フォントリストのソートに使用）
+      await Promise.all(selectedUsageFontIds.map(fid =>
+        updateDoc(doc(db,'fonts',fid), { lastUsageAt: serverTimestamp() })
+      ));
+      selectedUsageFontIds.forEach(fid => {
+        const f = fonts.find(f => f.id === fid);
+        if (f) f.lastUsageAt = { toMillis: () => Date.now() };
+      });
 
       // 複数フォントの場合は相互にrelatedUsagesを書き込む
       if (selectedUsageFontIds.length > 1) {
@@ -5749,6 +5792,7 @@ function renderBackupStatus() {
 
 async function loadFontsWithBackup() {
   await loadFonts();
+  migrateLastUsageAt(); // 既存用例のlastUsageAt移行（初回1回のみ、バックグラウンドで実行）
   renderBackupStatus();
   if (getDropboxToken()) {
     setTimeout(() => runBackup(true), 3000);
