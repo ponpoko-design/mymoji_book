@@ -4012,10 +4012,13 @@ function openEditFont(id) {
   const lang = f.lang || (EN_CATS.has(f.category) ? 'en' : 'ja');
   const langRadio = document.querySelector(`input[name="ef-lang"][value="${lang}"]`);
   if (langRadio) langRadio.checked = true;
-  // カテゴリーを先にセットしてからvisibilityを更新（順番重要）
-  const catRadio = document.querySelector(`input[name="ef-cat"][value="${f.category}"]`);
+  // まず表示/非表示を切り替える
+  document.querySelectorAll('.ef-cat-ja').forEach(el => el.style.display = lang === 'ja' ? '' : 'none');
+  document.querySelectorAll('.ef-cat-en').forEach(el => el.style.display = lang === 'en' ? '' : 'none');
+  // 表示されている側のカテゴリーの中から該当するものを選択
+  const selector = lang === 'ja' ? '.ef-cat-ja' : '.ef-cat-en';
+  const catRadio = document.querySelector(`${selector} input[name="ef-cat"][value="${f.category}"]`);
   if (catRadio) catRadio.checked = true;
-  updateEfCatVisibility();
   efExistingPhotos = f.photos ? [...f.photos] : [];
   efPhotoFiles = [null,null,null,null,null];
   efPhotoMemos = ['','','','',''];
