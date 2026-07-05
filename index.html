@@ -1463,17 +1463,6 @@
       </span>
       <span>用例採集</span>
     </button>
-    <button class="nav-btn" id="nav-mihon" data-screen="mihon">
-      <span class="icon">
-        <svg class="icon-outline" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 8h10M7 12h10M7 16h6"/></svg>
-        <svg class="icon-filled" width="26" height="26" viewBox="0 0 24 24" fill="none">
-          <defs><linearGradient id="ng5" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#b8a0f0"/><stop offset="100%" stop-color="#7ab8f5"/></linearGradient></defs>
-          <rect x="3" y="3" width="18" height="18" rx="3" fill="url(#ng5)"/>
-          <path d="M7 8h10M7 12h10M7 16h6" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-      </span>
-      <span>見本</span>
-    </button>
     <button class="nav-btn" id="nav-quiz" data-screen="quiz">
       <span class="icon">
         <svg class="icon-outline" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -1638,6 +1627,11 @@
       <button id="menu-dropbox-toggle" style="padding:10px 16px;border-radius:50px;border:1.5px solid var(--c-border);background:none;font-size:14px;color:var(--c-text);cursor:pointer;font-family:inherit;touch-action:manipulation;text-align:left;">Dropbox連携する</button>
       <div style="font-size:13px;color:var(--c-text-sub);line-height:1.7;padding:8px 4px 0;">⚠️ 端末を返却・譲渡する際は、必ず「Dropbox連携を解除」してください。解除するとこの端末からDropboxへのアクセス情報が削除されます。</div>
     </div>
+  </div>
+  <!-- 見本セクション -->
+  <div style="padding:16px 20px;border-bottom:1px solid var(--c-border);">
+    <div style="font-size:12px;font-weight:700;color:var(--c-text-sub);letter-spacing:0.08em;margin-bottom:10px;">PREVIEW</div>
+    <button id="menu-mihon" style="padding:10px 16px;border-radius:50px;border:1.5px solid var(--c-border);background:none;font-size:14px;color:var(--c-text);cursor:pointer;font-family:inherit;touch-action:manipulation;text-align:left;width:100%;">見本を表示する</button>
   </div>
   <!-- アカウントセクション -->
   <div style="padding:20px;">
@@ -4705,7 +4699,6 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
       if (s === 'home') { showScreen('screen-home'); renderHome(); }
       else if (s === 'add-font') { initAddFont(); showScreen('screen-add-font'); }
       else if (s === 'add-usage') { addUsageFrom = 'nav'; initAddUsage(); showScreen('screen-add-usage'); }
-      else if (s === 'mihon') { showScreen('screen-mihon'); }
       else if (s === 'quiz') { showScreen('screen-quiz'); }
     });
   };
@@ -6605,6 +6598,10 @@ function cmpResetZoom()  { if (cmpPinchA) cmpPinchA.reset(); if (cmpPinchB) cmpP
 // ══════════════════════════════════════════
 //  見本画面
 // ══════════════════════════════════════════
+$('menu-mihon').addEventListener('click', () => {
+  closeMenu();
+  showScreen('screen-mihon');
+});
 function applyMihonFont(fontValue) {
   const display = $('mihon-text-display');
   const customDisplay = $('mihon-custom-display');
