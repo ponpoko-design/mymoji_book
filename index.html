@@ -598,10 +598,16 @@
     flex: 1; position: relative;
     display: flex; align-items: center; justify-content: center;
     overflow: hidden; background: #111;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
   }
   #photo-editor-img {
     max-width: 100%; max-height: 100%;
     object-fit: contain; display: block;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
   }
   /* クロップ用オーバーレイ（写真の上に重ねる） */
   #pe-crop-ui { touch-action: none; }
@@ -1252,15 +1258,22 @@
       <div class="form-group">
         <label>カテゴリー</label>
         <div class="radio-group">
-          <label class="radio-label"><input type="radio" name="ef-cat" value="ゴシック"> ゴシック</label>
-          <label class="radio-label"><input type="radio" name="ef-cat" value="明朝"> 明朝</label>
-          <label class="radio-label"><input type="radio" name="ef-cat" value="丸ゴ"> 丸ゴ</label>
-          <label class="radio-label"><input type="radio" name="ef-cat" value="セリフ"> セリフ</label>
-          <label class="radio-label"><input type="radio" name="ef-cat" value="サンセリフ"> サンセリフ</label>
-          <label class="radio-label"><input type="radio" name="ef-cat" value="UD"> UD</label>
-          <label class="radio-label"><input type="radio" name="ef-cat" value="スクリプト"> スクリプト</label>
-          <label class="radio-label"><input type="radio" name="ef-cat" value="ブラックレター"> ブラックレター</label>
-          <label class="radio-label"><input type="radio" name="ef-cat" value="その他"> その他</label>
+          <!-- 言語 -->
+          <div class="radio-group" style="margin-bottom:8px;">
+            <label class="radio-label"><input type="radio" name="ef-lang" value="ja" checked> 日本語フォント</label>
+            <label class="radio-label"><input type="radio" name="ef-lang" value="en"> 欧文フォント</label>
+          </div>
+          <!-- カテゴリー（言語連動） -->
+          <label class="radio-label ef-cat-ja"><input type="radio" name="ef-cat" value="ゴシック"> ゴシック</label>
+          <label class="radio-label ef-cat-ja"><input type="radio" name="ef-cat" value="明朝"> 明朝</label>
+          <label class="radio-label ef-cat-ja"><input type="radio" name="ef-cat" value="丸ゴ"> 丸ゴ</label>
+          <label class="radio-label ef-cat-ja"><input type="radio" name="ef-cat" value="UD"> UD</label>
+          <label class="radio-label ef-cat-ja"><input type="radio" name="ef-cat" value="その他"> その他</label>
+          <label class="radio-label ef-cat-en" style="display:none;"><input type="radio" name="ef-cat" value="セリフ"> セリフ</label>
+          <label class="radio-label ef-cat-en" style="display:none;"><input type="radio" name="ef-cat" value="サンセリフ"> サンセリフ</label>
+          <label class="radio-label ef-cat-en" style="display:none;"><input type="radio" name="ef-cat" value="スクリプト"> スクリプト</label>
+          <label class="radio-label ef-cat-en" style="display:none;"><input type="radio" name="ef-cat" value="ブラックレター"> ブラックレター</label>
+          <label class="radio-label ef-cat-en" style="display:none;"><input type="radio" name="ef-cat" value="その他"> その他</label>
         </div>
       </div>
       <div class="form-group">
@@ -3956,6 +3969,23 @@ let efPhotoFiles = [null,null,null,null,null];
 let efPhotoMemos = ['','','','',''];
 let efExistingPhotos = [];
 
+function updateEfCatVisibility() {
+  const lang = document.querySelector('input[name="ef-lang"]:checked').value;
+  document.querySelectorAll('.ef-cat-ja').forEach(el => el.style.display = lang === 'ja' ? '' : 'none');
+  document.querySelectorAll('.ef-cat-en').forEach(el => el.style.display = lang === 'en' ? '' : 'none');
+  // 非表示カテゴリーが選択中なら最初の表示カテゴリーを選択
+  const checked = document.querySelector('input[name="ef-cat"]:checked');
+  const checkedLabel = checked?.closest('label');
+  if (checkedLabel && checkedLabel.style.display === 'none') {
+    const first = document.querySelector(lang === 'ja' ? '.ef-cat-ja input[name="ef-cat"]' : '.ef-cat-en input[name="ef-cat"]');
+    if (first) first.checked = true;
+  }
+}
+
+document.querySelectorAll('input[name="ef-lang"]').forEach(r => {
+  r.addEventListener('change', updateEfCatVisibility);
+});
+
 function openEditFont(id) {
   const f = fonts.find(x=>x.id===id);
   if (!f) return;
@@ -3963,6 +3993,11 @@ function openEditFont(id) {
   $('ef-reading').value = f.reading||'';
   $('ef-maker').value = f.maker||'';
   $('ef-memo').value = f.memo||'';
+  // 言語をセット
+  const lang = f.lang || 'ja';
+  const langRadio = document.querySelector(`input[name="ef-lang"][value="${lang}"]`);
+  if (langRadio) langRadio.checked = true;
+  updateEfCatVisibility();
   const catRadio = document.querySelector(`input[name="ef-cat"][value="${f.category}"]`);
   if (catRadio) catRadio.checked = true;
   efExistingPhotos = f.photos ? [...f.photos] : [];
@@ -3990,14 +4025,15 @@ async function saveEditFont(id) {
     const newPhotos = await uploadPhotos(`fonts`, efPhotoFiles, efPhotoMemos);
     const allPhotos = [...efExistingPhotos, ...newPhotos];
     const cat = document.querySelector('input[name="ef-cat"]:checked').value;
+    const lang = document.querySelector('input[name="ef-lang"]:checked').value;
     await updateDoc(doc(db,'fonts',id), {
       name, reading: $('ef-reading').value.trim(),
       maker: $('ef-maker').value.trim(),
-      category: cat, memo: $('ef-memo').value.trim(),
+      category: cat, lang, memo: $('ef-memo').value.trim(),
       photos: allPhotos
     });
     const f = fonts.find(x=>x.id===id);
-    if (f) Object.assign(f, { name, reading: $('ef-reading').value.trim(), maker: $('ef-maker').value.trim(), category: cat, memo: $('ef-memo').value.trim(), photos: allPhotos });
+    if (f) Object.assign(f, { name, reading: $('ef-reading').value.trim(), maker: $('ef-maker').value.trim(), category: cat, lang, memo: $('ef-memo').value.trim(), photos: allPhotos });
     showToast('保存しました！');
     openDetail(id);
   } catch(e) { console.error(e); showToast('エラーが発生しました'); }
