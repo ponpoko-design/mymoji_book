@@ -6823,13 +6823,13 @@ function initMihonScreen() {
     requestAnimationFrame(() => {
       if (window.FONTPLUS) {
         FONTPLUS.attachCompleteEvent(() => {
-          if (sel) applyMihonFont(sel.value);
+          applyMihonFont(mihonSelectedValue);
           if (display) display.style.opacity = '1';
           if (customInput) customInput.style.opacity = '1';
         });
         FONTPLUS.reload();
       } else {
-        if (sel) applyMihonFont(sel.value);
+        applyMihonFont(mihonSelectedValue);
         if (display) display.style.opacity = '1';
       }
     });
