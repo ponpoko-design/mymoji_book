@@ -161,8 +161,14 @@
     word-break: break-all; letter-spacing: 0.04em;
     font-size: 16px;
   }
-  .mihon-text-display, .mihon-text-display * { text-decoration: none !important; }
-  .mihon-custom-display, .mihon-custom-display * { text-decoration: none !important; }
+  .mihon-text-display, .mihon-text-display *,
+  .mihon-custom-display, .mihon-custom-display *,
+  .mihon-custom-input {
+    text-decoration: none !important;
+    text-decoration-line: none !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+  }
   .mihon-custom-wrap { margin-top: 2px; }
   .mihon-custom-label { font-size: 12px; color: var(--c-text-sub); margin-bottom: 5px; display: block; }
   .mihon-custom-input {
