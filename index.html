@@ -1564,21 +1564,21 @@
           <div style="position:absolute;top:66.6%;left:0;right:0;height:1px;background:rgba(255,255,255,0.25);"></div>
         </div>
         <!-- iPhoneスタイル四隅ハンドル（太いL字・大きなタッチ領域） -->
-        <div class="pe-crop-handle" data-corner="tl" style="position:absolute;top:-2px;left:-2px;width:44px;height:44px;touch-action:none;cursor:nwse-resize;">
-          <div class="pe-crop-bar" style="top:0;left:0;width:28px;height:4px;"></div>
-          <div class="pe-crop-bar" style="top:0;left:0;width:4px;height:28px;"></div>
+        <div class="pe-crop-handle" data-corner="tl" style="position:absolute;top:-4px;left:-4px;width:60px;height:60px;touch-action:none;cursor:nwse-resize;">
+          <div class="pe-crop-bar" style="top:0;left:0;width:36px;height:6px;"></div>
+          <div class="pe-crop-bar" style="top:0;left:0;width:6px;height:36px;"></div>
         </div>
-        <div class="pe-crop-handle" data-corner="tr" style="position:absolute;top:-2px;right:-2px;width:44px;height:44px;touch-action:none;cursor:nesw-resize;">
-          <div class="pe-crop-bar" style="top:0;right:0;width:28px;height:4px;"></div>
-          <div class="pe-crop-bar" style="top:0;right:0;width:4px;height:28px;"></div>
+        <div class="pe-crop-handle" data-corner="tr" style="position:absolute;top:-4px;right:-4px;width:60px;height:60px;touch-action:none;cursor:nesw-resize;">
+          <div class="pe-crop-bar" style="top:0;right:0;width:36px;height:6px;"></div>
+          <div class="pe-crop-bar" style="top:0;right:0;width:6px;height:36px;"></div>
         </div>
-        <div class="pe-crop-handle" data-corner="bl" style="position:absolute;bottom:-2px;left:-2px;width:44px;height:44px;touch-action:none;cursor:nesw-resize;">
-          <div class="pe-crop-bar" style="bottom:0;left:0;width:28px;height:4px;"></div>
-          <div class="pe-crop-bar" style="bottom:0;left:0;width:4px;height:28px;"></div>
+        <div class="pe-crop-handle" data-corner="bl" style="position:absolute;bottom:-4px;left:-4px;width:60px;height:60px;touch-action:none;cursor:nesw-resize;">
+          <div class="pe-crop-bar" style="bottom:0;left:0;width:36px;height:6px;"></div>
+          <div class="pe-crop-bar" style="bottom:0;left:0;width:6px;height:36px;"></div>
         </div>
-        <div class="pe-crop-handle" data-corner="br" style="position:absolute;bottom:-2px;right:-2px;width:44px;height:44px;touch-action:none;cursor:nwse-resize;">
-          <div class="pe-crop-bar" style="bottom:0;right:0;width:28px;height:4px;"></div>
-          <div class="pe-crop-bar" style="bottom:0;right:0;width:4px;height:28px;"></div>
+        <div class="pe-crop-handle" data-corner="br" style="position:absolute;bottom:-4px;right:-4px;width:60px;height:60px;touch-action:none;cursor:nwse-resize;">
+          <div class="pe-crop-bar" style="bottom:0;right:0;width:36px;height:6px;"></div>
+          <div class="pe-crop-bar" style="bottom:0;right:0;width:6px;height:36px;"></div>
         </div>
         <!-- 上下左右の中点ハンドル（細め） -->
         <div class="pe-crop-handle" data-corner="t" style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);width:60px;height:28px;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:ns-resize;">
@@ -5376,6 +5376,8 @@ function openPhotoEditor(src, onApply, onClose, originalUrl) {
         peOriginalSrc = blobUrl;
         applyBtn.disabled = false;
         applyBtn.textContent = '完了';
+        // 画像ロード完了後にクロップ枠をセットアップ
+        requestAnimationFrame(() => peSetupCrop());
       };
       img.src = blobUrl;
     } else {
