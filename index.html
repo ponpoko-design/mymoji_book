@@ -3982,12 +3982,17 @@ function updateEfCatVisibility() {
   const lang = document.querySelector('input[name="ef-lang"]:checked').value;
   document.querySelectorAll('.ef-cat-ja').forEach(el => el.style.display = lang === 'ja' ? '' : 'none');
   document.querySelectorAll('.ef-cat-en').forEach(el => el.style.display = lang === 'en' ? '' : 'none');
-  // 非表示カテゴリーが選択中なら最初の表示カテゴリーを選択
+  // 現在選択中のカテゴリーが今の言語に対応していない場合だけリセット
   const checked = document.querySelector('input[name="ef-cat"]:checked');
-  const checkedLabel = checked?.closest('label');
-  if (checkedLabel && checkedLabel.style.display === 'none') {
-    const first = document.querySelector(lang === 'ja' ? '.ef-cat-ja input[name="ef-cat"]' : '.ef-cat-en input[name="ef-cat"]');
-    if (first) first.checked = true;
+  if (checked) {
+    const checkedLabel = checked.closest('label');
+    const isJaCat = checkedLabel?.classList.contains('ef-cat-ja');
+    const isEnCat = checkedLabel?.classList.contains('ef-cat-en');
+    const mismatch = (lang === 'ja' && isEnCat && !isJaCat) || (lang === 'en' && isJaCat && !isEnCat);
+    if (mismatch) {
+      const first = document.querySelector(lang === 'ja' ? '.ef-cat-ja input[name="ef-cat"]' : '.ef-cat-en input[name="ef-cat"]');
+      if (first) first.checked = true;
+    }
   }
 }
 
@@ -4899,18 +4904,19 @@ $('af-name').addEventListener('input', () => {
 // 言語切替でカテゴリー表示切替 & サジェストリセット
 function updateAfCatVisibility() {
   const lang = document.querySelector('input[name="af-lang"]:checked').value;
-  document.querySelectorAll('.af-cat-ja').forEach(el => {
-    el.style.display = lang === 'ja' ? '' : 'none';
-  });
-  document.querySelectorAll('.af-cat-en').forEach(el => {
-    el.style.display = lang === 'en' ? '' : 'none';
-  });
-  // 非表示になったカテゴリーが選択中なら最初の表示カテゴリーを選択
+  document.querySelectorAll('.af-cat-ja').forEach(el => el.style.display = lang === 'ja' ? '' : 'none');
+  document.querySelectorAll('.af-cat-en').forEach(el => el.style.display = lang === 'en' ? '' : 'none');
+  // 現在選択中のカテゴリーが今の言語に対応していない場合だけリセット
   const checked = document.querySelector('input[name="af-cat"]:checked');
-  const checkedLabel = checked?.closest('label');
-  if (checkedLabel && checkedLabel.style.display === 'none') {
-    const firstVisible = document.querySelector(lang === 'ja' ? '.af-cat-ja input[name="af-cat"]' : '.af-cat-en input[name="af-cat"]');
-    if (firstVisible) firstVisible.checked = true;
+  if (checked) {
+    const checkedLabel = checked.closest('label');
+    const isJaCat = checkedLabel?.classList.contains('af-cat-ja');
+    const isEnCat = checkedLabel?.classList.contains('af-cat-en');
+    const mismatch = (lang === 'ja' && isEnCat && !isJaCat) || (lang === 'en' && isJaCat && !isEnCat);
+    if (mismatch) {
+      const first = document.querySelector(lang === 'ja' ? '.af-cat-ja input[name="af-cat"]' : '.af-cat-en input[name="af-cat"]');
+      if (first) first.checked = true;
+    }
   }
 }
 
