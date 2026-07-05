@@ -5383,6 +5383,7 @@ function openPhotoEditor(src, onApply, onClose, originalUrl) {
   const img = $('photo-editor-img');
   img.style.transform = '';
   img.style.filter = '';
+  img.style.clipPath = '';
   peSetTab('crop');
   $('photo-editor').classList.add('active');
 
@@ -5569,12 +5570,13 @@ function peSetupCrop() {
 function updateCropUI() {
   const img = $('photo-editor-img');
   const iRect = img.getBoundingClientRect();
-  const previewRect = $('pe-preview-area').getBoundingClientRect();
+  const cropUiRect = $('pe-crop-ui').getBoundingClientRect();
 
-  // imgの位置をpreview-area基準で計算
-  const offX = iRect.left - previewRect.left;
-  const offY = iRect.top  - previewRect.top;
+  // imgの位置をpe-crop-ui基準で計算
+  const offX = iRect.left - cropUiRect.left;
+  const offY = iRect.top  - cropUiRect.top;
   const iW = iRect.width, iH = iRect.height;
+  const uW = cropUiRect.width, uH = cropUiRect.height;
 
   const x  = offX + cropRect.x  * iW;
   const y  = offY + cropRect.y  * iH;
@@ -5584,18 +5586,24 @@ function updateCropUI() {
 
   $('pe-crop-frame').style.cssText = `position:absolute;border:1.5px solid rgba(200,160,248,0.8);box-sizing:border-box;left:${x}px;top:${y}px;width:${w}px;height:${h}px;cursor:move;`;
 
-  // 暗幕
-  $('pe-crop-dark-top').style.height    = y + 'px';
-  $('pe-crop-dark-bottom').style.height = (previewRect.height - y2) + 'px';
-  $('pe-crop-dark-left').style.cssText  = `position:absolute;left:0;width:${x}px;top:${y}px;height:${h}px;background:rgba(0,0,0,0.55);pointer-events:none;`;
-  $('pe-crop-dark-right').style.cssText = `position:absolute;right:0;width:${previewRect.width - x2}px;top:${y}px;height:${h}px;background:rgba(0,0,0,0.55);pointer-events:none;`;
+  // 暗幕（pe-crop-ui基準で計算）
+  $('pe-crop-dark-top').style.cssText    = `position:absolute;left:0;right:0;top:0;height:${y}px;background:rgba(0,0,0,0.55);pointer-events:none;`;
+  $('pe-crop-dark-bottom').style.cssText = `position:absolute;left:0;right:0;bottom:0;height:${uH - y2}px;background:rgba(0,0,0,0.55);pointer-events:none;`;
+  $('pe-crop-dark-left').style.cssText   = `position:absolute;left:0;width:${x}px;top:${y}px;height:${h}px;background:rgba(0,0,0,0.55);pointer-events:none;`;
+  $('pe-crop-dark-right').style.cssText  = `position:absolute;right:0;width:${uW - x2}px;top:${y}px;height:${h}px;background:rgba(0,0,0,0.55);pointer-events:none;`;
 
   peCropRect = { x1: cropRect.x, y1: cropRect.y, x2: cropRect.x2, y2: cropRect.y2 };
 }
 
 $('pe-crop-apply').addEventListener('click', () => {
   peCropRect = { x1: cropRect.x, y1: cropRect.y, x2: cropRect.x2, y2: cropRect.y2 };
-  showToast('クロップ範囲を確定しました');
+  // CSSのclip-pathで即時プレビュー
+  const img = $('photo-editor-img');
+  const x1p = (peCropRect.x1 * 100).toFixed(1) + '%';
+  const y1p = (peCropRect.y1 * 100).toFixed(1) + '%';
+  const x2p = (peCropRect.x2 * 100).toFixed(1) + '%';
+  const y2p = (peCropRect.y2 * 100).toFixed(1) + '%';
+  img.style.clipPath = `inset(${y1p} ${(100 - parseFloat(x2p)).toFixed(1)}% ${(100 - parseFloat(y2p)).toFixed(1)}% ${x1p})`;
   peSetTab('adjust');
 });
 
@@ -5607,6 +5615,7 @@ $('pe-reset').addEventListener('click', () => {
   $('pe-contrast').value = 0;   $('pe-contrast-val').textContent = '0';
   $('pe-saturation').value = 0; $('pe-saturation-val').textContent = '0';
   $('pe-blacks').value = 0;     $('pe-blacks-val').textContent = '0';
+  $('photo-editor-img').style.clipPath = '';
   peUpdatePreview();
   peSetTab('adjust');
 });
