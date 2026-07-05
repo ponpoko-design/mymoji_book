@@ -5529,10 +5529,10 @@ function peSetupCrop() {
     };
   });
 
-  // フレーム内ドラッグで全体移動
+  // フレーム内ドラッグで全体移動（枠の外側のタッチは無視）
   frame.onpointerdown = e => {
-    if (e.target !== frame && !e.target.classList.contains('pe-crop-handle') === false) return;
     if (e.target.classList.contains('pe-crop-handle')) return;
+    if (e.target.classList.contains('pe-crop-bar')) return;
     e.stopPropagation(); e.preventDefault();
     frame.setPointerCapture(e.pointerId);
     const startX = e.clientX, startY = e.clientY;
@@ -5550,6 +5550,17 @@ function peSetupCrop() {
       updateCropUI();
     };
     frame.onpointerup = () => { frame.onpointermove = null; frame.onpointerup = null; };
+  };
+
+  // 枠の外側（暗い部分）タップで誤操作しないようにpe-crop-ui全体のデフォルト動作を抑制
+  $('pe-crop-ui').onpointerdown = e => {
+    if (e.target === $('pe-crop-ui') ||
+        e.target.id === 'pe-crop-dark-top' ||
+        e.target.id === 'pe-crop-dark-bottom' ||
+        e.target.id === 'pe-crop-dark-left' ||
+        e.target.id === 'pe-crop-dark-right') {
+      e.stopPropagation(); e.preventDefault();
+    }
   };
 
   peCropRect = { x1: cropRect.x, y1: cropRect.y, x2: cropRect.x2, y2: cropRect.y2 };
