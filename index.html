@@ -1,18 +1,12 @@
 <!DOCTYPE html>
-<html lang="ja"><!-- MyMojiBook v1.0 260705 -->
+<html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="format-detection" content="telephone=no">
 <title>MyMoji Book</title>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
-<script>
-(function() {
-  var s = document.createElement('script');
-  s.src = 'https://webfont.fontplus.jp/accessor/script/fontplus.js?KXzscaaeJDE%3D&box=h5a2eVCZExw%3D&pm=1&aa=1&ab=1&_v=' + Math.floor(Date.now() / (1000 * 60 * 60 * 24));
-  document.head.appendChild(s);
-})();
-</script>
+<script src="https://webfont.fontplus.jp/accessor/script/fontplus.js?KXzscaaeJDE%3D&box=h5a2eVCZExw%3D&pm=1&aa=1&ab=1"></script>
 <style>
   :root {
     --c-lavender: #d3c3fc;
@@ -215,20 +209,12 @@
     font-family: var(--mihon-font, inherit) !important;
   }
   .mihon-custom-input:focus { border-color: var(--c-lavender); }
-  .mihon-custom-input:empty:before {
-    content: attr(data-placeholder);
-    color: var(--c-text-sub);
-    pointer-events: none;
-  }
   .mihon-custom-display {
+    font-family: var(--mihon-font, inherit) !important;
     width: 100%; min-height: 56px; padding: 10px 14px;
     border-radius: var(--radius-sm); border: 1.5px solid var(--c-border);
     background: var(--c-card); font-size: 16px;
     color: var(--c-text); line-height: 1.6; word-break: break-all; letter-spacing: 0.04em;
-    font-family: var(--mihon-font, inherit) !important;
-  }
-  .mihon-text-display {
-    font-family: var(--mihon-font, inherit);
   }
   .app-header h1 {
     font-size: 27px;
@@ -1378,7 +1364,7 @@
       <!-- 自由入力 -->
       <div class="mihon-custom-wrap">
         <span class="mihon-custom-label">自由入力</span>
-        <div class="mihon-custom-input" id="mihon-custom-input" contenteditable="true" data-placeholder="ここに文字を入力…" data-empty="true">ここに文字を入力…</div>
+        <textarea class="mihon-custom-input" id="mihon-custom-input" rows="2" placeholder="ここに文字を入力…"></textarea>
         <div class="mihon-custom-display" id="mihon-custom-display" style="display:none;"></div>
       </div>
     </div>
@@ -6928,7 +6914,7 @@ function applyMihonFont(fontValue) {
   const display = $('mihon-text-display');
   const customDisplay = $('mihon-custom-display');
   const customInput = $('mihon-custom-input');
-  // CSS変数をscreen-mihon全体にセット
+  // CSS変数をscreen-mihonにセット
   const screenMihon = $('screen-mihon');
   if (screenMihon) screenMihon.style.setProperty('--mihon-font', fontValue);
   if (display) {
@@ -6938,7 +6924,7 @@ function applyMihonFont(fontValue) {
   if (customDisplay) customDisplay.style.fontFamily = fontValue;
   if (customInput) {
     customInput.style.fontFamily = fontValue;
-    customInput.dataset.placeholder = isEnFont(fontValue) ? 'Type here...' : 'ここに文字を入力…';
+    customInput.placeholder = isEnFont(fontValue) ? 'Type here...' : 'ここに文字を入力…';
   }
 }
 
@@ -7079,7 +7065,7 @@ function initMihonScreen() {
   preload.id = 'mihon-font-preload';
   preload.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0.01;pointer-events:none;font-size:16px;line-height:1;';
   preload.innerHTML = allFonts.map(f =>
-    `<div style="font-family:${f};line-height:1;font-size:16px;">${MIHON_TEXT_JA}${MIHON_TEXT_EN}</div>`
+    `<div style="font-family:${f};">${MIHON_TEXT_JA}${MIHON_TEXT_EN}</div>`
   ).join('');
   document.body.appendChild(preload);
 
@@ -7087,18 +7073,18 @@ function initMihonScreen() {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       if (window.FONTPLUS) {
-        FONTPLUS.reload();
-        // isloading()がfalseになるまでポーリングして適用（attachCompleteEventがスマホで不安定なため）
-        let tries = 0;
-        const waitDone = setInterval(() => {
-          tries++;
-          if (!FONTPLUS.isloading() || tries > 40) {
-            clearInterval(waitDone);
-            applyMihonFont(mihonSelectedValue);
-            if (display) display.style.opacity = '1';
-            if (customInput) customInput.style.opacity = '1';
+        // attachCompleteEventのコールバックが積み重ならないようフラグ管理
+        window._mihonCompleteHandler = () => {
+          applyMihonFont(mihonSelectedValue);
+          if (display) display.style.opacity = '1';
+          if (customInput) customInput.style.opacity = '1';
+        };
+        FONTPLUS.attachCompleteEvent((...args) => {
+          if (window._mihonCompleteHandler) {
+            window._mihonCompleteHandler(...args);
           }
-        }, 100);
+        });
+        FONTPLUS.reload();
       } else {
         applyMihonFont(mihonSelectedValue);
         if (display) display.style.opacity = '1';
@@ -7107,20 +7093,25 @@ function initMihonScreen() {
   });
 }
 
-// 自由入力：フォーカス時にプレースホルダーをクリア
 const mihonCustomInput = $('mihon-custom-input');
-if (mihonCustomInput) {
-  mihonCustomInput.addEventListener('focus', () => {
-    if (mihonCustomInput.dataset.empty === 'true') {
-      mihonCustomInput.textContent = '';
-      delete mihonCustomInput.dataset.empty;
+const mihonCustomDisplay = $('mihon-custom-display');
+if (mihonCustomInput && mihonCustomDisplay) {
+  mihonCustomInput.addEventListener('input', () => {
+    const val = mihonCustomInput.value;
+    if (val) {
+      mihonCustomDisplay.textContent = val;
+      mihonCustomDisplay.style.fontFamily = mihonSelect.value;
+      mihonCustomDisplay.style.display = 'block';
+      mihonCustomInput.style.display = 'none';
+    } else {
+      mihonCustomDisplay.style.display = 'none';
+      mihonCustomInput.style.display = 'block';
     }
   });
-  mihonCustomInput.addEventListener('blur', () => {
-    if (!mihonCustomInput.textContent.trim()) {
-      mihonCustomInput.textContent = 'ここに文字を入力…';
-      mihonCustomInput.dataset.empty = 'true';
-    }
+  mihonCustomDisplay.addEventListener('click', () => {
+    mihonCustomDisplay.style.display = 'none';
+    mihonCustomInput.style.display = 'block';
+    mihonCustomInput.focus();
   });
 }
 
