@@ -7096,13 +7096,19 @@ function initMihonScreen() {
 const mihonCustomInput = $('mihon-custom-input');
 const mihonCustomDisplay = $('mihon-custom-display');
 if (mihonCustomInput && mihonCustomDisplay) {
+  let mihonReloadTimer = null;
   mihonCustomInput.addEventListener('input', () => {
     const val = mihonCustomInput.value;
     if (val) {
       mihonCustomDisplay.textContent = val;
-      mihonCustomDisplay.style.fontFamily = mihonSelect.value;
+      mihonCustomDisplay.style.fontFamily = mihonSelectedValue;
       mihonCustomDisplay.style.display = 'block';
       mihonCustomInput.style.display = 'none';
+      // 入力が止まって1秒後にreload（PV消費）
+      clearTimeout(mihonReloadTimer);
+      mihonReloadTimer = setTimeout(() => {
+        if (window.FONTPLUS) FONTPLUS.reload();
+      }, 1000);
     } else {
       mihonCustomDisplay.style.display = 'none';
       mihonCustomInput.style.display = 'block';
