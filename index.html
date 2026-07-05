@@ -6720,9 +6720,9 @@ function initMihonScreen() {
   if (!preload) {
     preload = document.createElement('div');
     preload.id = 'mihon-font-preload';
-    preload.style.cssText = 'position:absolute;opacity:0;pointer-events:none;font-size:1px;height:1px;overflow:hidden;';
+    preload.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0.01;pointer-events:none;font-size:16px;line-height:1;';
     preload.innerHTML = allFonts.map(f =>
-      `<span style="font-family:${f};">あいうえおABCabc123</span>`
+      `<div style="font-family:${f};">${MIHON_TEXT_JA}${MIHON_TEXT_EN}</div>`
     ).join('');
     document.body.appendChild(preload);
   }
