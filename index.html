@@ -1097,15 +1097,16 @@
       <div class="form-group">
         <label>カテゴリー</label>
         <div class="radio-group">
-          <label class="radio-label"><input type="radio" name="af-cat" value="ゴシック" checked> ゴシック</label>
-          <label class="radio-label"><input type="radio" name="af-cat" value="明朝"> 明朝</label>
-          <label class="radio-label"><input type="radio" name="af-cat" value="丸ゴ"> 丸ゴ</label>
-          <label class="radio-label"><input type="radio" name="af-cat" value="セリフ"> セリフ</label>
-          <label class="radio-label"><input type="radio" name="af-cat" value="サンセリフ"> サンセリフ</label>
-          <label class="radio-label"><input type="radio" name="af-cat" value="UD"> UD</label>
-          <label class="radio-label"><input type="radio" name="af-cat" value="スクリプト"> スクリプト</label>
-          <label class="radio-label"><input type="radio" name="af-cat" value="ブラックレター"> ブラックレター</label>
-          <label class="radio-label"><input type="radio" name="af-cat" value="その他"> その他</label>
+          <label class="radio-label af-cat-ja"><input type="radio" name="af-cat" value="ゴシック" checked> ゴシック</label>
+          <label class="radio-label af-cat-ja"><input type="radio" name="af-cat" value="明朝"> 明朝</label>
+          <label class="radio-label af-cat-ja"><input type="radio" name="af-cat" value="丸ゴ"> 丸ゴ</label>
+          <label class="radio-label af-cat-ja"><input type="radio" name="af-cat" value="UD"> UD</label>
+          <label class="radio-label af-cat-ja"><input type="radio" name="af-cat" value="その他"> その他</label>
+          <label class="radio-label af-cat-en" style="display:none;"><input type="radio" name="af-cat" value="セリフ"> セリフ</label>
+          <label class="radio-label af-cat-en" style="display:none;"><input type="radio" name="af-cat" value="サンセリフ"> サンセリフ</label>
+          <label class="radio-label af-cat-en" style="display:none;"><input type="radio" name="af-cat" value="スクリプト"> スクリプト</label>
+          <label class="radio-label af-cat-en" style="display:none;"><input type="radio" name="af-cat" value="ブラックレター"> ブラックレター</label>
+          <label class="radio-label af-cat-en" style="display:none;"><input type="radio" name="af-cat" value="その他"> その他</label>
         </div>
       </div>
       <div class="form-group">
@@ -1377,8 +1378,11 @@
           <button class="quiz-chip" data-val="ゴシック">ゴシック</button>
           <button class="quiz-chip" data-val="明朝">明朝</button>
           <button class="quiz-chip" data-val="丸ゴ">丸ゴ</button>
+          <button class="quiz-chip" data-val="UD">UD</button>
           <button class="quiz-chip" data-val="セリフ">セリフ</button>
           <button class="quiz-chip" data-val="サンセリフ">サンセリフ</button>
+          <button class="quiz-chip" data-val="スクリプト">スクリプト</button>
+          <button class="quiz-chip" data-val="ブラックレター">ブラックレター</button>
           <button class="quiz-chip" data-val="その他">その他</button>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;">
@@ -3270,6 +3274,7 @@ async function openDetail(id) {
         fontName: f.name || '',
         onEdit: () => {
           const origUrl = p.originalUrl || '';
+          let editedBlobUrl = ''; // onApplyとonCloseで共有
           openPhotoEditor(p.url, async (blob, revertUrl) => {
             try {
               if (revertUrl) {
@@ -3284,13 +3289,13 @@ async function openDetail(id) {
                 return;
               }
               // ① blobURLで即時表示
-              const blobUrl = URL.createObjectURL(blob);
+              editedBlobUrl = URL.createObjectURL(blob);
               const f2 = fonts.find(x => x.id === id);
               if (f2?.photos) {
                 const idx2 = f2.photos.findIndex(ph => ph.url === p.url);
                 if (idx2 >= 0) {
                   const orig2 = origUrl || f2.photos[idx2].originalUrl || f2.photos[idx2].url;
-                  f2.photos[idx2] = { ...f2.photos[idx2], url: blobUrl, originalUrl: orig2 };
+                  f2.photos[idx2] = { ...f2.photos[idx2], url: editedBlobUrl, originalUrl: orig2 };
                 }
                 openDetail(id);
               }
@@ -3300,7 +3305,7 @@ async function openDetail(id) {
                 await uploadBytes(storageRef, blob);
                 const newUrl = await getDownloadURL(storageRef) + '&t=' + Date.now();
                 if (f2?.photos) {
-                  const idx2 = f2.photos.findIndex(ph => ph.url === blobUrl);
+                  const idx2 = f2.photos.findIndex(ph => ph.url === editedBlobUrl);
                   if (idx2 >= 0) f2.photos[idx2] = { ...f2.photos[idx2], url: newUrl };
                   await updateDoc(doc(db,'fonts',id), { photos: f2.photos });
                 }
@@ -3308,8 +3313,7 @@ async function openDetail(id) {
             } catch(e2) { showToast('エラーが発生しました'); }
           }, () => {
             // 編集後ライトボックスに戻るとき最新URLで開く
-            const f2 = fonts.find(x => x.id === id);
-            const latestUrl = f2?.photos?.[f2.photos.findIndex(ph => ph.originalUrl === (origUrl || p.url) || ph.url === blobUrl)]?.url || blobUrl;
+            const latestUrl = editedBlobUrl || p.url;
             openLightbox(latestUrl, p.memo || '', null, f.name, null, id);
           }, origUrl);
         }
@@ -3575,6 +3579,7 @@ function openUsageDetail(fontId, usageId, usages) {
         fontName: f ? f.name : '',
         onEdit: () => {
           const origUrl = p.originalUrl || '';
+          let editedBlobUrl = ''; // onApplyとonCloseで共有
           openPhotoEditor(p.url, async (blob, revertUrl) => {
             try {
               if (revertUrl) {
@@ -3588,12 +3593,12 @@ function openUsageDetail(fontId, usageId, usages) {
                 return;
               }
               // ① blobURLで即時表示
-              const blobUrl = URL.createObjectURL(blob);
+              editedBlobUrl = URL.createObjectURL(blob);
               const newPhotos = [...(u.photos||[])];
               const pi = newPhotos.findIndex(ph => ph.url === p.url);
               if (pi >= 0) {
                 const orig = origUrl || newPhotos[pi].originalUrl || newPhotos[pi].url;
-                newPhotos[pi] = { ...newPhotos[pi], url: blobUrl, originalUrl: orig };
+                newPhotos[pi] = { ...newPhotos[pi], url: editedBlobUrl, originalUrl: orig };
               }
               u.photos = newPhotos;
               openUsageDetail(fontId, usageId, usages);
@@ -3602,14 +3607,14 @@ function openUsageDetail(fontId, usageId, usages) {
                 const storageRef = ref(storage, `fonts/${fontId}/usages/${Date.now()}_edited.jpg`);
                 await uploadBytes(storageRef, blob);
                 const newUrl = await getDownloadURL(storageRef) + '&t=' + Date.now();
-                const pi2 = u.photos.findIndex(ph => ph.url === blobUrl);
+                const pi2 = u.photos.findIndex(ph => ph.url === editedBlobUrl);
                 if (pi2 >= 0) u.photos[pi2] = { ...u.photos[pi2], url: newUrl };
                 await updateDoc(doc(db,'fonts',fontId,'usages',usageId), { photos: u.photos });
               } catch(e2) { showToast('保存に失敗しました'); }
             } catch(e2) { showToast('エラーが発生しました'); }
           }, () => {
             // 編集後ライトボックスに戻るとき最新URLで開く
-            const latestUrl = u.photos?.[u.photos.findIndex(ph => ph.url === blobUrl || ph.originalUrl === (origUrl || p.url))]?.url || blobUrl;
+            const latestUrl = editedBlobUrl || p.url;
             openLightbox(latestUrl, p.memo || '', null, f ? f.name : '', null, fontId);
           }, origUrl);
         }
@@ -4807,6 +4812,7 @@ function initAddFont() {
   $('af-suggestions').classList.remove('open');
   $('af-suggestions').innerHTML = '';
   const simWarn = $('af-similar-warn'); if (simWarn) simWarn.style.display = 'none';
+  updateAfCatVisibility();
   afPhotoFiles = [null,null,null,null,null];
   afPhotoMemos = ['','','','',''];
   buildPhotoSlots('af-photos','af-photo-memos-wrap',afPhotoFiles,afPhotoMemos);
@@ -4843,9 +4849,27 @@ $('af-name').addEventListener('input', () => {
   });
 });
 
-// 言語切替でサジェストリセット
+// 言語切替でカテゴリー表示切替 & サジェストリセット
+function updateAfCatVisibility() {
+  const lang = document.querySelector('input[name="af-lang"]:checked').value;
+  document.querySelectorAll('.af-cat-ja').forEach(el => {
+    el.style.display = lang === 'ja' ? '' : 'none';
+  });
+  document.querySelectorAll('.af-cat-en').forEach(el => {
+    el.style.display = lang === 'en' ? '' : 'none';
+  });
+  // 非表示になったカテゴリーが選択中なら最初の表示カテゴリーを選択
+  const checked = document.querySelector('input[name="af-cat"]:checked');
+  const checkedLabel = checked?.closest('label');
+  if (checkedLabel && checkedLabel.style.display === 'none') {
+    const firstVisible = document.querySelector(lang === 'ja' ? '.af-cat-ja input[name="af-cat"]' : '.af-cat-en input[name="af-cat"]');
+    if (firstVisible) firstVisible.checked = true;
+  }
+}
+
 document.querySelectorAll('input[name="af-lang"]').forEach(r => {
   r.addEventListener('change', () => {
+    updateAfCatVisibility();
     $('af-suggestions').classList.remove('open');
     if ($('af-name').value) $('af-name').dispatchEvent(new Event('input'));
   });
@@ -5076,6 +5100,14 @@ function renderUsageFontList() {
     </div>
   `).join('');
   wrap.querySelectorAll('.font-card').forEach(el => {
+    // 写真サムネイルタップ → フォント詳細へ
+    const thumb = el.querySelector('.font-thumb');
+    if (thumb) {
+      thumb.addEventListener('click', e => {
+        e.stopPropagation();
+        openDetail(el.dataset.id);
+      });
+    }
     el.addEventListener('click', () => {
       const fid = el.dataset.id;
       if (!selectedUsageFontIds.includes(fid)) selectedUsageFontIds = [fid];
