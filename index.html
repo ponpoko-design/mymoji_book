@@ -6678,34 +6678,36 @@ function applyMihonFont(fontValue) {
   }
 }
 
+let mihonInitialized = false;
 function initMihonScreen() {
   const sel = $('mihon-font-select');
+  const slider = $('mihon-size-slider');
+
+  // イベント登録は初回のみ
+  if (!mihonInitialized) {
+    mihonInitialized = true;
+    if (sel) {
+      sel.addEventListener('change', () => applyMihonFont(sel.value));
+      sel.addEventListener('input', () => applyMihonFont(sel.value));
+    }
+    if (slider) {
+      slider.addEventListener('input', () => {
+        const px = slider.value;
+        const display = $('mihon-text-display');
+        const customDisplay = $('mihon-custom-display');
+        const customInput = $('mihon-custom-input');
+        if (display) display.style.fontSize = px + 'px';
+        if (customDisplay) customDisplay.style.fontSize = px + 'px';
+        if (customInput) customInput.style.fontSize = px + 'px';
+      });
+    }
+  }
+
+  // 初期表示を適用
   if (sel) applyMihonFont(sel.value);
+
   // 見本ページを開いたとき1回だけreload（PV節約）
   if (window.FONTPLUS && window.FONTPLUS.reload) window.FONTPLUS.reload();
-}
-
-const mihonSelect = $('mihon-font-select');
-if (mihonSelect) {
-  const onMihonFontChange = () => applyMihonFont(mihonSelect.value);
-  mihonSelect.addEventListener('change', onMihonFontChange);
-  mihonSelect.addEventListener('input', onMihonFontChange);
-}
-
-// 文字サイズスライダー
-const mihonSlider = $('mihon-size-slider');
-function applyMihonSize(px) {
-  const display = $('mihon-text-display');
-  const customDisplay = $('mihon-custom-display');
-  const customInput = $('mihon-custom-input');
-  if (display) display.style.fontSize = px + 'px';
-  if (customDisplay) customDisplay.style.fontSize = px + 'px';
-  if (customInput) customInput.style.fontSize = px + 'px';
-}
-if (mihonSlider) {
-  mihonSlider.addEventListener('input', () => {
-    applyMihonSize(mihonSlider.value);
-  });
 }
 
 const mihonCustomInput = $('mihon-custom-input');
