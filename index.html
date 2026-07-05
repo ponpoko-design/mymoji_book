@@ -6727,12 +6727,22 @@ function initMihonScreen() {
     document.body.appendChild(preload);
   }
 
-  // reload完了後に初期フォントを適用
+  // フォント読み込み中は表示エリアを非表示に
+  const display = $('mihon-text-display');
+  const customInput = $('mihon-custom-input');
+  if (display) display.style.opacity = '0';
+
+  // reload完了後に表示を適用
   if (window.FONTPLUS) {
-    FONTPLUS.attachCompleteEvent(() => { if (sel) applyMihonFont(sel.value); });
+    FONTPLUS.attachCompleteEvent(() => {
+      if (sel) applyMihonFont(sel.value);
+      if (display) display.style.opacity = '1';
+      if (customInput) customInput.style.opacity = '1';
+    });
     FONTPLUS.reload();
   } else {
     if (sel) applyMihonFont(sel.value);
+    if (display) display.style.opacity = '1';
   }
 }
 
