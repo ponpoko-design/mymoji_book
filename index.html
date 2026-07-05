@@ -6,7 +6,7 @@
 <meta name="format-detection" content="telephone=no">
 <title>MyMoji Book</title>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
-<script src="https://webfont.fontplus.jp/accessor/script/fontplus.js?ZJD2U0NatP4%3D&box=hAVwcgCSHLs%3D&pm=1&aa=1&ab=1"></script>
+<script src="https://webfont.fontplus.jp/accessor/script/fontplus.js?KXzscaaeJDE%3D&box=h5a2eVCZExw%3D&pm=1&aa=1&ab=1"></script>
 <style>
   :root {
     --c-lavender: #d3c3fc;
@@ -1286,11 +1286,38 @@
       <!-- フォント選択 -->
       <div class="mihon-font-select-wrap">
         <select class="mihon-font-select" id="mihon-font-select">
+          <optgroup label="── 和文 ──────────────">
+          <option value="'FOT-ニューシネマA Std D'">ニューシネマA Std D</option>
           <option value="'FOT-ハミング Std D'">ハミング Std D</option>
+          <option value="'FOT-筑紫Aオールド明朝 Pr6 L'">筑紫Aオールド明朝 Pr6 L</option>
           <option value="'FOT-ユールカ Std UB'">ユールカ Std UB</option>
+          <option value="'丸明オールド StdN R'">丸明オールド StdN R</option>
+          <option value="'FOT-ベビポップ Std EB'">ベビポップ Std EB</option>
+          <option value="'FP-こぶりなゴシック StdN W3'">こぶりなゴシック StdN W3</option>
+          <option value="'FOT-つばめ Std R'">つばめ Std R</option>
           <option value="'FOT-筑紫Q明朝L Std L'">筑紫Q明朝L Std L</option>
+          <option value="'FOT-クックハンド Std R'">クックハンド Std R</option>
+          <option value="'TazuganeGothicStdN-Book'">タズガネゴシック StdN Book</option>
+          <option value="'FOT-カッコウ Std B'">カッコウ Std B</option>
+          <option value="'FOT-筑紫オールドゴシック Std R'">筑紫オールドゴシック Std R</option>
           <option value="'FOT-筑紫オールドゴシック Std M'">筑紫オールドゴシック Std M</option>
           <option value="'筑紫AN丸ゴOV StdN U'">筑紫AN丸ゴOV StdN U</option>
+          </optgroup>
+          <optgroup label="── 欧文 ──────────────">
+          <option value="'AvenirLTPro-Book'">Avenir LT Pro Book</option>
+          <option value="'CochinLTPro'">Cochin LT Pro</option>
+          <option value="'GillSansMTPro-Book'">Gill Sans MT Pro Book</option>
+          <option value="'NeueFrutigerWorld-Book'">Neue Frutiger World Book</option>
+          <option value="'AGaramondPro-Regular'">Adobe Garamond Pro</option>
+          <option value="'LinoscriptStd'">Linoscript Std</option>
+          <option value="'MinionPro-Regular'">Minion Pro</option>
+          <option value="'MistralStd'">Mistral Std</option>
+          <option value="'SabonLTPro-Roman'">Sabon LT Pro</option>
+          <option value="'ZapfinoExtraLTPro'">Zapfino Extra LT Pro</option>
+          <option value="'BookmanOldStyle'">Bookman Old Style</option>
+          <option value="'Swiss721BT-Regular'">Swiss 721 BT</option>
+          <option value="'Mt-OTF MaryScript Std Regular'">Mary Script Std</option>
+          </optgroup>
         </select>
         <span class="mihon-select-arrow">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -6622,6 +6649,7 @@ function cmpResetZoom()  { if (cmpPinchA) cmpPinchA.reset(); if (cmpPinchB) cmpP
 $('menu-mihon').addEventListener('click', () => {
   closeMenu();
   showScreen('screen-mihon');
+  initMihonScreen();
 });
 function applyMihonFont(fontValue) {
   const display = $('mihon-text-display');
@@ -6630,7 +6658,12 @@ function applyMihonFont(fontValue) {
   if (display) display.style.fontFamily = fontValue;
   if (customDisplay) customDisplay.style.fontFamily = fontValue;
   if (customInput) customInput.style.fontFamily = fontValue;
-  // FONT PLUSのフォントを再描画
+}
+
+function initMihonScreen() {
+  const sel = $('mihon-font-select');
+  if (sel) applyMihonFont(sel.value);
+  // 見本ページを開いたとき1回だけreload（PV節約）
   if (window.FONTPLUS && window.FONTPLUS.reload) window.FONTPLUS.reload();
 }
 
@@ -6639,7 +6672,6 @@ if (mihonSelect) {
   mihonSelect.addEventListener('change', () => {
     applyMihonFont(mihonSelect.value);
   });
-  applyMihonFont(mihonSelect.value);
 }
 
 // 文字サイズスライダー
