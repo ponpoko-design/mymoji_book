@@ -5328,6 +5328,11 @@ let peCropStart = null;
 let peCropRect = null;
 
 function openPhotoEditor(src, onApply, onClose, originalUrl) {
+  // iOSのfixed要素ずれを防ぐ：キーボードを閉じてスクロールをリセット
+  if (document.activeElement) document.activeElement.blur();
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+
   peRotation = 0; peBrightness = 0; peContrast = 0; peSaturation = 0; peBlacks = 0; peTemp = 0;
   peCropRect = null; peCropStart = null;
   cropRect = { x: 0.1, y: 0.1, x2: 0.9, y2: 0.9 };
