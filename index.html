@@ -3993,13 +3993,15 @@ function openEditFont(id) {
   $('ef-reading').value = f.reading||'';
   $('ef-maker').value = f.maker||'';
   $('ef-memo').value = f.memo||'';
-  // 言語をセット
-  const lang = f.lang || 'ja';
+  // 言語をセット（langフィールドがない場合はカテゴリーから自動判定）
+  const EN_CATS = new Set(['セリフ','サンセリフ','スクリプト','ブラックレター']);
+  const lang = f.lang || (EN_CATS.has(f.category) ? 'en' : 'ja');
   const langRadio = document.querySelector(`input[name="ef-lang"][value="${lang}"]`);
   if (langRadio) langRadio.checked = true;
-  updateEfCatVisibility();
+  // カテゴリーを先にセットしてからvisibilityを更新（順番重要）
   const catRadio = document.querySelector(`input[name="ef-cat"][value="${f.category}"]`);
   if (catRadio) catRadio.checked = true;
+  updateEfCatVisibility();
   efExistingPhotos = f.photos ? [...f.photos] : [];
   efPhotoFiles = [null,null,null,null,null];
   efPhotoMemos = ['','','','',''];
