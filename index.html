@@ -1,12 +1,18 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja"><!-- MyMojiBook v1.0 260705 -->
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="format-detection" content="telephone=no">
 <title>MyMoji Book</title>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
-<script src="https://webfont.fontplus.jp/accessor/script/fontplus.js?KXzscaaeJDE%3D&box=h5a2eVCZExw%3D&pm=1&aa=1&ab=1"></script>
+<script>
+(function() {
+  var s = document.createElement('script');
+  s.src = 'https://webfont.fontplus.jp/accessor/script/fontplus.js?KXzscaaeJDE%3D&box=h5a2eVCZExw%3D&pm=1&aa=1&ab=1&_v=' + Math.floor(Date.now() / (1000 * 60 * 60 * 24));
+  document.head.appendChild(s);
+})();
+</script>
 <style>
   :root {
     --c-lavender: #d3c3fc;
@@ -7068,18 +7074,18 @@ function initMihonScreen() {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       if (window.FONTPLUS) {
-        // attachCompleteEventのコールバックが積み重ならないようフラグ管理
-        window._mihonCompleteHandler = () => {
-          applyMihonFont(mihonSelectedValue);
-          if (display) display.style.opacity = '1';
-          if (customInput) customInput.style.opacity = '1';
-        };
-        FONTPLUS.attachCompleteEvent((...args) => {
-          if (window._mihonCompleteHandler) {
-            window._mihonCompleteHandler(...args);
-          }
-        });
         FONTPLUS.reload();
+        // isloading()がfalseになるまでポーリングして適用（attachCompleteEventがスマホで不安定なため）
+        let tries = 0;
+        const waitDone = setInterval(() => {
+          tries++;
+          if (!FONTPLUS.isloading() || tries > 40) {
+            clearInterval(waitDone);
+            applyMihonFont(mihonSelectedValue);
+            if (display) display.style.opacity = '1';
+            if (customInput) customInput.style.opacity = '1';
+          }
+        }, 100);
       } else {
         applyMihonFont(mihonSelectedValue);
         if (display) display.style.opacity = '1';
