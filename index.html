@@ -4840,8 +4840,7 @@ function checkSimilarFonts(name) {
   ).join('');
   chips.querySelectorAll('button').forEach(btn => {
     btn.addEventListener('click', () => {
-      const f = fonts.find(x => x.id === btn.dataset.id);
-      if (f) openFontDetail(f);
+      openDetail(btn.dataset.id);
     });
   });
 }
