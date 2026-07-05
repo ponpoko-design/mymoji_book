@@ -3292,13 +3292,6 @@ async function openDetail(id) {
                   const orig2 = origUrl || f2.photos[idx2].originalUrl || f2.photos[idx2].url;
                   f2.photos[idx2] = { ...f2.photos[idx2], url: blobUrl, originalUrl: orig2 };
                 }
-                // ライトボックスが開いていれば画像を即時更新
-                const lbImg = $('lightbox-img');
-                if (lbImg && lbImg.src && lightboxPhotos[lightboxIndex]) {
-                  lightboxPhotos[lightboxIndex] = { ...lightboxPhotos[lightboxIndex], url: blobUrl };
-                  lightboxCurrentUrl = blobUrl;
-                  lbImg.src = blobUrl;
-                }
                 openDetail(id);
               }
               // ② バックグラウンドでFirebaseにアップロード
@@ -3313,7 +3306,12 @@ async function openDetail(id) {
                 }
               } catch(e2) { showToast('保存に失敗しました'); }
             } catch(e2) { showToast('エラーが発生しました'); }
-          }, () => openLightbox(p.url, p.memo || '', null, f.name, null, id), origUrl);
+          }, () => {
+            // 編集後ライトボックスに戻るとき最新URLで開く
+            const f2 = fonts.find(x => x.id === id);
+            const latestUrl = f2?.photos?.[f2.photos.findIndex(ph => ph.originalUrl === (origUrl || p.url) || ph.url === blobUrl)]?.url || blobUrl;
+            openLightbox(latestUrl, p.memo || '', null, f.name, null, id);
+          }, origUrl);
         }
       }));
       openLightbox(url, memo, null, f.name, photosArr, id);
@@ -3598,13 +3596,6 @@ function openUsageDetail(fontId, usageId, usages) {
                 newPhotos[pi] = { ...newPhotos[pi], url: blobUrl, originalUrl: orig };
               }
               u.photos = newPhotos;
-              // ライトボックスが開いていれば画像を即時更新
-              const lbImg = $('lightbox-img');
-              if (lbImg && lbImg.src && lightboxPhotos[lightboxIndex]) {
-                lightboxPhotos[lightboxIndex] = { ...lightboxPhotos[lightboxIndex], url: blobUrl };
-                lightboxCurrentUrl = blobUrl;
-                lbImg.src = blobUrl;
-              }
               openUsageDetail(fontId, usageId, usages);
               // ② バックグラウンドでFirebaseにアップロード
               try {
@@ -3616,7 +3607,11 @@ function openUsageDetail(fontId, usageId, usages) {
                 await updateDoc(doc(db,'fonts',fontId,'usages',usageId), { photos: u.photos });
               } catch(e2) { showToast('保存に失敗しました'); }
             } catch(e2) { showToast('エラーが発生しました'); }
-          }, () => openLightbox(p.url, p.memo || '', null, f ? f.name : '', null, fontId), origUrl);
+          }, () => {
+            // 編集後ライトボックスに戻るとき最新URLで開く
+            const latestUrl = u.photos?.[u.photos.findIndex(ph => ph.url === blobUrl || ph.originalUrl === (origUrl || p.url))]?.url || blobUrl;
+            openLightbox(latestUrl, p.memo || '', null, f ? f.name : '', null, fontId);
+          }, origUrl);
         }
       }));
       openLightbox(url, memo, null, f ? f.name : '', photosArr, fontId);
