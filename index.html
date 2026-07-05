@@ -4836,7 +4836,7 @@ function checkSimilarFonts(name) {
   }
   warn.style.display = 'block';
   chips.innerHTML = similar.map(f =>
-    `<button data-id="${f.id}" style="padding:5px 12px;border-radius:50px;border:1.5px solid #e05c7a;background:none;font-size:12px;color:#e05c7a;cursor:pointer;font-family:inherit;touch-action:manipulation;">${f.name}</button>`
+    `<button data-id="${f.id}" style="padding:5px 12px;border-radius:50px;border:none;background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));font-size:12px;font-weight:600;color:#5a4a8a;cursor:pointer;font-family:inherit;touch-action:manipulation;">${f.name}</button>`
   ).join('');
   chips.querySelectorAll('button').forEach(btn => {
     btn.addEventListener('click', () => {
