@@ -5423,6 +5423,9 @@ function peSetTab(tab) {
   });
   const isCrop = tab === 'crop';
   $('pe-crop-ui').style.display = isCrop ? 'block' : 'none';
+  // クロップ時はタブ行を非表示、その分画像エリアが広がる
+  const tabRow = document.querySelector('.pe-tab-row');
+  if (tabRow) tabRow.style.display = isCrop ? 'none' : 'flex';
   const adjustBtnRow = $('pe-adjust-btn-row');
   if (adjustBtnRow) adjustBtnRow.style.display = isCrop ? 'none' : 'flex';
   if (isCrop) peSetupCrop();
