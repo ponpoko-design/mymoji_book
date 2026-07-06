@@ -191,30 +191,11 @@
     word-break: break-all; letter-spacing: 0.04em;
     font-size: 16px;
   }
-  .mihon-text-display, .mihon-text-display *,
-  .mihon-custom-display, .mihon-custom-display *,
-  .mihon-custom-input {
+  .mihon-text-display, .mihon-text-display * {
     text-decoration: none !important;
     text-decoration-line: none !important;
     border-bottom: none !important;
     box-shadow: none !important;
-  }
-  .mihon-custom-wrap { margin-top: 2px; }
-  .mihon-custom-label { font-size: 12px; color: var(--c-text-sub); margin-bottom: 5px; display: block; }
-  .mihon-custom-input {
-    width: 100%; padding: 10px 14px;
-    border-radius: var(--radius-sm); border: 1.5px solid var(--c-border);
-    background: var(--c-card); font-size: 16px;
-    color: var(--c-text); line-height: 1.6; resize: none; outline: none;
-    font-family: var(--mihon-font, inherit) !important;
-  }
-  .mihon-custom-input:focus { border-color: var(--c-lavender); }
-  .mihon-custom-display {
-    font-family: var(--mihon-font, inherit) !important;
-    width: 100%; min-height: 56px; padding: 10px 14px;
-    border-radius: var(--radius-sm); border: 1.5px solid var(--c-border);
-    background: var(--c-card); font-size: 16px;
-    color: var(--c-text); line-height: 1.6; word-break: break-all; letter-spacing: 0.04em;
   }
   .app-header h1 {
     font-size: 27px;
@@ -1361,12 +1342,6 @@
       </div>
       <!-- 固定文字表示 -->
       <div class="mihon-text-display" id="mihon-text-display">あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン1234567890　？！　「」（）</div>
-      <!-- 自由入力 -->
-      <div class="mihon-custom-wrap">
-        <span class="mihon-custom-label">自由入力</span>
-        <textarea class="mihon-custom-input" id="mihon-custom-input" rows="2" placeholder="ここに文字を入力…"></textarea>
-        <div class="mihon-custom-display" id="mihon-custom-display" style="display:none;"></div>
-      </div>
     </div>
   </div>
 
@@ -1722,6 +1697,11 @@
   <!-- フォント見本 -->
   <div style="padding:16px 20px;border-top:1px solid var(--c-border);border-bottom:1px solid var(--c-border);">
     <button id="menu-mihon" style="padding:10px 16px;border-radius:50px;border:1.5px solid var(--c-border);background:none;font-size:14px;color:var(--c-text);cursor:pointer;font-family:inherit;touch-action:manipulation;text-align:left;width:100%;">フォント見本</button>
+  </div>
+  <!-- フォント登録数 -->
+  <div style="padding:16px 20px;border-bottom:1px solid var(--c-border);">
+    <div style="font-size:12px;font-weight:700;color:var(--c-text-sub);letter-spacing:0.08em;margin-bottom:10px;">FONTS</div>
+    <div id="menu-font-count" style="font-size:13px;color:var(--c-text);line-height:1;"></div>
   </div>
   <!-- アカウントセクション -->
   <div style="padding:20px;">
@@ -2588,6 +2568,41 @@ function openMenu() {
       dbxBtn.textContent = 'Dropboxと連携する';
       dbxBtn.style.color = 'var(--c-text)';
     }
+  }
+  // フォント登録数を集計して表示
+  const countEl = $('menu-font-count');
+  if (countEl && fonts.length >= 0) {
+    const getFontLangForCount = f => {
+      if (f.lang) return f.lang;
+      const EN_CATS_MENU = new Set(['セリフ','サンセリフ','スクリプト','ブラックレター']);
+      return EN_CATS_MENU.has(f.category) ? 'en' : 'ja';
+    };
+    const jaFonts = fonts.filter(f => getFontLangForCount(f) === 'ja');
+    const enFonts = fonts.filter(f => getFontLangForCount(f) === 'en');
+    const jaCats  = ['ゴシック','明朝','丸ゴ','UD','その他'];
+    const enCats  = ['セリフ','サンセリフ','スクリプト','ブラックレター','その他'];
+    const countByCat = (arr, cats) =>
+      cats.map(cat => {
+        const n = arr.filter(f => (f.category || 'その他') === cat).length;
+        return n > 0 ? `<span style="color:var(--c-text-sub);">${cat}</span> ${n}` : null;
+      }).filter(Boolean).join('<span style="color:var(--c-border);margin:0 4px;">|</span>');
+
+    countEl.innerHTML = `
+      <div style="margin-bottom:10px;">
+        <span style="font-size:22px;font-weight:800;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${fonts.length}</span>
+        <span style="font-size:12px;color:var(--c-text-sub);margin-left:3px;">フォント登録中</span>
+      </div>
+      <div style="margin-bottom:6px;">
+        <span style="font-size:13px;font-weight:700;color:var(--c-text);">日本語</span>
+        <span style="font-size:13px;font-weight:700;color:var(--c-text);margin-left:6px;">${jaFonts.length}</span>
+      </div>
+      <div style="font-size:12px;color:var(--c-text-sub);line-height:2;margin-bottom:12px;padding-left:2px;">${countByCat(jaFonts, jaCats)}</div>
+      <div style="margin-bottom:6px;">
+        <span style="font-size:13px;font-weight:700;color:var(--c-text);">欧文</span>
+        <span style="font-size:13px;font-weight:700;color:var(--c-text);margin-left:6px;">${enFonts.length}</span>
+      </div>
+      <div style="font-size:12px;color:var(--c-text-sub);line-height:2;padding-left:2px;">${countByCat(enFonts, enCats)}</div>
+    `;
   }
   $('menu-drawer').style.display = 'flex';
   $('menu-overlay').style.display = 'block';
@@ -6912,19 +6927,11 @@ function isEnFont(fontValue) {
 }
 function applyMihonFont(fontValue) {
   const display = $('mihon-text-display');
-  const customDisplay = $('mihon-custom-display');
-  const customInput = $('mihon-custom-input');
-  // CSS変数をscreen-mihonにセット
   const screenMihon = $('screen-mihon');
   if (screenMihon) screenMihon.style.setProperty('--mihon-font', fontValue);
   if (display) {
     display.style.fontFamily = fontValue;
     display.textContent = isEnFont(fontValue) ? MIHON_TEXT_EN : MIHON_TEXT_JA;
-  }
-  if (customDisplay) customDisplay.style.fontFamily = fontValue;
-  if (customInput) {
-    customInput.style.fontFamily = fontValue;
-    customInput.placeholder = isEnFont(fontValue) ? 'Type here...' : 'ここに文字を入力…';
   }
 }
 
@@ -7031,18 +7038,13 @@ function initMihonScreen() {
       slider.addEventListener('input', () => {
         const px = slider.value;
         const display = $('mihon-text-display');
-        const customDisplay = $('mihon-custom-display');
-        const customInput = $('mihon-custom-input');
         if (display) display.style.fontSize = px + 'px';
-        if (customDisplay) customDisplay.style.fontSize = px + 'px';
-        if (customInput) customInput.style.fontSize = px + 'px';
       });
     }
   }
 
   // フォント読み込み中は表示エリアを非表示に
   const display = $('mihon-text-display');
-  const customInput = $('mihon-custom-input');
   if (display) display.style.opacity = '0';
 
   // 全フォントを非表示divに書き込んでサブセット化（reload前に必ずDOMに追加）
@@ -7077,7 +7079,6 @@ function initMihonScreen() {
         window._mihonCompleteHandler = () => {
           applyMihonFont(mihonSelectedValue);
           if (display) display.style.opacity = '1';
-          if (customInput) customInput.style.opacity = '1';
         };
         FONTPLUS.attachCompleteEvent((...args) => {
           if (window._mihonCompleteHandler) {
@@ -7090,19 +7091,6 @@ function initMihonScreen() {
         if (display) display.style.opacity = '1';
       }
     });
-  });
-}
-
-const mihonCustomInput = $('mihon-custom-input');
-const mihonCustomDisplay = $('mihon-custom-display');
-if (mihonCustomInput && mihonCustomDisplay) {
-  let mihonReloadTimer = null;
-  mihonCustomInput.addEventListener('input', () => {
-    // 入力が止まって1秒後にreload（PV消費）
-    clearTimeout(mihonReloadTimer);
-    mihonReloadTimer = setTimeout(() => {
-      if (window.FONTPLUS) FONTPLUS.reload();
-    }, 1000);
   });
 }
 
