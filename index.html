@@ -2625,13 +2625,13 @@ function openFontCountPanel() {
   const content = $('fontcount-content');
   if (content) {
     // チップ行生成（cat-chipスタイル＋数バッジ）
-    const chipRow = (arr, cats) => cats.map(cat => {
+    const chipRow = (arr, cats, lang) => cats.map(cat => {
       const n = arr.filter(f => (f.category || 'その他') === cat).length;
       if (!n) return '';
-      return `<div style="display:inline-flex;align-items:center;gap:5px;padding:6px 14px 6px 14px;border-radius:50px;background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border:none;margin:4px 4px 4px 0;">
+      return `<button onclick="goHomeWithFilter('${lang}','${cat}')" style="display:inline-flex;align-items:center;gap:5px;padding:6px 14px 6px 14px;border-radius:50px;background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border:none;margin:4px 4px 4px 0;cursor:pointer;font-family:inherit;touch-action:manipulation;">
         <span style="font-size:13px;font-weight:600;color:#5a4a8a;">${cat}</span>
         <span style="font-size:13px;font-weight:800;color:#5a4a8a;">${n}</span>
-      </div>`;
+      </button>`;
     }).join('');
 
     content.innerHTML = `
@@ -2648,7 +2648,7 @@ function openFontCountPanel() {
           <span style="font-size:15px;font-weight:800;color:var(--c-text);">日本語</span>
           <span style="font-size:22px;font-weight:900;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${jaFonts.length}</span>
         </div>
-        <div style="display:flex;flex-wrap:wrap;">${chipRow(jaFonts, jaCats)}</div>
+        <div style="display:flex;flex-wrap:wrap;">${chipRow(jaFonts, jaCats, 'ja')}</div>
       </div>
       <!-- 仕切り -->
       <div style="height:1px;background:var(--c-border);margin:0 0 20px;"></div>
@@ -2658,7 +2658,7 @@ function openFontCountPanel() {
           <span style="font-size:15px;font-weight:800;color:var(--c-text);">欧文</span>
           <span style="font-size:22px;font-weight:900;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${enFonts.length}</span>
         </div>
-        <div style="display:flex;flex-wrap:wrap;">${chipRow(enFonts, enCats)}</div>
+        <div style="display:flex;flex-wrap:wrap;">${chipRow(enFonts, enCats, 'en')}</div>
       </div>
     `;
   }
@@ -2679,6 +2679,25 @@ function closeFontCountPanel() {
   panel.addEventListener('transitionend', () => {
     panel.style.display = 'none';
   }, { once: true });
+}
+window.goHomeWithFilter = function(lang, cat) {
+  closeFontCountPanel();
+  showScreen('screen-home');
+  // lang チップのactiveを更新
+  document.querySelectorAll('[data-lang]').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === lang);
+  });
+  langFilter = lang;
+  // catチップを再描画してactiveをセット
+  updateCatChips(lang);
+  categoryFilter = cat;
+  const wrap = $('cat-filter-wrap');
+  if (wrap) {
+    wrap.querySelectorAll('.cat-chip[data-cat]').forEach(b => {
+      b.classList.toggle('active', b.dataset.cat === cat);
+    });
+  }
+  renderFontList();
 }
 
 $('menu-btn').addEventListener('click', openMenu);
