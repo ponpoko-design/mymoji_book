@@ -1713,7 +1713,7 @@
 </div>
 
 <!-- フォント登録数パネル -->
-<div id="fontcount-panel" style="position:fixed;top:0;right:0;width:100%;max-width:var(--max-w);height:100%;z-index:300;background:var(--c-bg);display:flex;flex-direction:column;transform:translateX(100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);pointer-events:none;">
+<div id="fontcount-panel" style="position:fixed;top:0;right:0;width:100%;max-width:var(--max-w);height:100%;z-index:500;background:var(--c-bg);display:none;flex-direction:column;transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);pointer-events:none;">
   <div style="height:var(--header-h);display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--c-border);flex-shrink:0;position:relative;">
     <button id="fontcount-back" style="background:none;border:none;cursor:pointer;padding:6px;color:var(--c-text-sub);touch-action:manipulation;display:flex;align-items:center;">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
@@ -2639,13 +2639,22 @@ function openFontCountPanel() {
     </div>
   `;
   const panel = $('fontcount-panel');
-  panel.style.transform = 'translateX(0)';
+  panel.style.display = 'flex';
+  panel.style.transform = 'translateX(100%)';
   panel.style.pointerEvents = 'auto';
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      panel.style.transform = 'translateX(0)';
+    });
+  });
 }
 function closeFontCountPanel() {
   const panel = $('fontcount-panel');
   panel.style.transform = 'translateX(100%)';
   panel.style.pointerEvents = 'none';
+  panel.addEventListener('transitionend', () => {
+    panel.style.display = 'none';
+  }, { once: true });
 }
 
 $('menu-btn').addEventListener('click', openMenu);
