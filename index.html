@@ -6,7 +6,7 @@
 <meta name="format-detection" content="telephone=no">
 <title>MyMoji Book</title>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
-<script src="https://webfont.fontplus.jp/accessor/script/fontplus.js?KXzscaaeJDE%3D&box=h5a2eVCZExw%3D&pm=1&aa=1&ab=1"></script>
+<script src="https://webfont.fontplus.jp/accessor/script/fontplus.js?KXzscaaeJDE%3D&box=h5a2eVCZExw%3D&pm=1&aa=1&ab=1&v=2"></script>
 <style>
   :root {
     --c-lavender: #d3c3fc;
@@ -1713,14 +1713,14 @@
 </div>
 
 <!-- フォント登録数パネル -->
-<div id="fontcount-panel" style="position:fixed;top:0;right:0;width:100%;max-width:var(--max-w);height:100%;z-index:500;background:var(--c-bg);display:none;flex-direction:column;transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);pointer-events:none;">
-  <div style="height:var(--header-h);display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--c-border);flex-shrink:0;position:relative;">
+<div id="fontcount-panel" style="position:fixed;top:0;right:0;width:100%;max-width:var(--max-w);height:100%;z-index:500;background:transparent;display:none;flex-direction:column;transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);pointer-events:none;">
+  <div style="height:var(--header-h);display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--c-border);flex-shrink:0;position:relative;background:rgba(244,240,255,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);">
     <button id="fontcount-back" style="background:none;border:none;cursor:pointer;padding:6px;color:var(--c-text-sub);touch-action:manipulation;display:flex;align-items:center;">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
     </button>
     <h2 style="font-size:17px;font-weight:800;position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;">フォント登録数</h2>
   </div>
-  <div id="fontcount-content" style="flex:1;overflow-y:auto;padding:24px 20px;"></div>
+  <div id="fontcount-content" style="flex:1;overflow-y:auto;padding:20px 20px;"></div>
 </div>
 
 <!-- Context Menu -->
@@ -2615,29 +2615,45 @@ function openFontCountPanel() {
   }).join('');
 
   const content = $('fontcount-content');
-  if (content) content.innerHTML = `
-    <!-- 総数 -->
-    <div style="text-align:center;padding:28px 0 32px;">
-      <div style="font-size:56px;font-weight:900;line-height:1;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${fonts.length}</div>
-      <div style="font-size:13px;color:var(--c-text-sub);margin-top:6px;">フォント登録中</div>
-    </div>
-    <!-- 日本語 -->
-    <div style="margin-bottom:28px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:2px solid var(--c-lavender);margin-bottom:4px;">
-        <span style="font-size:15px;font-weight:800;color:var(--c-text);">日本語</span>
-        <span style="font-size:18px;font-weight:900;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${jaFonts.length}</span>
+  if (content) {
+    // チップ行生成（cat-chipスタイル＋数バッジ）
+    const chipRow = (arr, cats) => cats.map(cat => {
+      const n = arr.filter(f => (f.category || 'その他') === cat).length;
+      if (!n) return '';
+      return `<div style="display:inline-flex;align-items:center;gap:5px;padding:6px 14px 6px 14px;border-radius:50px;background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border:none;margin:4px 4px 4px 0;">
+        <span style="font-size:13px;font-weight:600;color:#5a4a8a;">${cat}</span>
+        <span style="font-size:13px;font-weight:800;color:#5a4a8a;">${n}</span>
+      </div>`;
+    }).join('');
+
+    content.innerHTML = `
+      <!-- 総数 -->
+      <div style="text-align:center;padding:20px 0 20px;">
+        <div style="font-size:64px;font-weight:900;line-height:1;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${fonts.length}</div>
+        <div style="font-size:13px;color:var(--c-text-sub);margin-top:6px;letter-spacing:0.05em;">フォント登録中</div>
       </div>
-      ${catRow(jaFonts, jaCats)}
-    </div>
-    <!-- 欧文 -->
-    <div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:2px solid var(--c-sky);margin-bottom:4px;">
-        <span style="font-size:15px;font-weight:800;color:var(--c-text);">欧文</span>
-        <span style="font-size:18px;font-weight:900;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${enFonts.length}</span>
+      <!-- 仕切り -->
+      <div style="height:1px;background:var(--c-border);margin:0 0 20px;"></div>
+      <!-- 日本語 -->
+      <div style="margin-bottom:20px;">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:10px;">
+          <span style="font-size:15px;font-weight:800;color:var(--c-text);">日本語</span>
+          <span style="font-size:22px;font-weight:900;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${jaFonts.length}</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;">${chipRow(jaFonts, jaCats)}</div>
       </div>
-      ${catRow(enFonts, enCats)}
-    </div>
-  `;
+      <!-- 仕切り -->
+      <div style="height:1px;background:var(--c-border);margin:0 0 20px;"></div>
+      <!-- 欧文 -->
+      <div>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:10px;">
+          <span style="font-size:15px;font-weight:800;color:var(--c-text);">欧文</span>
+          <span style="font-size:22px;font-weight:900;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${enFonts.length}</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;">${chipRow(enFonts, enCats)}</div>
+      </div>
+    `;
+  }
   const panel = $('fontcount-panel');
   panel.style.display = 'flex';
   panel.style.transform = 'translateX(100%)';
