@@ -1700,14 +1700,27 @@
   </div>
   <!-- フォント登録数 -->
   <div style="padding:16px 20px;border-bottom:1px solid var(--c-border);">
-    <div style="font-size:12px;font-weight:700;color:var(--c-text-sub);letter-spacing:0.08em;margin-bottom:10px;">FONTS</div>
-    <div id="menu-font-count" style="font-size:13px;color:var(--c-text);line-height:1;"></div>
+    <button id="menu-fontcount-btn" style="width:100%;padding:10px 16px;border-radius:50px;border:1.5px solid var(--c-border);background:none;font-size:14px;color:var(--c-text);cursor:pointer;font-family:inherit;touch-action:manipulation;display:flex;align-items:center;justify-content:space-between;">
+      <span>フォント登録数</span>
+      <span id="menu-fontcount-badge" style="font-size:14px;font-weight:800;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">—</span>
+    </button>
   </div>
   <!-- アカウントセクション -->
   <div style="padding:20px;">
     <div style="font-size:12px;font-weight:700;color:var(--c-text-sub);letter-spacing:0.08em;margin-bottom:12px;">ACCOUNT</div>
     <button id="menu-logout" style="padding:10px 16px;border-radius:50px;border:1.5px solid var(--c-border);background:none;font-size:14px;color:#e05c7a;cursor:pointer;font-family:inherit;touch-action:manipulation;text-align:left;width:100%;">ログアウト</button>
   </div>
+</div>
+
+<!-- フォント登録数パネル -->
+<div id="fontcount-panel" style="position:fixed;top:0;right:0;width:100%;max-width:var(--max-w);height:100%;z-index:300;background:var(--c-bg);display:flex;flex-direction:column;transform:translateX(100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);pointer-events:none;">
+  <div style="height:var(--header-h);display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--c-border);flex-shrink:0;position:relative;">
+    <button id="fontcount-back" style="background:none;border:none;cursor:pointer;padding:6px;color:var(--c-text-sub);touch-action:manipulation;display:flex;align-items:center;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <h2 style="font-size:17px;font-weight:800;position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;">フォント登録数</h2>
+  </div>
+  <div id="fontcount-content" style="flex:1;overflow-y:auto;padding:24px 20px;"></div>
 </div>
 
 <!-- Context Menu -->
@@ -2569,41 +2582,9 @@ function openMenu() {
       dbxBtn.style.color = 'var(--c-text)';
     }
   }
-  // フォント登録数を集計して表示
-  const countEl = $('menu-font-count');
-  if (countEl && fonts.length >= 0) {
-    const getFontLangForCount = f => {
-      if (f.lang) return f.lang;
-      const EN_CATS_MENU = new Set(['セリフ','サンセリフ','スクリプト','ブラックレター']);
-      return EN_CATS_MENU.has(f.category) ? 'en' : 'ja';
-    };
-    const jaFonts = fonts.filter(f => getFontLangForCount(f) === 'ja');
-    const enFonts = fonts.filter(f => getFontLangForCount(f) === 'en');
-    const jaCats  = ['ゴシック','明朝','丸ゴ','UD','その他'];
-    const enCats  = ['セリフ','サンセリフ','スクリプト','ブラックレター','その他'];
-    const countByCat = (arr, cats) =>
-      cats.map(cat => {
-        const n = arr.filter(f => (f.category || 'その他') === cat).length;
-        return n > 0 ? `<span style="color:var(--c-text-sub);">${cat}</span> ${n}` : null;
-      }).filter(Boolean).join('<span style="color:var(--c-border);margin:0 4px;">|</span>');
-
-    countEl.innerHTML = `
-      <div style="margin-bottom:10px;">
-        <span style="font-size:22px;font-weight:800;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${fonts.length}</span>
-        <span style="font-size:12px;color:var(--c-text-sub);margin-left:3px;">フォント登録中</span>
-      </div>
-      <div style="margin-bottom:6px;">
-        <span style="font-size:13px;font-weight:700;color:var(--c-text);">日本語</span>
-        <span style="font-size:13px;font-weight:700;color:var(--c-text);margin-left:6px;">${jaFonts.length}</span>
-      </div>
-      <div style="font-size:12px;color:var(--c-text-sub);line-height:2;margin-bottom:12px;padding-left:2px;">${countByCat(jaFonts, jaCats)}</div>
-      <div style="margin-bottom:6px;">
-        <span style="font-size:13px;font-weight:700;color:var(--c-text);">欧文</span>
-        <span style="font-size:13px;font-weight:700;color:var(--c-text);margin-left:6px;">${enFonts.length}</span>
-      </div>
-      <div style="font-size:12px;color:var(--c-text-sub);line-height:2;padding-left:2px;">${countByCat(enFonts, enCats)}</div>
-    `;
-  }
+  // フォント登録数バッジを更新
+  const badge = $('menu-fontcount-badge');
+  if (badge) badge.textContent = fonts.length;
   $('menu-drawer').style.display = 'flex';
   $('menu-overlay').style.display = 'block';
 }
@@ -2612,9 +2593,66 @@ function closeMenu() {
   $('menu-overlay').style.display = 'none';
 }
 
+// ── フォント登録数パネル ──
+function openFontCountPanel() {
+  const getFontLangForCount = f => {
+    if (f.lang) return f.lang;
+    const EN_CATS_MENU = new Set(['セリフ','サンセリフ','スクリプト','ブラックレター']);
+    return EN_CATS_MENU.has(f.category) ? 'en' : 'ja';
+  };
+  const jaFonts = fonts.filter(f => getFontLangForCount(f) === 'ja');
+  const enFonts = fonts.filter(f => getFontLangForCount(f) === 'en');
+  const jaCats = ['ゴシック','明朝','丸ゴ','UD','その他'];
+  const enCats = ['セリフ','サンセリフ','スクリプト','ブラックレター','その他'];
+
+  const catRow = (arr, cats) => cats.map(cat => {
+    const n = arr.filter(f => (f.category || 'その他') === cat).length;
+    if (!n) return '';
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--c-border);">
+      <span style="font-size:14px;color:var(--c-text-sub);">${cat}</span>
+      <span style="font-size:15px;font-weight:700;color:var(--c-text);">${n}</span>
+    </div>`;
+  }).join('');
+
+  const content = $('fontcount-content');
+  if (content) content.innerHTML = `
+    <!-- 総数 -->
+    <div style="text-align:center;padding:28px 0 32px;">
+      <div style="font-size:56px;font-weight:900;line-height:1;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${fonts.length}</div>
+      <div style="font-size:13px;color:var(--c-text-sub);margin-top:6px;">フォント登録中</div>
+    </div>
+    <!-- 日本語 -->
+    <div style="margin-bottom:28px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:2px solid var(--c-lavender);margin-bottom:4px;">
+        <span style="font-size:15px;font-weight:800;color:var(--c-text);">日本語</span>
+        <span style="font-size:18px;font-weight:900;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${jaFonts.length}</span>
+      </div>
+      ${catRow(jaFonts, jaCats)}
+    </div>
+    <!-- 欧文 -->
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:2px solid var(--c-sky);margin-bottom:4px;">
+        <span style="font-size:15px;font-weight:800;color:var(--c-text);">欧文</span>
+        <span style="font-size:18px;font-weight:900;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${enFonts.length}</span>
+      </div>
+      ${catRow(enFonts, enCats)}
+    </div>
+  `;
+  const panel = $('fontcount-panel');
+  panel.style.transform = 'translateX(0)';
+  panel.style.pointerEvents = 'auto';
+}
+function closeFontCountPanel() {
+  const panel = $('fontcount-panel');
+  panel.style.transform = 'translateX(100%)';
+  panel.style.pointerEvents = 'none';
+}
+
 $('menu-btn').addEventListener('click', openMenu);
 $('menu-close').addEventListener('click', closeMenu);
 $('menu-overlay').addEventListener('click', closeMenu);
+$('menu-fontcount-btn').addEventListener('click', () => { closeMenu(); openFontCountPanel(); });
+$('fontcount-back').addEventListener('click', closeFontCountPanel);
 
 $('menu-logout').addEventListener('click', async () => {
   closeMenu();
@@ -4630,6 +4668,7 @@ function closeAllAndGoHome() {
   $('context-menu').classList.remove('active');
   $('context-overlay').classList.remove('active');
   $('confirm-dialog').classList.remove('active');
+  closeFontCountPanel();
   updateCompareFloat();
   showScreen('screen-home');
   renderHome();
@@ -6919,7 +6958,7 @@ const EN_FONTS = new Set([
   'AvenirLTPro-Book','CochinLTPro','GillSansMTPro-Book','NeueFrutigerWorld-Book',
   'AGaramondPro-Regular','LinoscriptStd','MinionPro-Regular','MistralStd',
   'SabonLTPro-Roman','ZapfinoExtraLTPro','BookmanOldStyle','Swiss721BT-Regular',
-  'Mt-OTF MaryScript Std Regular'
+  'Mt-OTF MaryScript Std Regular','EurostileLTPro'
 ]);
 function isEnFont(fontValue) {
   const name = fontValue.replace(/['"]/g, '').trim();
@@ -6966,6 +7005,7 @@ const MIHON_FONTS = [
   { group: '欧文', label: 'Bookman Old Style',          value: "'BookmanOldStyle'" },
   { group: '欧文', label: 'Swiss 721 BT',               value: "'Swiss721BT-Regular'" },
   { group: '欧文', label: 'Mary Script Std',            value: "'Mt-OTF MaryScript Std Regular'" },
+  { group: '欧文', label: 'Eurostile LT Pro',            value: "'EurostileLTPro'" },
 ];
 let mihonSelectedValue = MIHON_FONTS[0].value;
 let mihonDropdownOpen = false;
@@ -7058,7 +7098,7 @@ function initMihonScreen() {
     "'AvenirLTPro-Book'","'CochinLTPro'","'GillSansMTPro-Book'","'NeueFrutigerWorld-Book'",
     "'AGaramondPro-Regular'","'LinoscriptStd'","'MinionPro-Regular'","'MistralStd'",
     "'SabonLTPro-Roman'","'ZapfinoExtraLTPro'","'BookmanOldStyle'","'Swiss721BT-Regular'",
-    "'Mt-OTF MaryScript Std Regular'"
+    "'Mt-OTF MaryScript Std Regular'","'EurostileLTPro'"
   ];
   // preloadは毎回作り直す（フォントリスト変更に対応）
   let preload = $('mihon-font-preload');
