@@ -7096,7 +7096,7 @@ const MIHON_FONTS = [
   { group: '欧文', reading: 'swiss 721 bt',             label: 'Swiss 721 BT',               value: "'Swiss721BT-Regular'" },
   { group: '欧文', reading: 'zapfino extra lt pro',     label: 'Zapfino Extra LT Pro',       value: "'ZapfinoExtraLTPro'" },
 ];
-let mihonSelectedValue = [...MIHON_FONTS].sort((a,b) => (a.reading||a.label).localeCompare(b.reading||b.label))[0].value;
+let mihonSelectedValue = [...MIHON_FONTS].sort((a,b) => { if (a.group !== b.group) return a.group === '和文' ? -1 : 1; return (a.reading||a.label).localeCompare(b.reading||b.label); })[0].value;
 let mihonDropdownOpen = false;
 
 function mihonRenderList(q) {
