@@ -7180,12 +7180,8 @@ function initMihonScreen() {
     // 自由記入欄：ひらがな・カタカナ以外を除去
     const customInput = $('mihon-custom-input');
     if (customInput) {
-      // MIHON_TEXT_JAに含まれるひらがな・カタカナ・長音符をそのままALLOWEDに
-      const ALLOWED = new Set(MIHON_TEXT_JA.split('').filter(c => {
-        const code = c.charCodeAt(0);
-        return (code >= 0x3041 && code <= 0x3096) || // ひらがな
-               (code >= 0x30A1 && code <= 0x30FF);   // カタカナ（ーU+30FCを含む範囲）
-      }));
+      // MIHON_TEXT_JAに含まれる文字をすべてそのままALLOWEDに（記号・句読点含む）
+      const ALLOWED = new Set(MIHON_TEXT_JA.split('').filter(c => c.trim() !== ''));
       let _composing = false;
       customInput.addEventListener('compositionstart', () => { _composing = true; });
       customInput.addEventListener('compositionend', () => {
