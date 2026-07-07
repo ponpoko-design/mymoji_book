@@ -7047,49 +7047,54 @@ function applyMihonFont(fontValue) {
     display.style.fontFamily = fontValue;
     display.textContent = isEn ? MIHON_TEXT_EN : MIHON_TEXT_JA;
   }
-  // 自由記入欄：常に表示、選択フォントを適用
+  // 自由記入欄：常に表示、選択フォントを適用。欧文/和文でプレースホルダー切替
   if (customWrap) customWrap.style.display = '';
-  if (customInput) customInput.style.fontFamily = fontValue;
+  if (customInput) {
+    customInput.style.fontFamily = fontValue;
+    customInput.placeholder = isEn ? 'Type here...' : 'ひらがな･カタカナのみ、ためせます';
+  }
 }
 
 const MIHON_FONTS = [
-  { group: '和文', label: 'ニューシネマA Std D',       value: "'FOT-ニューシネマA Std D'" },
-  { group: '和文', label: 'ハミング Std D',             value: "'FOT-ハミング Std D'" },
-  { group: '和文', label: '筑紫Aオールド明朝 Pr6 L',   value: "'FOT-筑紫Aオールド明朝 Pr6 L'" },
-  { group: '和文', label: 'ユールカ Std UB',            value: "'FOT-ユールカ Std UB'" },
-  { group: '和文', label: '丸明オールド StdN R',        value: "'丸明オールド StdN R'" },
-  { group: '和文', label: 'ベビポップ Std EB',          value: "'FOT-ベビポップ Std EB'" },
-  { group: '和文', label: 'こぶりなゴシック StdN W3',  value: "'FP-こぶりなゴシック StdN W3'" },
-  { group: '和文', label: 'つばめ Std R',               value: "'FOT-つばめ Std R'" },
-  { group: '和文', label: '筑紫Q明朝L Std L',           value: "'FOT-筑紫Q明朝L Std L'" },
-  { group: '和文', label: 'クックハンド Std R',         value: "'FOT-クックハンド Std R'" },
-  { group: '和文', label: 'タズガネゴシック StdN Book', value: "'TazuganeGothicStdN-Book'" },
-  { group: '和文', label: 'カッコウ Std B',             value: "'FOT-カッコウ Std B'" },
-  { group: '和文', label: '筑紫オールドゴシック Std R', value: "'FOT-筑紫オールドゴシック Std R'" },
-  { group: '和文', label: '筑紫オールドゴシック Std M', value: "'FOT-筑紫オールドゴシック Std M'" },
-  { group: '和文', label: '筑紫A丸ゴシック Std M',      value: "'FOT-筑紫A丸ゴシック Std M'" },
-  { group: '和文', label: '筑紫B丸ゴシック Std M',      value: "'FOT-筑紫B丸ゴシック Std M'" },
-  { group: '和文', label: '筑紫AN丸ゴOV StdN U',       value: "'筑紫AN丸ゴOV StdN U'" },
-  { group: '和文', label: 'UD角ゴ_ラージ Pr6N DB',      value: "'FOT-UD角ゴ_ラージ Pr6N DB'" },
-  { group: '和文', label: 'テロップ明朝 ProN D',         value: "'FOT-テロップ明朝 ProN D'" },
-  { group: '和文', label: 'ヒラギノ丸ゴ StdN W5',        value: "'FP-ヒラギノ丸ゴ StdN W5'" },
-  { group: '和文', label: 'ヒラギノUD角ゴ StdN W5',      value: "'FP-ヒラギノUD角ゴ StdN W5'" },
-  { group: '和文', label: 'ヒラギノUD丸ゴ StdN W5',      value: "'FP-ヒラギノUD丸ゴ StdN W5'" },
-  { group: '和文', label: 'ヒラギノ角ゴ ProN W4',        value: "'FP-ヒラギノ角ゴ ProN W4'" },
-  { group: '欧文', label: 'Avenir LT Pro Book',         value: "'AvenirLTPro-Book'" },
-  { group: '欧文', label: 'Cochin LT Pro',              value: "'CochinLTPro'" },
-  { group: '欧文', label: 'Gill Sans MT Pro Book',      value: "'GillSansMTPro-Book'" },
-  { group: '欧文', label: 'Neue Frutiger World Book',   value: "'NeueFrutigerWorld-Book'" },
-  { group: '欧文', label: 'Adobe Garamond Pro',         value: "'AGaramondPro-Regular'" },
-  { group: '欧文', label: 'Linoscript Std',             value: "'LinoscriptStd'" },
-  { group: '欧文', label: 'Minion Pro',                 value: "'MinionPro-Regular'" },
-  { group: '欧文', label: 'Mistral Std',                value: "'MistralStd'" },
-  { group: '欧文', label: 'Sabon LT Pro',               value: "'SabonLTPro-Roman'" },
-  { group: '欧文', label: 'Zapfino Extra LT Pro',       value: "'ZapfinoExtraLTPro'" },
-  { group: '欧文', label: 'Bookman Old Style',          value: "'BookmanOldStyle'" },
-  { group: '欧文', label: 'Swiss 721 BT',               value: "'Swiss721BT-Regular'" },
-  { group: '欧文', label: 'Mary Script Std',            value: "'Mt-OTF MaryScript Std Regular'" },
-  { group: '欧文', label: 'Eurostile LT Pro',            value: "'EurostileLTPro'" },
+  // 和文：readingで五十音順。新規追加時はreadingを入れれば自動ソートされる
+  { group: '和文', reading: 'かっこう',                          label: 'カッコウ Std B',             value: "'FOT-カッコウ Std B'" },
+  { group: '和文', reading: 'くっくはんど',                      label: 'クックハンド Std R',         value: "'FOT-クックハンド Std R'" },
+  { group: '和文', reading: 'こぶりなごしっく',                  label: 'こぶりなゴシック StdN W3',  value: "'FP-こぶりなゴシック StdN W3'" },
+  { group: '和文', reading: 'たづかねごしっく',                  label: 'タヅガネゴシック StdN Book', value: "'TazuganeGothicStdN-Book'" },
+  { group: '和文', reading: 'つくしあんてぃーくまるごしっくおーぶい', label: '筑紫AN丸ゴOV StdN U',  value: "'筑紫AN丸ゴOV StdN U'" },
+  { group: '和文', reading: 'つくしえーおーるどみんちょう',      label: '筑紫Aオールド明朝 Pr6 L',   value: "'FOT-筑紫Aオールド明朝 Pr6 L'" },
+  { group: '和文', reading: 'つくしえーまるごしっく',            label: '筑紫A丸ゴシック Std M',      value: "'FOT-筑紫A丸ゴシック Std M'" },
+  { group: '和文', reading: 'つくしおーるどごしっくあーる',      label: '筑紫オールドゴシック Std R', value: "'FOT-筑紫オールドゴシック Std R'" },
+  { group: '和文', reading: 'つくしおーるどごしっくえむ',        label: '筑紫オールドゴシック Std M', value: "'FOT-筑紫オールドゴシック Std M'" },
+  { group: '和文', reading: 'つくしきゅーみんちょう',            label: '筑紫Q明朝L Std L',           value: "'FOT-筑紫Q明朝L Std L'" },
+  { group: '和文', reading: 'つくしびーまるごしっく',            label: '筑紫B丸ゴシック Std M',      value: "'FOT-筑紫B丸ゴシック Std M'" },
+  { group: '和文', reading: 'つばめ',                            label: 'つばめ Std R',               value: "'FOT-つばめ Std R'" },
+  { group: '和文', reading: 'てろっぷみんちょう',                label: 'テロップ明朝 ProN D',         value: "'FOT-テロップ明朝 ProN D'" },
+  { group: '和文', reading: 'にゅーしねまえー',                  label: 'ニューシネマA Std D',         value: "'FOT-ニューシネマA Std D'" },
+  { group: '和文', reading: 'はみんぐ',                          label: 'ハミング Std D',             value: "'FOT-ハミング Std D'" },
+  { group: '和文', reading: 'ひらぎのかくごぷろえぬ',            label: 'ヒラギノ角ゴ ProN W4',        value: "'FP-ヒラギノ角ゴ ProN W4'" },
+  { group: '和文', reading: 'ひらぎのまるご',                    label: 'ヒラギノ丸ゴ StdN W5',        value: "'FP-ヒラギノ丸ゴ StdN W5'" },
+  { group: '和文', reading: 'ひらぎのゆーでぃーかくご',          label: 'ヒラギノUD角ゴ StdN W5',      value: "'FP-ヒラギノUD角ゴ StdN W5'" },
+  { group: '和文', reading: 'ひらぎのゆーでぃーまるご',          label: 'ヒラギノUD丸ゴ StdN W5',      value: "'FP-ヒラギノUD丸ゴ StdN W5'" },
+  { group: '和文', reading: 'べびぽっぷ',                        label: 'ベビポップ Std EB',          value: "'FOT-ベビポップ Std EB'" },
+  { group: '和文', reading: 'まるみんおーるど',                  label: '丸明オールド StdN R',        value: "'丸明オールド StdN R'" },
+  { group: '和文', reading: 'ゆーでぃーかくごらーじ',            label: 'UD角ゴ_ラージ Pr6N DB',      value: "'FOT-UD角ゴ_ラージ Pr6N DB'" },
+  { group: '和文', reading: 'ゆーるか',                          label: 'ユールカ Std UB',            value: "'FOT-ユールカ Std UB'" },
+  // 欧文：readingでアルファベット順。新規追加時はreadingを入れれば自動ソートされる
+  { group: '欧文', reading: 'adobe garamond pro',       label: 'Adobe Garamond Pro',         value: "'AGaramondPro-Regular'" },
+  { group: '欧文', reading: 'avenir lt pro book',       label: 'Avenir LT Pro Book',         value: "'AvenirLTPro-Book'" },
+  { group: '欧文', reading: 'bookman old style',        label: 'Bookman Old Style',          value: "'BookmanOldStyle'" },
+  { group: '欧文', reading: 'cochin lt pro',            label: 'Cochin LT Pro',              value: "'CochinLTPro'" },
+  { group: '欧文', reading: 'eurostile lt pro',         label: 'Eurostile LT Pro',           value: "'EurostileLTPro'" },
+  { group: '欧文', reading: 'gill sans mt pro book',    label: 'Gill Sans MT Pro Book',      value: "'GillSansMTPro-Book'" },
+  { group: '欧文', reading: 'linoscript std',           label: 'Linoscript Std',             value: "'LinoscriptStd'" },
+  { group: '欧文', reading: 'mary script std',          label: 'Mary Script Std',            value: "'Mt-OTF MaryScript Std Regular'" },
+  { group: '欧文', reading: 'minion pro',               label: 'Minion Pro',                 value: "'MinionPro-Regular'" },
+  { group: '欧文', reading: 'mistral std',              label: 'Mistral Std',                value: "'MistralStd'" },
+  { group: '欧文', reading: 'neue frutiger world book', label: 'Neue Frutiger World Book',   value: "'NeueFrutigerWorld-Book'" },
+  { group: '欧文', reading: 'sabon lt pro',             label: 'Sabon LT Pro',               value: "'SabonLTPro-Roman'" },
+  { group: '欧文', reading: 'swiss 721 bt',             label: 'Swiss 721 BT',               value: "'Swiss721BT-Regular'" },
+  { group: '欧文', reading: 'zapfino extra lt pro',     label: 'Zapfino Extra LT Pro',       value: "'ZapfinoExtraLTPro'" },
 ];
 let mihonSelectedValue = MIHON_FONTS[0].value;
 let mihonDropdownOpen = false;
@@ -7097,7 +7102,12 @@ let mihonDropdownOpen = false;
 function mihonRenderList(q) {
   const list = $('mihon-font-list');
   if (!list) return;
-  const filtered = MIHON_FONTS.filter(f => f.label.toLowerCase().includes((q||'').toLowerCase()));
+  const filtered = MIHON_FONTS
+    .filter(f => f.label.toLowerCase().includes((q||'').toLowerCase()))
+    .sort((a, b) => {
+      if (a.group !== b.group) return a.group === '和文' ? -1 : 1;
+      return (a.reading || a.label).localeCompare(b.reading || b.label);
+    });
   if (!filtered.length) {
     list.innerHTML = '<div class="mihon-font-no-result">見つかりません</div>';
     return;
