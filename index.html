@@ -197,6 +197,21 @@
     border-bottom: none !important;
     box-shadow: none !important;
   }
+  .mihon-custom-wrap {
+    margin-bottom: 10px;
+  }
+  .mihon-custom-input {
+    width: 100%; min-height: 72px;
+    background: var(--c-card); border-radius: var(--radius);
+    border: 1.5px solid var(--c-border); padding: 14px 12px;
+    line-height: 1.5; word-break: break-all; letter-spacing: 0.04em;
+    font-size: 16px; color: var(--c-text);
+    resize: none; outline: none;
+    font-family: inherit;
+    transition: border-color 0.2s;
+  }
+  .mihon-custom-input::placeholder { color: #b0a8c8; }
+  .mihon-custom-input:focus { border-color: var(--c-lavender); }
   .app-header h1 {
     font-size: 27px;
     font-weight: 800;
@@ -1342,6 +1357,10 @@
       </div>
       <!-- 固定文字表示 -->
       <div class="mihon-text-display" id="mihon-text-display">あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン1234567890　？！　「」（）</div>
+      <!-- 自由記入欄 -->
+      <div class="mihon-custom-wrap" id="mihon-custom-wrap">
+        <textarea class="mihon-custom-input" id="mihon-custom-input" placeholder="ひらがな･カタカナを自由に試せます" rows="3" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+      </div>
     </div>
   </div>
 
@@ -7004,7 +7023,7 @@ $('menu-mihon').addEventListener('click', () => {
   showScreen('screen-mihon');
   initMihonScreen();
 });
-const MIHON_TEXT_JA = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン1234567890　？！　「」（）';
+const MIHON_TEXT_JA = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんがぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽきゃきゅきょぎゃぎゅぎょしゃしゅしょじゃじゅじょちゃちゅちょにゃにゅにょひゃひゅひょびゃびゅびょぴゃぴゅぴょみゃみゅみょりゃりゅりょっアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンガギグゲゴザジズゼゾダヂヅデドバビブベボパピプペポキャキュキョギャギュギョシャシュショジャジュジョチャチュチョニャニュニョヒャヒュヒョビャビュビョピャピュピョミャミュミョリャリュリョッ1234567890　？！　「」（）';
 const MIHON_TEXT_EN = `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz&fi fl0123456789!?().,-:;" ' $%@*˜*{}[]`;
 const EN_FONTS = new Set([
   'AvenirLTPro-Book','CochinLTPro','GillSansMTPro-Book','NeueFrutigerWorld-Book',
@@ -7019,11 +7038,17 @@ function isEnFont(fontValue) {
 function applyMihonFont(fontValue) {
   const display = $('mihon-text-display');
   const screenMihon = $('screen-mihon');
+  const customWrap = $('mihon-custom-wrap');
+  const customInput = $('mihon-custom-input');
   if (screenMihon) screenMihon.style.setProperty('--mihon-font', fontValue);
+  const isEn = isEnFont(fontValue);
   if (display) {
     display.style.fontFamily = fontValue;
-    display.textContent = isEnFont(fontValue) ? MIHON_TEXT_EN : MIHON_TEXT_JA;
+    display.textContent = isEn ? MIHON_TEXT_EN : MIHON_TEXT_JA;
   }
+  // 自由記入欄：欧文フォント選択時は非表示、和文は表示してフォント適用
+  if (customWrap) customWrap.style.display = isEn ? 'none' : '';
+  if (customInput) customInput.style.fontFamily = isEn ? '' : fontValue;
 }
 
 const MIHON_FONTS = [
@@ -7132,6 +7157,24 @@ function initMihonScreen() {
         const px = slider.value;
         const display = $('mihon-text-display');
         if (display) display.style.fontSize = px + 'px';
+        const customInput = $('mihon-custom-input');
+        if (customInput) customInput.style.fontSize = px + 'px';
+      });
+    }
+    // 自由記入欄：ひらがな・カタカナ以外を除去
+    const customInput = $('mihon-custom-input');
+    if (customInput) {
+      const ALLOWED = new Set(MIHON_TEXT_JA.split('').filter(c => {
+        const code = c.charCodeAt(0);
+        return (code >= 0x3041 && code <= 0x3096) || (code >= 0x30A1 && code <= 0x30F6);
+      }));
+      customInput.addEventListener('input', () => {
+        const pos = customInput.selectionStart;
+        const filtered = customInput.value.split('').filter(c => ALLOWED.has(c)).join('');
+        if (filtered !== customInput.value) {
+          customInput.value = filtered;
+          customInput.setSelectionRange(Math.min(pos, filtered.length), Math.min(pos, filtered.length));
+        }
       });
     }
   }
