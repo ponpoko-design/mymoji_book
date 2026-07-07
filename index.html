@@ -1359,7 +1359,7 @@
       <div class="mihon-text-display" id="mihon-text-display">あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン1234567890　？！　「」（）</div>
       <!-- 自由記入欄 -->
       <div class="mihon-custom-wrap" id="mihon-custom-wrap">
-        <textarea class="mihon-custom-input" id="mihon-custom-input" placeholder="ひらがな･カタカナを自由に試せます" rows="3" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+        <textarea class="mihon-custom-input" id="mihon-custom-input" placeholder="ひらがな･カタカナのみ、ためせます" rows="3" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
       </div>
     </div>
   </div>
@@ -7024,7 +7024,7 @@ $('menu-mihon').addEventListener('click', () => {
   initMihonScreen();
 });
 const MIHON_TEXT_JA = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんがぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽきゃきゅきょぎゃぎゅぎょしゃしゅしょじゃじゅじょちゃちゅちょにゃにゅにょひゃひゅひょびゃびゅびょぴゃぴゅぴょみゃみゅみょりゃりゅりょっアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンガギグゲゴザジズゼゾダヂヅデドバビブベボパピプペポキャキュキョギャギュギョシャシュショジャジュジョチャチュチョニャニュニョヒャヒュヒョビャビュビョピャピュピョミャミュミョリャリュリョッ1234567890　？！　「」（）';
-const MIHON_TEXT_EN = `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz&fi fl0123456789!?().,-:;" ' $%@*˜*{}[]`;
+const MIHON_TEXT_EN = `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz&fi fl0123456789!?().,-:;“” ‘’ $%@*˜*{}[]`;
 const EN_FONTS = new Set([
   'AvenirLTPro-Book','CochinLTPro','GillSansMTPro-Book','NeueFrutigerWorld-Book',
   'AGaramondPro-Regular','LinoscriptStd','MinionPro-Regular','MistralStd',
@@ -7046,9 +7046,9 @@ function applyMihonFont(fontValue) {
     display.style.fontFamily = fontValue;
     display.textContent = isEn ? MIHON_TEXT_EN : MIHON_TEXT_JA;
   }
-  // 自由記入欄：欧文フォント選択時は非表示、和文は表示してフォント適用
-  if (customWrap) customWrap.style.display = isEn ? 'none' : '';
-  if (customInput) customInput.style.fontFamily = isEn ? '' : fontValue;
+  // 自由記入欄：常に表示、選択フォントを適用
+  if (customWrap) customWrap.style.display = '';
+  if (customInput) customInput.style.fontFamily = fontValue;
 }
 
 const MIHON_FONTS = [
@@ -7168,7 +7168,22 @@ function initMihonScreen() {
         const code = c.charCodeAt(0);
         return (code >= 0x3041 && code <= 0x3096) || (code >= 0x30A1 && code <= 0x30F6);
       }));
+      let _composing = false;
+      customInput.addEventListener('compositionstart', () => { _composing = true; });
+      customInput.addEventListener('compositionend', () => {
+        _composing = false;
+        if (isEnFont(mihonSelectedValue)) return; // 欧文はフィルターなし
+        // 確定後にフィルター実行
+        const pos = customInput.selectionStart;
+        const filtered = customInput.value.split('').filter(c => ALLOWED.has(c)).join('');
+        if (filtered !== customInput.value) {
+          customInput.value = filtered;
+          customInput.setSelectionRange(Math.min(pos, filtered.length), Math.min(pos, filtered.length));
+        }
+      });
       customInput.addEventListener('input', () => {
+        if (_composing) return; // 変換中はスキップ
+        if (isEnFont(mihonSelectedValue)) return; // 欧文はフィルターなし
         const pos = customInput.selectionStart;
         const filtered = customInput.value.split('').filter(c => ALLOWED.has(c)).join('');
         if (filtered !== customInput.value) {
