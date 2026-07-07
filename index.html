@@ -2693,8 +2693,8 @@ function openFontCountPanel() {
       const n = arr.filter(f => (f.category || 'その他') === cat).length;
       if (!n) return '';
       return `<button onclick="goHomeWithFilter('${lang}','${cat}')" style="display:inline-flex;align-items:center;gap:5px;padding:6px 14px 6px 14px;border-radius:50px;background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border:none;margin:4px 4px 4px 0;cursor:pointer;font-family:inherit;touch-action:manipulation;">
-        <span style="font-size:15px;font-weight:600;color:#5a4a8a;">${cat}</span>
-        <span style="font-size:15px;font-weight:800;color:#5a4a8a;">${n}</span>
+        <span style="font-size:14px;font-weight:600;color:#5a4a8a;">${cat}</span>
+        <span style="font-size:14px;font-weight:800;color:#5a4a8a;">${n}</span>
       </button>`;
     }).join('');
 
@@ -2709,8 +2709,8 @@ function openFontCountPanel() {
       <!-- 日本語 -->
       <div style="margin-bottom:14px;">
         <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px;">
-          <span style="font-size:17px;font-weight:800;color:var(--c-text);">日本語</span>
-          <span style="font-size:26px;font-weight:900;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${jaFonts.length}</span>
+          <span style="font-size:16px;font-weight:800;color:var(--c-text);">日本語</span>
+          <span style="font-size:24px;font-weight:900;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${jaFonts.length}</span>
         </div>
         <div style="display:flex;flex-wrap:wrap;">${chipRow(jaFonts, jaCats, 'ja')}</div>
       </div>
@@ -2719,8 +2719,8 @@ function openFontCountPanel() {
       <!-- 欧文 -->
       <div>
         <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px;">
-          <span style="font-size:17px;font-weight:800;color:var(--c-text);">欧文</span>
-          <span style="font-size:26px;font-weight:900;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${enFonts.length}</span>
+          <span style="font-size:16px;font-weight:800;color:var(--c-text);">欧文</span>
+          <span style="font-size:24px;font-weight:900;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${enFonts.length}</span>
         </div>
         <div style="display:flex;flex-wrap:wrap;">${chipRow(enFonts, enCats, 'en')}</div>
       </div>
