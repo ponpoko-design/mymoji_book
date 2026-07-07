@@ -895,22 +895,37 @@
     border-color: #7ab8f5; color: #2a7abf;
   }
   .quiz-mode-card {
-    padding: 8px 18px; border-radius: 50px;
+    flex: 1; padding: 14px 4px; border-radius: 12px;
     border: 1.5px solid var(--c-border);
     background: rgba(255,255,255,0.8); cursor: pointer;
-    display: flex; align-items: center; gap: 10px;
-    transition: all 0.15s; touch-action: manipulation;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    transition: all 0.15s; touch-action: manipulation; min-height: 72px;
   }
   .quiz-mode-card.selected {
     border-color: #b8a0f0;
     background: linear-gradient(135deg, rgba(184,160,240,0.15), rgba(122,184,245,0.15));
   }
   .quiz-mode-icon {
-    width: 36px; height: 36px; flex-shrink: 0;
+    width: 28px; height: 28px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
     color: var(--c-text-sub);
   }
   .quiz-mode-card.selected .quiz-mode-icon { color: #9b7fe8; }
+  .quiz-mode-row { display: flex; gap: 8px; }
+  .quiz-count-row { display: flex; align-items: center; gap: 8px; }
+  .quiz-count-label { font-size: 13px; font-weight: 700; color: var(--c-text-sub); white-space: nowrap; flex-shrink: 0; }
+  .quiz-count-chips { display: flex; flex: 1; gap: 8px; }
+  .quiz-count-chip {
+    flex: 1; padding: 6px 0; border-radius: 50px; text-align: center;
+    border: 1.5px solid var(--c-border);
+    background: rgba(255,255,255,0.8); color: var(--c-text-sub);
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    font-family: inherit; transition: all 0.15s; touch-action: manipulation;
+  }
+  .quiz-count-chip.selected {
+    background: linear-gradient(135deg, rgba(122,184,245,0.25), rgba(100,200,240,0.25));
+    border-color: #7ab8f5; color: #2a7abf;
+  }
   .quiz-choice {
     padding: 13px 16px; border-radius: var(--radius-sm);
     border: 1.5px solid var(--c-border);
@@ -1404,20 +1419,31 @@
 
       <div style="height:1px;background:var(--c-border);margin-bottom:8px;"></div>
 
-      <div style="margin-bottom:10px;">
-        <div style="display:flex;flex-direction:column;gap:6px;">
-          <div class="quiz-mode-card selected" data-mode="4choice">
-            <div class="quiz-mode-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="7" y1="15" x2="13" y2="15"/></svg></div>
-            <div style="font-size:16px;font-weight:700;color:var(--c-text);">4択クイズ</div>
-          </div>
-          <div class="quiz-mode-card" data-mode="compare">
-            <div class="quiz-mode-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
-            <div style="font-size:16px;font-weight:700;color:var(--c-text);">比較クイズ</div>
-          </div>
-          <div class="quiz-mode-card" data-mode="reverse">
-            <div class="quiz-mode-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 2.5 2.5 9.5 9.5 9.5"/><path d="M2.5 9.5A9 9 0 1 1 5 17"/></svg></div>
-            <div style="font-size:16px;font-weight:700;color:var(--c-text);">用例から当てる！</div>
-          </div>
+      <!-- 問題数 -->
+      <div class="quiz-count-row" style="margin-bottom:8px;">
+        <span class="quiz-count-label">問題数：</span>
+        <div class="quiz-count-chips">
+          <button class="quiz-count-chip" data-count="5">5</button>
+          <button class="quiz-count-chip selected" data-count="10">10</button>
+          <button class="quiz-count-chip" data-count="15">15</button>
+        </div>
+      </div>
+
+      <div style="height:1px;background:var(--c-border);margin-bottom:8px;"></div>
+
+      <!-- クイズ種類 -->
+      <div class="quiz-mode-row" style="margin-bottom:10px;">
+        <div class="quiz-mode-card selected" data-mode="4choice">
+          <div class="quiz-mode-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="7" y1="15" x2="13" y2="15"/></svg></div>
+          <div style="font-size:14px;font-weight:700;color:var(--c-text);">4択</div>
+        </div>
+        <div class="quiz-mode-card" data-mode="compare">
+          <div class="quiz-mode-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
+          <div style="font-size:14px;font-weight:700;color:var(--c-text);">比較</div>
+        </div>
+        <div class="quiz-mode-card" data-mode="reverse">
+          <div class="quiz-mode-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 2.5 2.5 9.5 9.5 9.5"/><path d="M2.5 9.5A9 9 0 1 1 5 17"/></svg></div>
+          <div style="font-size:14px;font-weight:700;color:var(--c-text);">用例</div>
         </div>
       </div>
 
@@ -1880,7 +1906,7 @@ let currentFontId = null;
 let currentUsageId = null;
 let selectedUsageFontIds = []; // 複数フォント対応
 let addUsageFrom = 'nav'; // 'nav' | 'detail'
-let sortMode = 'new'; // 'new' | 'fav'
+let sortMode = 'new'; // 'new' | 'fav' | 'basic'
 let searchQuery = '';
 let categoryFilter = '';
 let langFilter = ''; // '' | 'ja' | 'en'
@@ -2877,6 +2903,9 @@ function renderFontList() {
   if (sortMode === 'fav') {
     list = list.filter(f => f.favorite);
   }
+  if (sortMode === 'basic') {
+    list = list.filter(f => f.basic);
+  }
   if (!list.length) {
     wrap.innerHTML = `<div class="empty-state">
       <svg class="empty-icon" width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2932,8 +2961,10 @@ $('search-input').addEventListener('blur', () => {
   }
 });
 $('sort-btn').addEventListener('click', () => {
-  sortMode = sortMode === 'new' ? 'fav' : 'new';
-  $('sort-label').textContent = sortMode === 'new' ? '新しい順' : 'お気に入り';
+  if (sortMode === 'new') sortMode = 'fav';
+  else if (sortMode === 'fav') sortMode = 'basic';
+  else sortMode = 'new';
+  $('sort-label').textContent = sortMode === 'new' ? '新しい順' : sortMode === 'fav' ? 'お気に入り' : '基本フォント';
   renderFontList();
 });
 
@@ -6332,7 +6363,7 @@ let cmpQuestions     = [];
 let cmpCurrent       = 0;
 let cmpScore         = 0;
 let cmpLog           = [];
-const QUIZ_COUNT     = 5;
+let quizCount = 10;
 
 const jaNameSet = new Set(FONT_DB.ja.map(x => x.name));
 const enNameSet = new Set(FONT_DB.en.map(x => x.name));
@@ -6342,6 +6373,13 @@ document.querySelectorAll('.quiz-chip').forEach(chip => {
   chip.addEventListener('click', () => {
     chip.classList.toggle('selected');
     updateQuizHint();
+  });
+});
+document.querySelectorAll('.quiz-count-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.quiz-count-chip').forEach(c => c.classList.remove('selected'));
+    chip.classList.add('selected');
+    quizCount = parseInt(chip.dataset.count);
   });
 });
 document.querySelectorAll('.quiz-mode-card').forEach(card => {
@@ -6577,7 +6615,7 @@ function startQuiz(pool) {
   quizQuestions = [];
   for (const item of pool) {
     if (!seen.has(item.fontName)) { seen.add(item.fontName); quizQuestions.push(item); }
-    if (quizQuestions.length >= QUIZ_COUNT) break;
+    if (quizQuestions.length >= quizCount) break;
   }
   quizCurrent = 0; quizScore = 0; quizLog = [];
   quizShowPlay();
@@ -6647,10 +6685,10 @@ function startCompareQuiz(pool) {
       }
     }
   }
-  if (pairs.length < QUIZ_COUNT) {
+  if (pairs.length < quizCount) {
     const seenNames = new Set(pairs.flatMap(p => [p.a.fontName, p.b.fontName]));
     const rem = pool.filter(item => !seenNames.has(item.fontName));
-    for (let i = 0; i < rem.length - 1 && pairs.length < QUIZ_COUNT; i += 2) {
+    for (let i = 0; i < rem.length - 1 && pairs.length < quizCount; i += 2) {
       pairs.push({ a: rem[i], b: rem[i + 1] });
     }
   }
@@ -6658,7 +6696,7 @@ function startCompareQuiz(pool) {
     const j = Math.floor(Math.random() * (i + 1));
     [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
   }
-  cmpQuestions = pairs.slice(0, QUIZ_COUNT);
+  cmpQuestions = pairs.slice(0, quizCount);
   if (!cmpQuestions.length) { showToast('比較クイズに使えるフォントが足りません'); return; }
   cmpCurrent = 0; cmpScore = 0; cmpLog = [];
   quizShowCompare();
