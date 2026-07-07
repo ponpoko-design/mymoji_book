@@ -401,6 +401,13 @@
     font-size: 16px; color: var(--c-text); flex: 1; min-width: 0;
     font-family: inherit;
   }
+  .sort-drop-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 14px; font-size: 14px; font-weight: 600; color: var(--c-text);
+    cursor: pointer; border-bottom: 1px solid var(--c-border); touch-action: manipulation;
+  }
+  .sort-drop-item:last-child { border-bottom: none; }
+  .sort-drop-item:active { background: var(--c-lavender-soft, #f0edf9); }
   .sort-btn {
     background: var(--c-card); border: 1.5px solid var(--c-border);
     border-radius: 50px; padding: 8px 12px;
@@ -1017,7 +1024,18 @@
         <span class="search-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
         <input type="text" id="search-input" placeholder="フォント名・メーカー・メモで検索">
       </div>
-      <button class="sort-btn" id="sort-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M7 12h10M11 18h2"/></svg> <span id="sort-label">新しい順</span></button>
+      <div style="position:relative;">
+        <button class="sort-btn" id="sort-btn" style="display:flex;align-items:center;gap:5px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
+          <span id="sort-label">新しい順</span>
+          <svg id="sort-arrow" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div id="sort-dropdown" style="display:none;position:absolute;right:0;top:calc(100% + 4px);min-width:148px;background:#fff;border:1.5px solid var(--c-border);border-radius:12px;overflow:hidden;z-index:300;">
+          <div class="sort-drop-item" data-val="new"><span>新しい順</span><svg class="sort-check" id="sort-chk-new" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9b7fe8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="sort-drop-item" data-val="fav"><span>お気に入り</span><svg class="sort-check" id="sort-chk-fav" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9b7fe8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="sort-drop-item" data-val="basic"><span>基本フォント</span><svg class="sort-check" id="sort-chk-basic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9b7fe8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0"><polyline points="20 6 9 17 4 12"/></svg></div>
+        </div>
+      </div>
     </div>
     <!-- Lang filter -->
     <div style="display:flex;gap:8px;padding:2px 16px 6px;">
@@ -2675,34 +2693,34 @@ function openFontCountPanel() {
       const n = arr.filter(f => (f.category || 'その他') === cat).length;
       if (!n) return '';
       return `<button onclick="goHomeWithFilter('${lang}','${cat}')" style="display:inline-flex;align-items:center;gap:5px;padding:6px 14px 6px 14px;border-radius:50px;background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border:none;margin:4px 4px 4px 0;cursor:pointer;font-family:inherit;touch-action:manipulation;">
-        <span style="font-size:13px;font-weight:600;color:#5a4a8a;">${cat}</span>
-        <span style="font-size:13px;font-weight:800;color:#5a4a8a;">${n}</span>
+        <span style="font-size:15px;font-weight:600;color:#5a4a8a;">${cat}</span>
+        <span style="font-size:15px;font-weight:800;color:#5a4a8a;">${n}</span>
       </button>`;
     }).join('');
 
     content.innerHTML = `
       <!-- 総数 -->
-      <div style="text-align:center;padding:20px 0 20px;">
+      <div style="text-align:center;padding:10px 0 10px;">
         <div style="font-size:64px;font-weight:900;line-height:1;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${fonts.length}</div>
-        <div style="font-size:13px;color:var(--c-text-sub);margin-top:6px;letter-spacing:0.05em;">フォント登録中</div>
+        <div style="font-size:14px;color:var(--c-text-sub);margin-top:5px;letter-spacing:0.05em;">フォント登録中</div>
       </div>
       <!-- 仕切り -->
-      <div style="height:1px;background:var(--c-border);margin:0 0 20px;"></div>
+      <div style="height:1px;background:var(--c-border);margin:0 0 14px;"></div>
       <!-- 日本語 -->
-      <div style="margin-bottom:20px;">
-        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:10px;">
-          <span style="font-size:15px;font-weight:800;color:var(--c-text);">日本語</span>
-          <span style="font-size:22px;font-weight:900;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${jaFonts.length}</span>
+      <div style="margin-bottom:14px;">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px;">
+          <span style="font-size:17px;font-weight:800;color:var(--c-text);">日本語</span>
+          <span style="font-size:26px;font-weight:900;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${jaFonts.length}</span>
         </div>
         <div style="display:flex;flex-wrap:wrap;">${chipRow(jaFonts, jaCats, 'ja')}</div>
       </div>
       <!-- 仕切り -->
-      <div style="height:1px;background:var(--c-border);margin:0 0 20px;"></div>
+      <div style="height:1px;background:var(--c-border);margin:0 0 14px;"></div>
       <!-- 欧文 -->
       <div>
-        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:10px;">
-          <span style="font-size:15px;font-weight:800;color:var(--c-text);">欧文</span>
-          <span style="font-size:22px;font-weight:900;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${enFonts.length}</span>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px;">
+          <span style="font-size:17px;font-weight:800;color:var(--c-text);">欧文</span>
+          <span style="font-size:26px;font-weight:900;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${enFonts.length}</span>
         </div>
         <div style="display:flex;flex-wrap:wrap;">${chipRow(enFonts, enCats, 'en')}</div>
       </div>
@@ -2960,13 +2978,38 @@ $('search-input').addEventListener('blur', () => {
     renderFontList();
   }
 });
-$('sort-btn').addEventListener('click', () => {
-  if (sortMode === 'new') sortMode = 'fav';
-  else if (sortMode === 'fav') sortMode = 'basic';
-  else sortMode = 'new';
-  $('sort-label').textContent = sortMode === 'new' ? '新しい順' : sortMode === 'fav' ? 'お気に入り' : '基本フォント';
-  renderFontList();
-});
+(function() {
+  const btn = $('sort-btn');
+  const dd = $('sort-dropdown');
+  const arrow = $('sort-arrow');
+  let ddOpen = false;
+  const sortLabels = { new: '新しい順', fav: 'お気に入り', basic: '基本フォント' };
+  function closeDd() {
+    ddOpen = false;
+    dd.style.display = 'none';
+    arrow.style.transform = '';
+  }
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    ddOpen = !ddOpen;
+    dd.style.display = ddOpen ? 'block' : 'none';
+    arrow.style.transform = ddOpen ? 'rotate(180deg)' : '';
+  });
+  document.addEventListener('click', closeDd);
+  document.querySelectorAll('.sort-drop-item').forEach(item => {
+    item.addEventListener('click', e => {
+      e.stopPropagation();
+      sortMode = item.dataset.val;
+      $('sort-label').textContent = sortLabels[sortMode];
+      ['new','fav','basic'].forEach(v => {
+        const chk = $('sort-chk-' + v);
+        if (chk) chk.style.opacity = v === sortMode ? '1' : '0';
+      });
+      closeDd();
+      renderFontList();
+    });
+  });
+})();
 
 // ── Cat chips per lang ────────────────────
 const CAT_CHIPS = {
