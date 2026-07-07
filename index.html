@@ -575,10 +575,15 @@
 
   /* ── Category filter ── */
   .cat-filter-wrap {
-    display: flex; gap: 8px; padding: 4px 16px 10px;
-    overflow-x: auto; scrollbar-width: none;
+    display: flex; align-items: center; gap: 8px; padding: 4px 0 10px 16px;
   }
-  .cat-filter-wrap::-webkit-scrollbar { display: none; }
+  .cat-chip-divider {
+    width: 1px; height: 20px; background: var(--c-border); flex-shrink: 0;
+  }
+  .cat-chip-scroll {
+    display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-right: 16px;
+  }
+  .cat-chip-scroll::-webkit-scrollbar { display: none; }
   .cat-chip {
     flex-shrink: 0; padding: 6px 16px; border-radius: 50px;
     font-size: 13px; font-weight: 600; cursor: pointer;
@@ -1045,16 +1050,9 @@
     </div>
     <!-- Category filter -->
     <div class="cat-filter-wrap" id="cat-filter-wrap">
-      <button class="cat-chip active" data-cat="">すべて</button>
-      <button class="cat-chip" data-cat="ゴシック">ゴシック</button>
-      <button class="cat-chip" data-cat="明朝">明朝</button>
-      <button class="cat-chip" data-cat="丸ゴ">丸ゴ</button>
-      <button class="cat-chip" data-cat="セリフ">セリフ</button>
-      <button class="cat-chip" data-cat="サンセリフ">サンセリフ</button>
-      <button class="cat-chip" data-cat="UD">UD</button>
-      <button class="cat-chip" data-cat="スクリプト">スクリプト</button>
-      <button class="cat-chip" data-cat="ブラックレター">ブラックレター</button>
-      <button class="cat-chip" data-cat="その他">その他</button>
+      <button class="cat-chip active" id="cat-all-chip" data-cat="">すべて</button>
+      <div class="cat-chip-divider"></div>
+      <div class="cat-chip-scroll" id="cat-chip-scroll"></div>
     </div>
 
     <!-- Font list -->
@@ -2755,12 +2753,18 @@ window.goHomeWithFilter = function(lang, cat) {
   // catチップを再描画してactiveをセット
   updateCatChips(lang);
   categoryFilter = cat;
-  const wrap = $('cat-filter-wrap');
-  if (wrap) {
-    wrap.querySelectorAll('.cat-chip[data-cat]').forEach(b => {
+  // 新構造：固定「すべて」ボタン＋スクロールエリアのactive設定
+  const allChip = $('cat-all-chip');
+  const scroll = $('cat-chip-scroll');
+  if (cat === '') {
+    if (allChip) allChip.classList.add('active');
+  } else {
+    if (allChip) allChip.classList.remove('active');
+    if (scroll) scroll.querySelectorAll('.cat-chip').forEach(b => {
       b.classList.toggle('active', b.dataset.cat === cat);
     });
   }
+  updateCatChips('');
   renderFontList();
 }
 
@@ -3013,9 +3017,9 @@ $('search-input').addEventListener('blur', () => {
 
 // ── Cat chips per lang ────────────────────
 const CAT_CHIPS = {
-  '':   ['すべて', 'ゴシック', '明朝', '丸ゴ', 'セリフ', 'サンセリフ', 'UD', 'スクリプト', 'ブラックレター', 'その他'],
-  'ja': ['すべて', 'ゴシック', '明朝', '丸ゴ', 'UD', 'その他'],
-  'en': ['すべて', 'セリフ', 'サンセリフ', 'スクリプト', 'ブラックレター', 'その他'],
+  '':   ['ゴシック', '明朝', '丸ゴ', 'UD', 'セリフ', 'サンセリフ', 'スクリプト', 'ブラックレター', 'その他'],
+  'ja': ['ゴシック', '明朝', '丸ゴ', 'UD', 'その他'],
+  'en': ['セリフ', 'サンセリフ', 'スクリプト', 'ブラックレター', 'その他'],
 };
 const CAT_VALUES = {
   'すべて': '', 'ゴシック': 'ゴシック', '明朝': '明朝', '丸ゴ': '丸ゴ',
@@ -3023,16 +3027,28 @@ const CAT_VALUES = {
 };
 
 function updateCatChips(lang) {
-  const wrap = $('cat-filter-wrap');
+  const scroll = $('cat-chip-scroll');
+  const allChip = $('cat-all-chip');
   const labels = CAT_CHIPS[lang] || CAT_CHIPS[''];
-  wrap.innerHTML = labels.map((label, i) =>
-    `<button class="cat-chip${i === 0 ? ' active' : ''}" data-cat="${CAT_VALUES[label]}">${label}</button>`
+  // スクロールエリアを再生成
+  scroll.innerHTML = labels.map(label =>
+    `<button class="cat-chip" data-cat="${CAT_VALUES[label]}">${label}</button>`
   ).join('');
+  // 「すべて」をactiveに戻す
+  allChip.classList.add('active');
   categoryFilter = '';
-  // 新しいチップにリスナーを再登録
-  wrap.querySelectorAll('.cat-chip[data-cat]').forEach(btn => {
+  // 「すべて」固定ボタンのリスナー
+  allChip.onclick = () => {
+    allChip.classList.add('active');
+    scroll.querySelectorAll('.cat-chip').forEach(b => b.classList.remove('active'));
+    categoryFilter = '';
+    renderFontList();
+  };
+  // スクロール内チップのリスナー
+  scroll.querySelectorAll('.cat-chip').forEach(btn => {
     btn.addEventListener('click', () => {
-      wrap.querySelectorAll('.cat-chip[data-cat]').forEach(b => b.classList.remove('active'));
+      allChip.classList.remove('active');
+      scroll.querySelectorAll('.cat-chip').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       categoryFilter = btn.dataset.cat;
       renderFontList();
@@ -3052,14 +3068,7 @@ document.querySelectorAll('[data-lang]').forEach(btn => {
 });
 
 // ── Category filter ────────────────────────
-document.querySelectorAll('.cat-chip[data-cat]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.cat-chip[data-cat]').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    categoryFilter = btn.dataset.cat;
-    renderFontList();
-  });
-});
+// cat-chip-scroll内チップはupdateCatChips()内で登録
 
 // ── Fav ───────────────────────────────────
 async function toggleFav(id) {
