@@ -6,7 +6,7 @@
 <meta name="format-detection" content="telephone=no">
 <title>MyMoji Book</title>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
-<script src="https://webfont.fontplus.jp/accessor/script/fontplus.js?KXzscaaeJDE%3D&box=h5a2eVCZExw%3D&pm=1&aa=1&ab=1&v=3"></script>
+<script src="https://webfont.fontplus.jp/accessor/script/fontplus.js?KXzscaaeJDE%3D&box=h5a2eVCZExw%3D&pm=1&aa=1&ab=1&v=4"></script>
 <style>
   :root {
     --c-lavender: #d3c3fc;
@@ -143,8 +143,9 @@
   .mihon-selector-arrow.open { transform: rotate(180deg); }
   .mihon-selector-dropdown {
     display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0;
-    background: var(--c-card); border: 1.5px solid var(--c-border);
+    background: #ffffff; border: 1.5px solid var(--c-border);
     border-radius: var(--radius-sm); z-index: 200; overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.10);
   }
   .mihon-selector-dropdown.open { display: block; }
   .mihon-selector-search-wrap { padding: 8px 10px; border-bottom: 1px solid var(--c-border); }
@@ -161,7 +162,7 @@
     padding: 8px 14px 4px; letter-spacing: 0.08em;
   }
   .mihon-font-item {
-    padding: 10px 14px; font-size: 14px; color: var(--c-text);
+    padding: 12px 16px; font-size: 17px; color: var(--c-text);
     cursor: pointer; display: flex; align-items: center; gap: 8px;
   }
   .mihon-font-item:hover { background: var(--c-bg); }
@@ -7070,6 +7071,11 @@ const MIHON_FONTS = [
   { group: '和文', label: '筑紫B丸ゴシック Std M',      value: "'FOT-筑紫B丸ゴシック Std M'" },
   { group: '和文', label: '筑紫AN丸ゴOV StdN U',       value: "'筑紫AN丸ゴOV StdN U'" },
   { group: '和文', label: 'UD角ゴ_ラージ Pr6N DB',      value: "'FOT-UD角ゴ_ラージ Pr6N DB'" },
+  { group: '和文', label: 'テロップ明朝 ProN D',         value: "'FOT-テロップ明朝 ProN D'" },
+  { group: '和文', label: 'ヒラギノ丸ゴ StdN W5',        value: "'FP-ヒラギノ丸ゴ StdN W5'" },
+  { group: '和文', label: 'ヒラギノUD角ゴ StdN W5',      value: "'FP-ヒラギノUD角ゴ StdN W5'" },
+  { group: '和文', label: 'ヒラギノUD丸ゴ StdN W5',      value: "'FP-ヒラギノUD丸ゴ StdN W5'" },
+  { group: '和文', label: 'ヒラギノ角ゴ ProN W4',        value: "'FP-ヒラギノ角ゴ ProN W4'" },
   { group: '欧文', label: 'Avenir LT Pro Book',         value: "'AvenirLTPro-Book'" },
   { group: '欧文', label: 'Cochin LT Pro',              value: "'CochinLTPro'" },
   { group: '欧文', label: 'Gill Sans MT Pro Book',      value: "'GillSansMTPro-Book'" },
@@ -7208,7 +7214,7 @@ function initMihonScreen() {
     "'FOT-クックハンド Std R'","'TazuganeGothicStdN-Book'","'FOT-カッコウ Std B'",
     "'FOT-筑紫オールドゴシック Std R'","'FOT-筑紫オールドゴシック Std M'",
     "'FOT-筑紫A丸ゴシック Std M'","'FOT-筑紫B丸ゴシック Std M'","'筑紫AN丸ゴOV StdN U'",
-    "'FOT-UD角ゴ_ラージ Pr6N DB'",
+    "'FOT-UD角ゴ_ラージ Pr6N DB'","'FOT-テロップ明朝 ProN D'","'FP-ヒラギノ丸ゴ StdN W5'","'FP-ヒラギノUD角ゴ StdN W5'","'FP-ヒラギノUD丸ゴ StdN W5'","'FP-ヒラギノ角ゴ ProN W4'",
     "'AvenirLTPro-Book'","'CochinLTPro'","'GillSansMTPro-Book'","'NeueFrutigerWorld-Book'",
     "'AGaramondPro-Regular'","'LinoscriptStd'","'MinionPro-Regular'","'MistralStd'",
     "'SabonLTPro-Roman'","'ZapfinoExtraLTPro'","'BookmanOldStyle'","'Swiss721BT-Regular'",
