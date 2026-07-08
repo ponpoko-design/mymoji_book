@@ -2050,7 +2050,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut }
   from "https://www.gstatic.com/firebasejs/11.9.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp, Timestamp }
+import { getFirestore, collection, addDoc, getDocs, getDoc, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp, Timestamp }
   from "https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL }
   from "https://www.gstatic.com/firebasejs/11.9.0/firebase-storage.js";
@@ -6207,23 +6207,47 @@ $('pe-highlight-clear').addEventListener('click', () => {
 });
 
 $('pe-highlight-apply').addEventListener('click', async () => {
-  // peCurrentPhotoInfo は用例写真エディタで設定
   if (!peCurrentPhotoInfo) { peSetTab('adjust'); return; }
   const { fontId, usageId, photoIdx } = peCurrentPhotoInfo;
   const uid = auth.currentUser?.uid;
   if (!uid) return;
-  const u = (fonts.find(x=>x.id===fontId)?.usages||[]).find(x=>x.id===usageId)
-         || await (async () => { const s = await getDocs(collection(db,'fonts',fontId,'usages')); return s.docs.find(d=>d.id===usageId)?.data(); })();
-  // Firestoreから最新取得
-  // ローカルのfontsデータから更新
-  const fontObj = fonts.find(x=>x.id===fontId);
-  if (fontObj) {
-    const usageObj = fontObj.usages?.find(x=>x.id===usageId);
-    if (usageObj && usageObj.photos && usageObj.photos[photoIdx] !== undefined) {
-      usageObj.photos[photoIdx].highlightRect = peHighlightRect || null;
-      await updateDoc(doc(db,'fonts',fontId,'usages',usageId), { photos: usageObj.photos });
-      showToast('強調エリアを保存しました');
+  try {
+    if (usageId) {
+      // 用例写真：Firestoreから最新のphotosを取得して更新
+      const usageRef = doc(db,'fonts',fontId,'usages',usageId);
+      const usageSnap = await getDoc(usageRef);
+      if (!usageSnap.exists()) { showToast('用例が見つかりませんでした'); return; }
+      const usageData = usageSnap.data();
+      const newPhotos = [...(usageData.photos || [])];
+      if (photoIdx >= 0 && photoIdx < newPhotos.length) {
+        newPhotos[photoIdx] = { ...newPhotos[photoIdx], highlightRect: peHighlightRect || null };
+        await updateDoc(usageRef, { photos: newPhotos });
+        // ローカルキャッシュも更新
+        const fontObj = fonts.find(x=>x.id===fontId);
+        if (fontObj?.usages) {
+          const usageObj = fontObj.usages.find(x=>x.id===usageId);
+          if (usageObj) usageObj.photos = newPhotos;
+        }
+        showToast('強調エリアを保存しました');
+      }
+    } else {
+      // フォント詳細の写真（usagesなし）
+      const fontRef = doc(db,'fonts',fontId);
+      const fontSnap = await getDoc(fontRef);
+      if (!fontSnap.exists()) return;
+      const fontData = fontSnap.data();
+      const newPhotos = [...(fontData.photos || [])];
+      if (photoIdx >= 0 && photoIdx < newPhotos.length) {
+        newPhotos[photoIdx] = { ...newPhotos[photoIdx], highlightRect: peHighlightRect || null };
+        await updateDoc(fontRef, { photos: newPhotos });
+        const fontObj = fonts.find(x=>x.id===fontId);
+        if (fontObj) fontObj.photos = newPhotos;
+        showToast('強調エリアを保存しました');
+      }
     }
+  } catch(err) {
+    console.error('highlight save error', err);
+    showToast('保存に失敗しました');
   }
   peSetTab('adjust');
 });
@@ -7111,12 +7135,12 @@ function renderOboeakiList() {
     // ── 下段：フォントチップ＋＋ボタン（右揃え） ──
     const bottomRow = document.createElement('div');
     bottomRow.className = 'ob-bottom-row';
-    bottomRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end;margin-top:10px;padding:0 2px;';
+    bottomRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end;margin-top:10px;padding:0 2px 4px;';
 
     // ── 罫線 ──
     const dividerEl = document.createElement('div');
     dividerEl.className = 'ob-card-divider';
-    dividerEl.style.cssText = 'height:1px;background:var(--c-border);margin-top:20px;';
+    dividerEl.style.cssText = 'height:1px;background:var(--c-border);margin-top:24px;';
 
     // 削除ボタン（枠外・上右、編集中のみ表示）
     const deleteBtn = document.createElement('button');
@@ -7178,7 +7202,7 @@ function renderOboeakiList() {
         chip.className = 'ob-font-chip';
         chip.dataset.id = f2.id;
         chip.style.cssText = 'display:inline-flex;align-items:center;border:none;border-radius:50px;background:transparent;padding:0;cursor:pointer;font-family:inherit;touch-action:manipulation;';
-        chip.innerHTML = `<span style="display:inline-flex;align-items:center;background:#fff;border:1.5px solid #c8c0e0;border-radius:50px;padding:3px 10px 3px 14px;font-size:13px;font-weight:600;color:#5a4a8a;gap:8px;">${f2.name} <span style="font-size:11px;color:rgba(90,74,138,0.6);pointer-events:none;padding-right:4px;">✕</span></span>`;
+        chip.innerHTML = `<span style="display:inline-flex;align-items:center;background:#fff;border:1px solid var(--c-border);border-radius:50px;padding:3px 10px 3px 14px;font-size:13px;font-weight:600;color:#5a4a8a;gap:8px;">${f2.name} <span style="font-size:11px;color:rgba(90,74,138,0.6);pointer-events:none;padding-right:4px;">✕</span></span>`;
         chip.addEventListener('mousedown', ev => ev.preventDefault());
         chip.addEventListener('click', ev => {
           ev.stopPropagation();
