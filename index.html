@@ -6933,6 +6933,7 @@ function renderOboeakiList() {
 
     // ── 罫線 ──
     const dividerEl = document.createElement('div');
+    dividerEl.className = 'ob-card-divider';
     dividerEl.style.cssText = 'height:1px;background:var(--c-border);margin-top:14px;';
 
     // 削除ボタン（枠外・上右、編集中のみ表示）
@@ -6994,8 +6995,8 @@ function renderOboeakiList() {
         const chip = document.createElement('button');
         chip.className = 'ob-font-chip';
         chip.dataset.id = f2.id;
-        chip.style.cssText = 'display:flex;align-items:center;gap:5px;font-size:13px;padding:6px 14px;border-radius:50px;background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border:none;color:#5a4a8a;font-weight:600;cursor:pointer;font-family:inherit;touch-action:manipulation;';
-        chip.innerHTML = `${f2.name}<span class="ob-chip-remove" data-id="${f2.id}" style="opacity:0.6;font-size:11px;margin-left:2px;line-height:1;">✕</span>`;
+        chip.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:13px;padding:7px 8px 7px 16px;border-radius:50px;background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border:none;color:#5a4a8a;font-weight:600;cursor:pointer;font-family:inherit;touch-action:manipulation;';
+        chip.innerHTML = `${f2.name}<span class="ob-chip-remove" data-id="${f2.id}" style="display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(90,74,138,0.15);font-size:12px;color:#5a4a8a;flex-shrink:0;">✕</span>`;
         chip.addEventListener('mousedown', ev => ev.preventDefault());
         chip.addEventListener('click', ev => {
           ev.stopPropagation();
@@ -7100,7 +7101,7 @@ function renderOboeakiList() {
       const w = makeCard(e);
       // 最後のjaカードで、enもある場合はグレー罫線を非表示
       if (i === ja.length - 1 && en.length) {
-        const gr = w.querySelector('div[style*="background:var(--c-border)"]');
+        const gr = w.querySelector('.ob-card-divider');
         if (gr) gr.style.display = 'none';
       }
       list.appendChild(w);
