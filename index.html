@@ -482,6 +482,46 @@
     background: linear-gradient(135deg, var(--c-lavender), var(--c-sky));
     color: #5a4a8a; margin-top: 10px;
   }
+  /* 特徴文字チップ */
+  .tokucho-chip {
+    display: inline-block; font-size: 13px; padding: 4px 12px;
+    border-radius: 20px; font-weight: 700;
+    background: #fff; color: var(--c-text-sub);
+    border: 1.5px solid var(--c-text-sub);
+  }
+  .tokucho-row {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 8px;
+  }
+  .tokucho-add-btn {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 1.5px solid var(--c-border); background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0; touch-action: manipulation;
+  }
+  /* 特徴文字選択オーバーレイ */
+  #tokucho-overlay {
+    position: fixed; inset: 0; background: rgba(44,38,64,0.55);
+    display: flex; align-items: flex-end; z-index: 400;
+  }
+  #tokucho-sheet {
+    background: #fff; border-radius: 20px 20px 0 0;
+    padding: 20px 16px 36px; width: 100%; max-width: var(--max-w);
+    margin: 0 auto; max-height: 85vh; overflow-y: auto;
+  }
+  #tokucho-sheet h3 { font-size: 15px; font-weight: 700; color: var(--c-text); margin-bottom: 14px; }
+  .tokucho-char-row { display: flex; gap: 6px; margin-bottom: 6px; }
+  .tokucho-gap { width: 12px; flex-shrink: 0; }
+  .tokucho-char-btn {
+    font-size: 15px; padding: 6px 0; border-radius: 20px;
+    border: 1.5px solid var(--c-border); background: #fff; color: var(--c-text);
+    cursor: pointer; font-family: inherit; font-weight: 500;
+    width: 40px; text-align: center; flex-shrink: 0; touch-action: manipulation;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .tokucho-char-btn.on {
+    background: linear-gradient(135deg, var(--c-lavender), var(--c-sky));
+    border-color: transparent; color: #5a4a8a;
+  }
   .detail-section { margin-top: 22px; }
   .detail-section h3 { font-size: 15px; font-weight: 700; color: var(--c-text-sub); margin-bottom: 10px; letter-spacing: 0.05em; }
   .memo-text { font-size: 16px; line-height: 1.7; color: var(--c-text); }
@@ -1396,6 +1436,68 @@
     </div>
   </div>
 
+  <!-- ══ 覚えがき ══ -->
+  <div id="screen-oboeaki" class="screen">
+    <div class="app-header">
+      <div></div>
+      <h1 style="position:absolute;left:50%;transform:translateX(-50%);font-size:17px;font-weight:800;white-space:nowrap;">フォント覚えがき</h1>
+      <div></div>
+    </div>
+
+    <!-- 検索＋並び替え（ホームと同じピル型） -->
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 16px 10px;">
+      <div class="search-box" style="flex:1;border-radius:50px;padding:8px 16px;">
+        <span class="search-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
+        <input type="text" id="oboeaki-search-input" placeholder="フォント名・メモで検索" autocomplete="off" style="border:none;background:none;outline:none;font-size:15px;color:var(--c-text);flex:1;font-family:inherit;">
+      </div>
+      <button id="oboeaki-sort-btn" style="display:flex;align-items:center;gap:5px;white-space:nowrap;font-size:13px;padding:8px 14px;border-radius:50px;border:1.5px solid var(--c-border);background:rgba(255,255,255,0.9);color:var(--c-text-sub);cursor:pointer;font-family:inherit;flex-shrink:0;font-weight:600;touch-action:manipulation;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="16" y2="12"/><line x1="4" y1="18" x2="12" y2="18"/></svg>
+        <span id="oboeaki-sort-label">新しい順</span>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+    </div>
+
+    <!-- エントリ一覧 -->
+    <div id="oboeaki-list" style="padding:0 16px 120px;overflow-y:auto;"></div>
+
+    <!-- 新規メモFAB -->
+    <button id="oboeaki-fab" style="position:fixed;bottom:calc(var(--nav-h) + 16px);right:16px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#b8a0f0,#7ab8f5);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(150,120,240,0.35);z-index:50;touch-action:manipulation;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 014 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+    </button>
+  </div>
+
+  <!-- 覚えがき新規/編集オーバーレイ -->
+  <div id="oboeaki-overlay" style="display:none;position:fixed;inset:0;background:rgba(44,38,64,0.55);align-items:center;justify-content:center;z-index:300;">
+    <div style="background:#fff;border-radius:20px;padding:24px 20px 24px;width:calc(100% - 48px);max-width:500px;">
+      <div style="font-size:15px;font-weight:700;color:var(--c-text);margin-bottom:14px;" id="oboeaki-overlay-title">新規メモ</div>
+      <!-- 言語選択 -->
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <button class="oboeaki-lang-btn" id="ob-lng-ja" style="flex:1;padding:8px;border-radius:12px;border:1.5px solid var(--c-border);background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border-color:transparent;color:#5a4a8a;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;touch-action:manipulation;">日本語</button>
+        <button class="oboeaki-lang-btn" id="ob-lng-en" style="flex:1;padding:8px;border-radius:12px;border:1.5px solid var(--c-border);background:#fff;color:var(--c-text-sub);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;touch-action:manipulation;">欧文</button>
+      </div>
+      <!-- メモテキストエリア -->
+      <textarea id="oboeaki-memo-ta" placeholder="このフォントについてメモ…" style="width:100%;min-height:100px;border:1.5px solid var(--c-border);border-radius:14px;font-size:16px;padding:12px 14px;font-family:inherit;color:var(--c-text);background:rgba(255,255,255,0.95);resize:vertical;outline:none;line-height:1.7;margin-bottom:14px;"></textarea>
+      <!-- 関連フォント -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:13px;color:var(--c-text-sub);margin-bottom:6px;font-weight:600;">関連フォント</div>
+        <div id="oboeaki-font-chips" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:28px;">
+          <button id="oboeaki-font-add-btn" style="width:24px;height:24px;border-radius:50%;border:1.5px solid var(--c-border);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;touch-action:manipulation;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-text-sub)" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+        <!-- フォント検索パネル -->
+        <div id="oboeaki-font-search-wrap" style="display:none;margin-top:8px;">
+          <div class="search-box" style="margin-bottom:8px;border-radius:50px;padding:8px 16px;">
+            <span class="search-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
+            <input type="text" id="oboeaki-font-search-input" placeholder="フォント名で検索" autocomplete="off" style="border:none;background:none;outline:none;font-size:15px;color:var(--c-text);flex:1;font-family:inherit;">
+          </div>
+          <div id="oboeaki-font-search-results" style="max-height:160px;overflow-y:auto;"></div>
+        </div>
+      </div>
+      <button id="oboeaki-save-btn" style="width:100%;padding:13px;border-radius:16px;background:linear-gradient(135deg,#b8a0f0,#7ab8f5);color:#fff;font-size:16px;font-weight:700;border:none;cursor:pointer;font-family:inherit;touch-action:manipulation;">メモ完了</button>
+    </div>
+  </div>
+
   <div id="screen-quiz" class="screen">
     <div class="app-header">
       <button class="back-btn" id="quiz-header-back" style="display:none;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
@@ -1582,6 +1684,18 @@
       </span>
       <span>用例採集</span>
     </button>
+    <button class="nav-btn" id="nav-oboeaki" data-screen="oboeaki">
+      <span class="icon">
+        <svg class="icon-outline" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 3a2.828 2.828 0 014 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+        </svg>
+        <svg class="icon-filled" width="26" height="26" viewBox="0 0 24 24" fill="none">
+          <defs><linearGradient id="ng-ob" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#b8a0f0"/><stop offset="100%" stop-color="#7ab8f5"/></linearGradient></defs>
+          <path d="M17 3a2.828 2.828 0 014 4L7.5 20.5 2 22l1.5-5.5L17 3z" fill="url(#ng-ob)"/>
+        </svg>
+      </span>
+      <span>覚えがき</span>
+    </button>
     <button class="nav-btn" id="nav-quiz" data-screen="quiz">
       <span class="icon">
         <svg class="icon-outline" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -1606,6 +1720,15 @@
     </button>
   </nav>
 
+</div>
+
+<!-- 特徴文字選択オーバーレイ -->
+<div id="tokucho-overlay" style="display:none;position:fixed;inset:0;background:rgba(44,38,64,0.55);align-items:flex-end;justify-content:center;z-index:400;">
+  <div id="tokucho-sheet" style="background:#fff;border-radius:20px 20px 0 0;padding:20px 16px 36px;width:100%;max-width:var(--max-w);max-height:85vh;overflow-y:auto;">
+    <div style="font-size:15px;font-weight:700;color:var(--c-text);margin-bottom:14px;" id="tokucho-sheet-title">特徴的な文字を選ぶ</div>
+    <div id="tokucho-char-body"></div>
+    <button id="tokucho-ok-btn" style="width:100%;padding:13px;border-radius:16px;background:linear-gradient(135deg,#b8a0f0,#7ab8f5);color:#fff;font-size:16px;font-weight:700;border:none;cursor:pointer;font-family:inherit;margin-top:16px;touch-action:manipulation;">OK</button>
+  </div>
 </div>
 
 <!-- Photo Editor -->
@@ -3070,6 +3193,101 @@ document.querySelectorAll('[data-lang]').forEach(btn => {
 // ── Category filter ────────────────────────
 // cat-chip-scroll内チップはupdateCatChips()内で登録
 
+// ── 特徴チップ ─────────────────────────────
+const TOKUCHO_JA_ROWS = [
+  ['あ','い','う','え','お','','ア','イ','ウ','エ','オ'],
+  ['か','き','く','け','こ','','カ','キ','ク','ケ','コ'],
+  ['さ','し','す','せ','そ','','サ','シ','ス','セ','ソ'],
+  ['た','ち','つ','て','と','','タ','チ','ツ','テ','ト'],
+  ['な','に','ぬ','ね','の','','ナ','ニ','ヌ','ネ','ノ'],
+  ['は','ひ','ふ','へ','ほ','','ハ','ヒ','フ','ヘ','ホ'],
+  ['ま','み','む','め','も','','マ','ミ','ム','メ','モ'],
+  ['や','ゆ','よ','ら','り','','ヤ','ユ','ヨ','ラ','リ'],
+  ['る','れ','ろ','わ','を','','ル','レ','ロ','ワ','ヲ'],
+  ['ん','','','','','','ン'],
+  [],  // spacer
+  ['1','2','3','4','5','6','7','8','9','0'],
+];
+const TOKUCHO_EN_ROWS = [
+  ['A','B','C','D','E','F','G','H','I','J','K'],
+  ['L','M','N','O','P','Q','R','S','T','U'],
+  ['V','W','X','Y','Z'],
+  [],
+  ['a','b','c','d','e','f','g','h','i','j','k'],
+  ['l','m','n','o','p','q','r','s','t','u'],
+  ['v','w','x','y','z'],
+  [],
+  ['&','!','?'],
+  [],
+  ['0','1','2','3','4','5','6','7','8','9','(', ')'],
+  ['\u201c','\u201d','\u2018','\u2019','$','%','@','{','}','[',']'],
+];
+
+let _tokuchoFontId = null;
+let _tokuchoSelected = new Set();
+
+function openTokuchoOverlay(fontId) {
+  const f = fonts.find(x=>x.id===fontId);
+  if (!f) return;
+  _tokuchoFontId = fontId;
+  _tokuchoSelected = new Set(f.tokuchoChars||[]);
+  const isJa = f.lang === 'en' ? false : true;
+  const rows = isJa ? TOKUCHO_JA_ROWS : TOKUCHO_EN_ROWS;
+  const body = document.getElementById('tokucho-char-body');
+  body.innerHTML = '';
+  rows.forEach(row => {
+    if (row.length === 0) { const sp = document.createElement('div'); sp.style.height='10px'; body.appendChild(sp); return; }
+    const rowEl = document.createElement('div');
+    rowEl.className = 'tokucho-char-row';
+    row.forEach(c => {
+      if (c === '') { const g = document.createElement('div'); g.className='tokucho-gap'; rowEl.appendChild(g); return; }
+      const btn = document.createElement('button');
+      btn.className = 'tokucho-char-btn' + (_tokuchoSelected.has(c) ? ' on' : '');
+      btn.textContent = c;
+      btn.dataset.c = c;
+      btn.addEventListener('click', () => {
+        if (_tokuchoSelected.has(c)) { _tokuchoSelected.delete(c); btn.classList.remove('on'); }
+        else { _tokuchoSelected.add(c); btn.classList.add('on'); }
+      });
+      rowEl.appendChild(btn);
+    });
+    body.appendChild(rowEl);
+  });
+  const ov = document.getElementById('tokucho-overlay');
+  ov.style.display = 'flex';
+}
+
+function closeTokuchoOverlay() {
+  document.getElementById('tokucho-overlay').style.display = 'none';
+}
+
+function renderTokuchoRow(fontId) {
+  const f = fonts.find(x=>x.id===fontId);
+  const row = document.getElementById('detail-tokucho-row');
+  if (!f || !row) return;
+  row.innerHTML = '';
+  (f.tokuchoChars||[]).forEach(c => {
+    const s = document.createElement('span'); s.className='tokucho-chip'; s.textContent=c; row.appendChild(s);
+  });
+  const addBtn = document.createElement('button');
+  addBtn.className = 'tokucho-add-btn';
+  addBtn.id = 'detail-tokucho-add-btn';
+  addBtn.title = '特徴的な文字を追加';
+  addBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--c-text-sub)" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+  addBtn.addEventListener('click', () => openTokuchoOverlay(fontId));
+  row.appendChild(addBtn);
+}
+
+document.getElementById('tokucho-ok-btn').addEventListener('click', async () => {
+  if (!_tokuchoFontId) { closeTokuchoOverlay(); return; }
+  const chars = [..._tokuchoSelected];
+  await updateDoc(doc(db,'fonts',_tokuchoFontId), { tokuchoChars: chars });
+  const f = fonts.find(x=>x.id===_tokuchoFontId);
+  if (f) f.tokuchoChars = chars;
+  closeTokuchoOverlay();
+  renderTokuchoRow(_tokuchoFontId);
+});
+
 // ── Fav ───────────────────────────────────
 async function toggleFav(id) {
   const f = fonts.find(x=>x.id===id);
@@ -3141,6 +3359,14 @@ async function openDetail(id) {
       <div style="display:flex;align-items:center;gap:8px;margin-top:10px;">
         <span class="chip" style="margin-top:0;">${f.category||''}</span>
         <button id="detail-crown" data-id="${id}" title="基本フォント" style="background:none;border:none;cursor:pointer;padding:2px;display:flex;align-items:center;transition:transform 0.15s;">${f.basic ? CROWN_FILLED : CROWN_OUTLINE}</button>
+      </div>
+
+      <!-- 特徴文字チップ行 -->
+      <div class="tokucho-row" id="detail-tokucho-row">
+        ${(f.tokuchoChars||[]).map(c=>`<span class="tokucho-chip">${c}</span>`).join('')}
+        <button class="tokucho-add-btn" id="detail-tokucho-add-btn" title="特徴的な文字を追加">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--c-text-sub)" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
       </div>
 
       ${weights ? `
@@ -3580,6 +3806,12 @@ async function openDetail(id) {
   // crownボタン
   const crownBtn = $('detail-crown');
   if (crownBtn) crownBtn.addEventListener('click', () => toggleBasic(crownBtn.dataset.id));
+
+  // ── 特徴チップ ＋ボタン ──────────────────────────
+  const tokuchoAddBtn = $('detail-content').querySelector('#detail-tokucho-add-btn');
+  if (tokuchoAddBtn) {
+    tokuchoAddBtn.addEventListener('click', () => openTokuchoOverlay(id));
+  }
 
   // ── PHOTOS ＋ボタン ──────────────────────────
   const photoAddBtn = $('detail-content').querySelector('#detail-photo-add-btn');
@@ -4824,6 +5056,8 @@ function closeAllAndGoHome() {
   $('context-overlay').classList.remove('active');
   $('confirm-dialog').classList.remove('active');
   closeFontCountPanel();
+  if ($('tokucho-overlay')) $('tokucho-overlay').style.display = 'none';
+  if ($('oboeaki-overlay')) $('oboeaki-overlay').style.display = 'none';
   updateCompareFloat();
   showScreen('screen-home');
   renderHome();
@@ -5088,6 +5322,7 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
       if (s === 'home') { showScreen('screen-home'); renderHome(); }
       else if (s === 'add-font') { initAddFont(); showScreen('screen-add-font'); }
       else if (s === 'add-usage') { addUsageFrom = 'nav'; initAddUsage(); showScreen('screen-add-usage'); }
+      else if (s === 'oboeaki') { showScreen('screen-oboeaki'); initOboeaki(); }
       else if (s === 'quiz') { showScreen('screen-quiz'); }
     });
   };
@@ -6395,6 +6630,246 @@ async function loadFontsWithBackup() {
       runBackup(true);
     }
   });
+}
+
+// ══════════════════════════════════════════
+//  覚えがき
+// ══════════════════════════════════════════
+
+let oboeakiEntries = [];  // { id, lang, memo, fontIds:[], createdAt }
+let oboeakiSortMode = 'mix'; // 'mix' | 'sep'
+let oboeakiSearchQ = '';
+let oboeakiEditId = null; // 編集中のエントリID（null=新規）
+let oboeakiSelectedFontIds = []; // 覚えがきオーバーレイで選択中のフォントID
+let oboeakiInited = false;
+
+async function loadOboeakiEntries() {
+  const uid = auth.currentUser?.uid;
+  if (!uid) return;
+  const snap = await getDocs(collection(db, 'users', uid, 'oboeaki'));
+  oboeakiEntries = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+    .sort((a,b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+}
+
+function initOboeaki() {
+  loadOboeakiEntries().then(() => renderOboeakiList());
+  if (oboeakiInited) return;
+  oboeakiInited = true;
+
+  // 検索
+  $('oboeaki-search-input').addEventListener('input', e => {
+    oboeakiSearchQ = e.target.value.trim().toLowerCase();
+    renderOboeakiList();
+  });
+
+  // 並び替え
+  $('oboeaki-sort-btn').addEventListener('click', () => {
+    oboeakiSortMode = oboeakiSortMode === 'mix' ? 'sep' : 'mix';
+    $('oboeaki-sort-label').textContent = oboeakiSortMode === 'mix' ? '新しい順' : '日欧別';
+    renderOboeakiList();
+  });
+
+  // FAB
+  $('oboeaki-fab').addEventListener('click', () => openOboeakiOverlay(null));
+
+  // 言語ボタン
+  $('ob-lng-ja').addEventListener('click', () => setOboeakiLang('ja'));
+  $('ob-lng-en').addEventListener('click', () => setOboeakiLang('en'));
+
+  // フォント追加ボタン
+  $('oboeaki-font-add-btn').addEventListener('click', () => {
+    const wrap = $('oboeaki-font-search-wrap');
+    wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
+    if (wrap.style.display === 'block') {
+      $('oboeaki-font-search-input').focus();
+      renderOboeakiFontResults('');
+    }
+  });
+
+  // フォント検索入力
+  $('oboeaki-font-search-input').addEventListener('input', e => {
+    renderOboeakiFontResults(e.target.value.trim());
+  });
+
+  // 保存ボタン
+  $('oboeaki-save-btn').addEventListener('click', () => saveOboeakiEntry());
+}
+
+function setOboeakiLang(lang) {
+  $('ob-lng-ja').style.background = lang === 'ja' ? 'linear-gradient(135deg,var(--c-lavender),var(--c-sky))' : '#fff';
+  $('ob-lng-ja').style.borderColor = lang === 'ja' ? 'transparent' : 'var(--c-border)';
+  $('ob-lng-ja').style.color = lang === 'ja' ? '#5a4a8a' : 'var(--c-text-sub)';
+  $('ob-lng-en').style.background = lang === 'en' ? 'linear-gradient(135deg,var(--c-lavender),var(--c-sky))' : '#fff';
+  $('ob-lng-en').style.borderColor = lang === 'en' ? 'transparent' : 'var(--c-border)';
+  $('ob-lng-en').style.color = lang === 'en' ? '#5a4a8a' : 'var(--c-text-sub)';
+  $('ob-lng-ja').dataset.active = lang === 'ja' ? '1' : '';
+  $('ob-lng-en').dataset.active = lang === 'en' ? '1' : '';
+}
+
+function getOboeakiLang() {
+  return $('ob-lng-en').dataset.active === '1' ? 'en' : 'ja';
+}
+
+function renderOboeakiFontResults(q) {
+  const results = $('oboeaki-font-search-results');
+  let list = fonts.filter(f => !oboeakiSelectedFontIds.includes(f.id));
+  if (q) list = list.filter(f => (f.name||'').toLowerCase().includes(q.toLowerCase()));
+  results.innerHTML = '';
+  list.slice(0, 20).forEach(f => {
+    const btn = document.createElement('button');
+    btn.style.cssText = 'width:100%;text-align:left;padding:10px 12px;border:none;background:none;font-size:15px;color:var(--c-text);cursor:pointer;border-bottom:1px solid var(--c-border);font-family:inherit;touch-action:manipulation;';
+    btn.textContent = f.name;
+    btn.addEventListener('click', () => {
+      oboeakiSelectedFontIds.push(f.id);
+      $('oboeaki-font-search-wrap').style.display = 'none';
+      $('oboeaki-font-search-input').value = '';
+      renderOboeakiFontChips();
+    });
+    results.appendChild(btn);
+  });
+  if (!list.length) results.innerHTML = '<div style="padding:10px 12px;font-size:14px;color:var(--c-text-sub);">見つかりませんでした</div>';
+}
+
+function renderOboeakiFontChips() {
+  const wrap = $('oboeaki-font-chips');
+  const addBtn = $('oboeaki-font-add-btn');
+  wrap.innerHTML = '';
+  oboeakiSelectedFontIds.forEach(fid => {
+    const f = fonts.find(x => x.id === fid);
+    if (!f) return;
+    const chip = document.createElement('button');
+    chip.style.cssText = 'display:flex;align-items:center;gap:5px;font-size:12px;padding:4px 10px;border-radius:20px;background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border:none;color:#5a4a8a;font-weight:600;cursor:pointer;font-family:inherit;touch-action:manipulation;';
+    chip.innerHTML = `${f.name}<span style="opacity:0.6;font-size:10px;">✕</span>`;
+    chip.addEventListener('click', () => {
+      oboeakiSelectedFontIds = oboeakiSelectedFontIds.filter(x => x !== fid);
+      renderOboeakiFontChips();
+    });
+    wrap.appendChild(chip);
+  });
+  wrap.appendChild(addBtn);
+}
+
+function openOboeakiOverlay(entryId) {
+  oboeakiEditId = entryId;
+  oboeakiSelectedFontIds = [];
+  $('oboeaki-font-search-wrap').style.display = 'none';
+  $('oboeaki-font-search-input').value = '';
+
+  if (entryId) {
+    const e = oboeakiEntries.find(x => x.id === entryId);
+    if (!e) return;
+    $('oboeaki-overlay-title').textContent = 'メモを編集';
+    $('oboeaki-memo-ta').value = e.memo || '';
+    setOboeakiLang(e.lang || 'ja');
+    oboeakiSelectedFontIds = [...(e.fontIds || [])];
+  } else {
+    $('oboeaki-overlay-title').textContent = '新規メモ';
+    $('oboeaki-memo-ta').value = '';
+    setOboeakiLang('ja');
+  }
+  renderOboeakiFontChips();
+  const ov = $('oboeaki-overlay');
+  ov.style.display = 'flex';
+  setTimeout(() => $('oboeaki-memo-ta').focus(), 100);
+}
+
+function closeOboeakiOverlay() {
+  $('oboeaki-overlay').style.display = 'none';
+}
+
+async function saveOboeakiEntry() {
+  const uid = auth.currentUser?.uid;
+  if (!uid) return;
+  const memo = $('oboeaki-memo-ta').value.trim();
+  if (!memo) { showToast('メモを入力してください'); return; }
+  const lang = getOboeakiLang();
+  const fontIds = [...oboeakiSelectedFontIds];
+
+  try {
+    if (oboeakiEditId) {
+      // 編集
+      const ref2 = doc(db, 'users', uid, 'oboeaki', oboeakiEditId);
+      await updateDoc(ref2, { memo, lang, fontIds, updatedAt: serverTimestamp() });
+      const idx = oboeakiEntries.findIndex(x => x.id === oboeakiEditId);
+      if (idx >= 0) Object.assign(oboeakiEntries[idx], { memo, lang, fontIds });
+    } else {
+      // 新規
+      const ref2 = await addDoc(collection(db, 'users', uid, 'oboeaki'), { memo, lang, fontIds, createdAt: serverTimestamp() });
+      oboeakiEntries.unshift({ id: ref2.id, memo, lang, fontIds });
+    }
+    closeOboeakiOverlay();
+    renderOboeakiList();
+    showToast('保存しました');
+  } catch(err) { showToast('保存に失敗しました'); }
+}
+
+function renderOboeakiList() {
+  const list = $('oboeaki-list');
+  if (!list) return;
+
+  let entries = [...oboeakiEntries];
+
+  // 検索フィルタ
+  if (oboeakiSearchQ) {
+    entries = entries.filter(e => {
+      const memoMatch = (e.memo||'').toLowerCase().includes(oboeakiSearchQ);
+      const fontMatch = (e.fontIds||[]).some(fid => {
+        const f = fonts.find(x => x.id === fid);
+        return f && (f.name||'').toLowerCase().includes(oboeakiSearchQ);
+      });
+      return memoMatch || fontMatch;
+    });
+  }
+
+  list.innerHTML = '';
+
+  if (!entries.length) {
+    list.innerHTML = '<div style="padding:32px 0;text-align:center;color:var(--c-text-sub);font-size:15px;">メモがありません<br><span style="font-size:13px;">右下のボタンから追加できます</span></div>';
+    return;
+  }
+
+  const makeCard = (e) => {
+    const card = document.createElement('div');
+    card.style.cssText = 'background:rgba(255,255,255,0.85);border:1px solid var(--c-border);border-radius:16px;padding:14px 16px;margin-bottom:14px;cursor:pointer;';
+    const date = e.createdAt?.toDate?.() ? (() => { const d = e.createdAt.toDate(); return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`; })() : '';
+    const memoHtml = (e.memo||'').split('\n').filter(l=>l.trim()).map(l=>`<div style="display:flex;align-items:baseline;gap:8px;padding:2px 0;"><span style="color:#9b7fe8;font-size:11px;flex-shrink:0;position:relative;top:-1px;">◆</span><span style="font-size:15px;line-height:1.5;color:var(--c-text);">${l}</span></div>`).join('');
+    const fontChips = (e.fontIds||[]).map(fid => {
+      const f = fonts.find(x => x.id === fid);
+      return f ? `<button class="ob-font-chip" data-id="${f.id}" style="font-size:12px;padding:4px 12px;border-radius:20px;background:rgba(255,255,255,0.9);border:1px solid var(--c-border);color:var(--c-text-sub);cursor:pointer;font-family:inherit;touch-action:manipulation;">${f.name}</button>` : '';
+    }).join('');
+    card.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span style="font-size:12px;padding:3px 10px;border-radius:20px;border:1.5px solid var(--c-text-sub);background:#fff;color:var(--c-text-sub);font-weight:700;">${e.lang==='en'?'欧文':'日本語'}</span>
+        <span style="font-size:12px;color:#b0a8c8;margin-left:auto;">${date}</span>
+      </div>
+      <div style="margin-bottom:10px;">${memoHtml}</div>
+      ${fontChips || e.fontIds?.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">${fontChips}</div>` : ''}
+    `;
+    // タップで編集
+    card.addEventListener('click', e2 => {
+      if (e2.target.closest('.ob-font-chip')) return;
+      openOboeakiOverlay(e.id);
+    });
+    // フォントチップでopenDetail
+    card.querySelectorAll('.ob-font-chip').forEach(btn => {
+      btn.addEventListener('click', ev => { ev.stopPropagation(); openDetail(btn.dataset.id); });
+    });
+    return card;
+  };
+
+  if (oboeakiSortMode === 'sep') {
+    const ja = entries.filter(e => e.lang !== 'en');
+    const en = entries.filter(e => e.lang === 'en');
+    ja.forEach(e => list.appendChild(makeCard(e)));
+    if (ja.length && en.length) {
+      const div = document.createElement('div');
+      div.style.cssText = 'height:2px;background:linear-gradient(90deg,var(--c-lavender),var(--c-sky));border-radius:2px;margin:4px 0 16px;';
+      list.appendChild(div);
+    }
+    en.forEach(e => list.appendChild(makeCard(e)));
+  } else {
+    entries.forEach(e => list.appendChild(makeCard(e)));
+  }
 }
 
 // ══════════════════════════════════════════
