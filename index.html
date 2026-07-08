@@ -1513,7 +1513,7 @@
 
   <div id="screen-quiz" class="screen">
     <div class="app-header">
-      <button class="back-btn" id="quiz-header-back" style="display:none;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <button class="back-btn" id="quiz-header-back" style="visibility:hidden;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
       <h1 id="quiz-header-title" style="position:absolute;left:50%;transform:translateX(-50%);font-size:17px;font-weight:800;white-space:nowrap;">文字クイズ</h1>
       <button class="header-btn sub-menu-btn" title="メニュー"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
     </div>
@@ -7184,7 +7184,7 @@ function quizShowSetup() {
   $('quiz-play').style.display         = 'none';
   $('quiz-compare-play').style.display = 'none';
   $('quiz-result').style.display       = 'none';
-  $('quiz-header-back').style.display  = 'none';
+  $('quiz-header-back').style.visibility = 'hidden';
   $('quiz-header-title').textContent   = '文字クイズ';
 }
 function quizShowPlay() {
@@ -7192,7 +7192,7 @@ function quizShowPlay() {
   $('quiz-play').style.display         = 'block';
   $('quiz-compare-play').style.display = 'none';
   $('quiz-result').style.display       = 'none';
-  $('quiz-header-back').style.display  = 'flex';
+  $('quiz-header-back').style.visibility = 'visible';
   $('quiz-header-title').textContent   = '文字クイズ';
 }
 function quizShowCompare() {
@@ -7200,7 +7200,7 @@ function quizShowCompare() {
   $('quiz-play').style.display         = 'none';
   $('quiz-compare-play').style.display = 'block';
   $('quiz-result').style.display       = 'none';
-  $('quiz-header-back').style.display  = 'flex';
+  $('quiz-header-back').style.visibility = 'visible';
   $('quiz-header-title').textContent   = '比較クイズ';
 }
 function quizShowResult() {
@@ -7208,7 +7208,7 @@ function quizShowResult() {
   $('quiz-play').style.display         = 'none';
   $('quiz-compare-play').style.display = 'none';
   $('quiz-result').style.display       = 'block';
-  $('quiz-header-back').style.display  = 'none';
+  $('quiz-header-back').style.visibility = 'hidden';
   $('quiz-header-title').textContent   = '結果';
 }
 
