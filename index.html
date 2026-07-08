@@ -269,7 +269,8 @@
   /* よく使う3つをやや広く、残り2つをコンパクトに */
   #nav-home, #nav-add-font, #nav-add-usage { flex: 1.1; }
   #nav-oboeaki, #nav-quiz { flex: 0.9; }
-  #nav-home, #nav-add-font, #nav-add-usage, #nav-oboeaki { position: relative; left: -2px; }
+  #nav-home, #nav-add-usage, #nav-oboeaki { position: relative; left: -2px; }
+  #nav-add-font { position: relative; left: -4px; }
 
   /* ── Login ── */
   .login-logo {
@@ -1477,8 +1478,8 @@
       <div style="font-size:15px;font-weight:700;color:var(--c-text);margin-bottom:14px;" id="oboeaki-overlay-title">新規メモ</div>
       <!-- 言語選択 -->
       <div style="display:flex;gap:8px;margin-bottom:14px;">
-        <button class="oboeaki-lang-btn" id="ob-lng-ja" style="flex:1;padding:8px;border-radius:12px;border:1.5px solid var(--c-border);background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border-color:transparent;color:#5a4a8a;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;touch-action:manipulation;">日本語</button>
-        <button class="oboeaki-lang-btn" id="ob-lng-en" style="flex:1;padding:8px;border-radius:12px;border:1.5px solid var(--c-border);background:#fff;color:var(--c-text-sub);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;touch-action:manipulation;">欧文</button>
+        <button class="oboeaki-lang-btn" id="ob-lng-ja" style="flex:1;padding:10px;border-radius:50px;border:1.5px solid var(--c-border);background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border-color:transparent;color:#5a4a8a;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;touch-action:manipulation;">日本語</button>
+        <button class="oboeaki-lang-btn" id="ob-lng-en" style="flex:1;padding:10px;border-radius:50px;border:1.5px solid var(--c-border);background:#fff;color:var(--c-text-sub);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;touch-action:manipulation;">欧文</button>
       </div>
       <!-- メモテキストエリア（フォント大きく） -->
       <textarea id="oboeaki-memo-ta" placeholder="このフォントについてメモ…" style="width:100%;min-height:110px;border:1.5px solid var(--c-border);border-radius:14px;font-size:16px;padding:12px 14px;font-family:inherit;color:var(--c-text);background:rgba(255,255,255,0.95);resize:vertical;outline:none;line-height:1.7;margin-bottom:14px;"></textarea>
@@ -1500,7 +1501,7 @@
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
-        <button id="oboeaki-save-btn" style="flex:1;padding:13px;border-radius:16px;background:linear-gradient(135deg,#b8a0f0,#7ab8f5);color:#fff;font-size:16px;font-weight:700;border:none;cursor:pointer;font-family:inherit;touch-action:manipulation;">メモ完了</button>
+        <button id="oboeaki-save-btn" style="flex:1;padding:13px;border-radius:50px;background:linear-gradient(135deg,#b8a0f0,#7ab8f5);color:#fff;font-size:16px;font-weight:700;border:none;cursor:pointer;font-family:inherit;touch-action:manipulation;">メモ完了</button>
         <button id="oboeaki-overlay-close" style="width:50px;height:50px;border-radius:50%;border:1.5px solid var(--c-border);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;flex-shrink:0;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--c-text-sub)" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
