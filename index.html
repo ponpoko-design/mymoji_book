@@ -3826,7 +3826,7 @@ async function openDetail(id) {
             // 編集後ライトボックスに戻るとき最新URLで開く
             const latestUrl = editedBlobUrl || p.url;
             openLightbox(latestUrl, p.memo || '', null, f.name, null, id);
-          }, origUrl);
+          }, origUrl, photoInfo2);
         }
       }));
       openLightbox(url, memo, null, f.name, photosArr, id);
@@ -4133,7 +4133,7 @@ function openUsageDetail(fontId, usageId, usages) {
             // 編集後ライトボックスに戻るとき最新URLで開く
             const latestUrl = editedBlobUrl || p.url;
             openLightbox(latestUrl, p.memo || '', null, f ? f.name : '', null, fontId);
-          }, origUrl);
+          }, origUrl, photoInfo);
         }
       }));
       openLightbox(url, memo, null, f ? f.name : '', photosArr, fontId);
@@ -7139,8 +7139,11 @@ function renderOboeakiList() {
 
     // ── 罫線 ──
     const dividerEl = document.createElement('div');
+    const dividerWrapper = document.createElement('div');
+    dividerWrapper.style.cssText = 'display:flex;align-items:center;padding:14px 0;';
     dividerEl.className = 'ob-card-divider';
-    dividerEl.style.cssText = 'height:1px;background:var(--c-border);margin-top:24px;';
+    dividerEl.style.cssText = 'flex:1;height:1px;background:var(--c-border);';
+    dividerWrapper.appendChild(dividerEl);
 
     // 削除ボタン（枠外・上右、編集中のみ表示）
     const deleteBtn = document.createElement('button');
@@ -7151,7 +7154,7 @@ function renderOboeakiList() {
     wrapper.appendChild(topRow);
     wrapper.appendChild(card);
     wrapper.appendChild(bottomRow);
-    wrapper.appendChild(dividerEl);
+    wrapper.appendChild(dividerWrapper);
     wrapper.appendChild(deleteBtn);
 
     const memoDisplay = card.querySelector('.ob-memo-display');
