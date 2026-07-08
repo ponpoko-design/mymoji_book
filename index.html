@@ -3432,7 +3432,7 @@ async function openDetail(id) {
           </button>
         </div>
         <div id="detail-check-list" style="display:flex;flex-wrap:wrap;gap:8px;min-height:24px;">
-          ${(f.checks||[]).map(cid=>{const cf=fonts.find(x=>x.id===cid);return cf?`<button class="check-font-chip" data-id="${cid}" style="background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border:none;border-radius:50px;padding:7px 8px 7px 16px;font-size:13px;font-weight:600;color:#5a4a8a;cursor:pointer;font-family:inherit;touch-action:manipulation;display:flex;align-items:center;gap:6px;">${cf.name}<span style="font-size:11px;color:rgba(90,74,138,0.6);pointer-events:none;padding-right:8px;">✕</span></button>`:''}).join('')}
+          ${(f.checks||[]).map(cid=>{const cf=fonts.find(x=>x.id===cid);return cf?`<span class="check-chip-wrap" data-id="${cid}" style="display:inline-flex;align-items:center;background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border-radius:50px;"><button class="check-font-chip" data-id="${cid}" style="background:none;border:none;border-radius:50px 0 0 50px;padding:7px 4px 7px 16px;font-size:13px;font-weight:600;color:#5a4a8a;cursor:pointer;font-family:inherit;touch-action:manipulation;">${cf.name}</button><button class="check-remove-btn" data-id="${cid}" style="background:none;border:none;padding:7px 14px 7px 8px;font-size:13px;color:rgba(90,74,138,0.7);cursor:pointer;touch-action:manipulation;border-radius:0 50px 50px 0;line-height:1;font-weight:700;">✕</button></span>`:''}).join('')}
         </div>
         <div id="detail-check-search-wrap" style="display:none;margin-top:10px;">
           <div class="search-box" style="margin-bottom:8px;">
@@ -3910,26 +3910,24 @@ async function openDetail(id) {
           const chip = document.createElement('button');
           chip.className = 'check-font-chip';
           chip.dataset.id = targetId;
-          chip.style.cssText = 'background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border:none;border-radius:50px;padding:7px 8px 7px 16px;font-size:13px;font-weight:600;color:#5a4a8a;cursor:pointer;font-family:inherit;touch-action:manipulation;display:flex;align-items:center;gap:6px;';
-          chip.innerHTML = `${targetFont.name} <span style="font-size:11px;color:rgba(90,74,138,0.6);pointer-events:none;padding-right:8px;">✕</span>`;
-          chip.addEventListener('click', async e2 => {
-            const chipRect2 = chip.getBoundingClientRect();
-            const isRemove2 = e2.clientX >= chipRect2.right - 28;
-            if (isRemove2) {
-              const removeId = chip.dataset.id;
-              const nc = (f.checks||[]).filter(x => x !== removeId);
-              await updateDoc(doc(db,'fonts',id), { checks: nc });
-              f.checks = nc;
-              const tf = fonts.find(x=>x.id===removeId);
-              if (tf) {
-                const ntc = (tf.checks||[]).filter(x => x !== id);
-                await updateDoc(doc(db,'fonts',removeId), { checks: ntc });
-                tf.checks = ntc;
-              }
-              chip.remove();
-              return;
-            }
+          chip.style.cssText = 'display:inline-flex;align-items:center;background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border-radius:50px;border:none;';
+          chip.innerHTML = `<button class="check-font-chip" data-id="${targetId}" style="background:none;border:none;border-radius:50px 0 0 50px;padding:7px 4px 7px 16px;font-size:13px;font-weight:600;color:#5a4a8a;cursor:pointer;font-family:inherit;touch-action:manipulation;">${targetFont.name}</button><button class="check-remove-btn" data-id="${targetId}" style="background:none;border:none;padding:7px 14px 7px 8px;font-size:13px;color:rgba(90,74,138,0.7);cursor:pointer;touch-action:manipulation;border-radius:0 50px 50px 0;line-height:1;font-weight:700;">✕</button>`;
+          chip.querySelector('.check-font-chip').addEventListener('click', () => {
             if (fonts.find(x=>x.id===chip.dataset.id)) openDetail(chip.dataset.id);
+          });
+          chip.querySelector('.check-remove-btn').addEventListener('click', async () => {
+            const removeId = chip.dataset.id;
+            const nc = (f.checks||[]).filter(x => x !== removeId);
+            await updateDoc(doc(db,'fonts',id), { checks: nc });
+            f.checks = nc;
+            const tf = fonts.find(x=>x.id===removeId);
+            if (tf) {
+              const ntc = (tf.checks||[]).filter(x => x !== id);
+              await updateDoc(doc(db,'fonts',removeId), { checks: ntc });
+              tf.checks = ntc;
+            }
+            showToast(`✕ ${chip.querySelector('.check-font-chip')?.textContent||''} を削除しました`);
+            chip.remove();
           });
           checkList.appendChild(chip);
           // 検索結果からこのフォントを除去
@@ -3940,33 +3938,29 @@ async function openDetail(id) {
     });
   }
 
-  // CHECKチップのタップ（フォントに飛ぶ）と✕（削除）
-  $('detail-content').querySelectorAll('.check-font-chip').forEach(chip => {
-    chip.addEventListener('click', async e => {
-      // pointer-events:noneのspanを通過してbuttonに届く。X部分クリックはclientXで判定
-      // シンプルに：クリック位置がチップ右端20px以内なら削除
-      const chipRect = chip.getBoundingClientRect();
-      const isRemove = e.clientX >= chipRect.right - 28;
-      if (isRemove) {
-        // 削除（双方向）
-        const removeId = chip.dataset.id;
-        const newChecks = (f.checks||[]).filter(x => x !== removeId);
-        await updateDoc(doc(db,'fonts',id), { checks: newChecks });
-        f.checks = newChecks;
-        // 相手側からも削除
-        const targetFont = fonts.find(x=>x.id===removeId);
-        if (targetFont) {
-          const newTargetChecks = (targetFont.checks||[]).filter(x => x !== id);
-          await updateDoc(doc(db,'fonts',removeId), { checks: newTargetChecks });
-          targetFont.checks = newTargetChecks;
-        }
-        openDetail(id);
-        return;
-      }
-      // フォントに飛ぶ
-      const targetId = chip.dataset.id;
+  // CHECKチップ：フォント名→詳細、✕→削除（ボタン分離）
+  async function removeCheckFont(removeId) {
+    const newChecks = (f.checks||[]).filter(x => x !== removeId);
+    await updateDoc(doc(db,'fonts',id), { checks: newChecks });
+    f.checks = newChecks;
+    const targetFont = fonts.find(x=>x.id===removeId);
+    if (targetFont) {
+      const newTargetChecks = (targetFont.checks||[]).filter(x => x !== id);
+      await updateDoc(doc(db,'fonts',removeId), { checks: newTargetChecks });
+      targetFont.checks = newTargetChecks;
+    }
+    const removedName = fonts.find(x=>x.id===removeId)?.name || '';
+    showToast(`✕ ${removedName} を削除しました`);
+    openDetail(id);
+  }
+  $('detail-content').querySelectorAll('.check-font-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.dataset.id;
       if (fonts.find(x=>x.id===targetId)) openDetail(targetId);
     });
+  });
+  $('detail-content').querySelectorAll('.check-remove-btn').forEach(btn => {
+    btn.addEventListener('click', () => removeCheckFont(btn.dataset.id));
   });
 
   // 自動保存メモ
