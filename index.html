@@ -267,8 +267,8 @@
   .nav-btn.active .icon-outline { display: none; }
   .nav-btn.active .icon-filled { display: block; }
   /* よく使う3つをやや広く、残り2つをコンパクトに */
-  #nav-home, #nav-add-font, #nav-add-usage { flex: 1.25; }
-  #nav-oboeaki, #nav-quiz { flex: 0.8; }
+  #nav-home, #nav-add-font, #nav-add-usage { flex: 1.1; }
+  #nav-oboeaki, #nav-quiz { flex: 0.9; }
 
   /* ── Login ── */
   .login-logo {
@@ -1485,7 +1485,7 @@
         <button class="oboeaki-lang-btn" id="ob-lng-en" style="flex:1;padding:8px;border-radius:12px;border:1.5px solid var(--c-border);background:#fff;color:var(--c-text-sub);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;touch-action:manipulation;">欧文</button>
       </div>
       <!-- メモテキストエリア（フォント大きく） -->
-      <textarea id="oboeaki-memo-ta" placeholder="このフォントについてメモ…" style="width:100%;min-height:110px;border:1.5px solid var(--c-border);border-radius:14px;font-size:20px;padding:12px 14px;font-family:inherit;color:var(--c-text);background:rgba(255,255,255,0.95);resize:vertical;outline:none;line-height:1.7;margin-bottom:14px;"></textarea>
+      <textarea id="oboeaki-memo-ta" placeholder="このフォントについてメモ…" style="width:100%;min-height:110px;border:1.5px solid var(--c-border);border-radius:14px;font-size:16px;padding:12px 14px;font-family:inherit;color:var(--c-text);background:rgba(255,255,255,0.95);resize:vertical;outline:none;line-height:1.7;margin-bottom:14px;"></textarea>
       <!-- 関連フォント -->
       <div style="margin-bottom:14px;">
         <div style="font-size:13px;color:var(--c-text-sub);margin-bottom:6px;font-weight:600;">関連フォント</div>
@@ -6845,7 +6845,7 @@ function renderOboeakiList() {
         <span style="font-size:12px;color:#b0a8c8;margin-left:auto;">${date}</span>
       </div>
       <div class="ob-memo-display" style="margin-bottom:10px;cursor:pointer;"></div>
-      <textarea class="ob-memo-ta" style="display:none;width:100%;min-height:80px;border:1.5px solid var(--c-border);border-radius:12px;font-size:20px;padding:10px 12px;font-family:inherit;color:var(--c-text);background:rgba(255,255,255,0.95);resize:vertical;outline:none;line-height:1.7;margin-bottom:10px;"></textarea>
+      <textarea class="ob-memo-ta" style="display:none;width:100%;min-height:80px;border:1.5px solid var(--c-border);border-radius:12px;font-size:16px;padding:10px 12px;font-family:inherit;color:var(--c-text);background:rgba(255,255,255,0.95);resize:vertical;outline:none;line-height:1.7;margin-bottom:10px;"></textarea>
       <button class="ob-delete-btn" style="display:none;position:absolute;top:12px;right:12px;font-size:12px;padding:4px 12px;border-radius:20px;background:rgba(255,80,80,0.1);border:1px solid rgba(220,80,80,0.3);color:#cc4444;cursor:pointer;font-family:inherit;touch-action:manipulation;font-weight:600;">削除</button>
       ${fontChips || e.fontIds?.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">${fontChips}</div>` : ''}
     `;
@@ -6859,7 +6859,7 @@ function renderOboeakiList() {
     function renderMemoDisplay() {
       memoTa.value = e.memo || '';
       memoDisplay.innerHTML = (e.memo||'').split('\n').filter(l=>l.trim())
-        .map(l=>`<div style="display:flex;align-items:baseline;gap:8px;padding:2px 0;"><span style="color:#9b7fe8;font-size:11px;flex-shrink:0;position:relative;top:-1px;">◆</span><span style="font-size:15px;line-height:1.5;color:var(--c-text);">${l}</span></div>`).join('')
+        .map(l=>`<div style="display:flex;align-items:baseline;gap:8px;padding:2px 0;"><span style="color:#9b7fe8;font-size:11px;flex-shrink:0;position:relative;top:-1px;">◆</span><span style="font-size:18px;line-height:1.5;color:var(--c-text);">${l}</span></div>`).join('')
         || '<span style="color:var(--c-text-sub);font-size:14px;">タップして編集…</span>';
     }
     renderMemoDisplay();
