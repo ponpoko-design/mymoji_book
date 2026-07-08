@@ -266,6 +266,9 @@
   .nav-btn .icon-filled { display: none; }
   .nav-btn.active .icon-outline { display: none; }
   .nav-btn.active .icon-filled { display: block; }
+  /* よく使う3つをやや広く、残り2つをコンパクトに */
+  #nav-home, #nav-add-font, #nav-add-usage { flex: 1.25; }
+  #nav-oboeaki, #nav-quiz { flex: 0.8; }
 
   /* ── Login ── */
   .login-logo {
@@ -1482,7 +1485,7 @@
         <button class="oboeaki-lang-btn" id="ob-lng-en" style="flex:1;padding:8px;border-radius:12px;border:1.5px solid var(--c-border);background:#fff;color:var(--c-text-sub);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;touch-action:manipulation;">欧文</button>
       </div>
       <!-- メモテキストエリア（フォント大きく） -->
-      <textarea id="oboeaki-memo-ta" placeholder="このフォントについてメモ…" style="width:100%;min-height:110px;border:1.5px solid var(--c-border);border-radius:14px;font-size:18px;padding:12px 14px;font-family:inherit;color:var(--c-text);background:rgba(255,255,255,0.95);resize:vertical;outline:none;line-height:1.7;margin-bottom:14px;"></textarea>
+      <textarea id="oboeaki-memo-ta" placeholder="このフォントについてメモ…" style="width:100%;min-height:110px;border:1.5px solid var(--c-border);border-radius:14px;font-size:20px;padding:12px 14px;font-family:inherit;color:var(--c-text);background:rgba(255,255,255,0.95);resize:vertical;outline:none;line-height:1.7;margin-bottom:14px;"></textarea>
       <!-- 関連フォント -->
       <div style="margin-bottom:14px;">
         <div style="font-size:13px;color:var(--c-text-sub);margin-bottom:6px;font-weight:600;">関連フォント</div>
@@ -6837,12 +6840,12 @@ function renderOboeakiList() {
       return f ? `<button class="ob-font-chip" data-id="${f.id}" style="font-size:12px;padding:4px 12px;border-radius:20px;background:rgba(255,255,255,0.9);border:1px solid var(--c-border);color:var(--c-text-sub);cursor:pointer;font-family:inherit;touch-action:manipulation;">${f.name}</button>` : '';
     }).join('');
     card.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <div class="ob-date-row" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
         <span style="font-size:12px;padding:3px 10px;border-radius:20px;border:1.5px solid var(--c-text-sub);background:#fff;color:var(--c-text-sub);font-weight:700;">${e.lang==='en'?'欧文':'日本語'}</span>
         <span style="font-size:12px;color:#b0a8c8;margin-left:auto;">${date}</span>
       </div>
       <div class="ob-memo-display" style="margin-bottom:10px;cursor:pointer;"></div>
-      <textarea class="ob-memo-ta" style="display:none;width:100%;min-height:80px;border:1.5px solid var(--c-border);border-radius:12px;font-size:16px;padding:10px 12px;font-family:inherit;color:var(--c-text);background:rgba(255,255,255,0.95);resize:vertical;outline:none;line-height:1.7;margin-bottom:10px;"></textarea>
+      <textarea class="ob-memo-ta" style="display:none;width:100%;min-height:80px;border:1.5px solid var(--c-border);border-radius:12px;font-size:20px;padding:10px 12px;font-family:inherit;color:var(--c-text);background:rgba(255,255,255,0.95);resize:vertical;outline:none;line-height:1.7;margin-bottom:10px;"></textarea>
       <button class="ob-delete-btn" style="display:none;position:absolute;top:12px;right:12px;font-size:12px;padding:4px 12px;border-radius:20px;background:rgba(255,80,80,0.1);border:1px solid rgba(220,80,80,0.3);color:#cc4444;cursor:pointer;font-family:inherit;touch-action:manipulation;font-weight:600;">削除</button>
       ${fontChips || e.fontIds?.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">${fontChips}</div>` : ''}
     `;
@@ -6866,10 +6869,12 @@ function renderOboeakiList() {
       memoDisplay.style.display = 'none';
       memoTa.style.display = 'block';
       deleteBtn.style.display = 'block';
+      const dateRow = card.querySelector('.ob-date-row');
+      if (dateRow) dateRow.style.display = 'none';
       memoTa.focus();
     });
 
-    // テキストエリアの自動保存（入力停止後に保存）
+    // input時：800msタイマーで自動保存（フォント詳細と同じ）
     memoTa.addEventListener('input', () => {
       clearTimeout(oboeakiSaveTimer);
       oboeakiSaveTimer = setTimeout(async () => {
@@ -6877,30 +6882,47 @@ function renderOboeakiList() {
         if (!uid) return;
         const newMemo = memoTa.value;
         e.memo = newMemo;
-        await updateDoc(doc(db,'users',uid,'oboeaki',e.id), { memo: newMemo });
+        try {
+          await updateDoc(doc(db,'users',uid,'oboeaki',e.id), { memo: newMemo });
+        } catch(err) { console.error('oboeaki save error', err); }
       }, 800);
     });
 
-    // 枠外タップで編集終了
-    memoTa.addEventListener('blur', () => {
+    // blur時：即時保存＋表示モードに戻す（フォント詳細と同じ）
+    memoTa.addEventListener('blur', async () => {
+      // 未保存分を即時保存
+      clearTimeout(oboeakiSaveTimer);
+      const uid = auth.currentUser?.uid;
+      if (uid) {
+        const newMemo = memoTa.value;
+        e.memo = newMemo;
+        try {
+          await updateDoc(doc(db,'users',uid,'oboeaki',e.id), { memo: newMemo });
+        } catch(err) { console.error('oboeaki blur save error', err); }
+      }
+      // 表示モードに戻す
       memoTa.style.display = 'none';
       deleteBtn.style.display = 'none';
       memoDisplay.style.display = 'block';
+      const dateRow = card.querySelector('.ob-date-row');
+      if (dateRow) dateRow.style.display = 'flex';
       renderMemoDisplay();
     });
 
     // 削除ボタン
-    deleteBtn.addEventListener('click', async (ev) => {
+    deleteBtn.addEventListener('click', (ev) => {
+      ev.preventDefault();
       ev.stopPropagation();
       const uid = auth.currentUser?.uid;
       if (!uid) return;
-      if (!confirm('このメモを削除しますか？')) return;
-      try {
-        await deleteDoc(doc(db,'users',uid,'oboeaki',e.id));
-        oboeakiEntries = oboeakiEntries.filter(x => x.id !== e.id);
-        renderOboeakiList();
-        showToast('削除しました');
-      } catch(err) { showToast('削除に失敗しました'); }
+      showConfirm('メモを削除', 'このメモを削除しますか？', async () => {
+        try {
+          await deleteDoc(doc(db,'users',uid,'oboeaki',e.id));
+          oboeakiEntries = oboeakiEntries.filter(x => x.id !== e.id);
+          renderOboeakiList();
+          showToast('削除しました');
+        } catch(err) { showToast('削除に失敗しました'); }
+      });
     });
 
     // フォントチップでopenDetail
