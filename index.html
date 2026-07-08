@@ -1473,12 +1473,7 @@
   <!-- 覚えがき新規/編集オーバーレイ -->
   <div id="oboeaki-overlay" style="display:none;position:fixed;inset:0;background:rgba(44,38,64,0.55);align-items:center;justify-content:center;z-index:300;">
     <div style="background:#fff;border-radius:20px;padding:24px 20px 24px;width:calc(100% - 48px);max-width:500px;position:relative;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-        <div style="font-size:15px;font-weight:700;color:var(--c-text);" id="oboeaki-overlay-title">新規メモ</div>
-        <button id="oboeaki-overlay-close" style="width:32px;height:32px;border-radius:50%;border:1.5px solid var(--c-border);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;flex-shrink:0;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--c-text-sub)" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-      </div>
+      <div style="font-size:15px;font-weight:700;color:var(--c-text);margin-bottom:14px;" id="oboeaki-overlay-title">新規メモ</div>
       <!-- 言語選択 -->
       <div style="display:flex;gap:8px;margin-bottom:14px;">
         <button class="oboeaki-lang-btn" id="ob-lng-ja" style="flex:1;padding:8px;border-radius:12px;border:1.5px solid var(--c-border);background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border-color:transparent;color:#5a4a8a;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;touch-action:manipulation;">日本語</button>
@@ -1503,7 +1498,12 @@
           <div id="oboeaki-font-search-results" style="max-height:160px;overflow-y:auto;"></div>
         </div>
       </div>
-      <button id="oboeaki-save-btn" style="width:100%;padding:13px;border-radius:16px;background:linear-gradient(135deg,#b8a0f0,#7ab8f5);color:#fff;font-size:16px;font-weight:700;border:none;cursor:pointer;font-family:inherit;touch-action:manipulation;">メモ完了</button>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button id="oboeaki-save-btn" style="flex:1;padding:13px;border-radius:16px;background:linear-gradient(135deg,#b8a0f0,#7ab8f5);color:#fff;font-size:16px;font-weight:700;border:none;cursor:pointer;font-family:inherit;touch-action:manipulation;">メモ完了</button>
+        <button id="oboeaki-overlay-close" style="width:50px;height:50px;border-radius:50%;border:1.5px solid var(--c-border);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;flex-shrink:0;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--c-text-sub)" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -6912,7 +6912,7 @@ function renderOboeakiList() {
     const dateLabel = document.createElement('span');
     dateLabel.className = 'ob-date-label';
     dateLabel.textContent = date;
-    dateLabel.style.cssText = 'font-size:12px;color:#b0a8c8;margin-left:auto;';
+    dateLabel.style.cssText = 'font-size:12px;color:var(--c-text-sub);margin-left:auto;font-weight:600;';
 
     topRow.appendChild(langJaBtn);
     topRow.appendChild(langEnBtn);
@@ -6994,10 +6994,22 @@ function renderOboeakiList() {
         const chip = document.createElement('button');
         chip.className = 'ob-font-chip';
         chip.dataset.id = f2.id;
-        chip.style.cssText = 'font-size:12px;padding:4px 12px;border-radius:20px;background:rgba(255,255,255,0.9);border:1px solid var(--c-border);color:var(--c-text-sub);cursor:pointer;font-family:inherit;touch-action:manipulation;';
-        chip.textContent = f2.name;
+        chip.style.cssText = 'display:flex;align-items:center;gap:5px;font-size:13px;padding:6px 14px;border-radius:50px;background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border:none;color:#5a4a8a;font-weight:600;cursor:pointer;font-family:inherit;touch-action:manipulation;';
+        chip.innerHTML = `${f2.name}<span class="ob-chip-remove" data-id="${f2.id}" style="opacity:0.6;font-size:11px;margin-left:2px;line-height:1;">✕</span>`;
         chip.addEventListener('mousedown', ev => ev.preventDefault());
-        chip.addEventListener('click', ev => { ev.stopPropagation(); openDetail(f2.id); });
+        chip.addEventListener('click', ev => {
+          ev.stopPropagation();
+          if (ev.target.closest('.ob-chip-remove')) {
+            // ✕で削除
+            const uid = auth.currentUser?.uid;
+            if (!uid) return;
+            e.fontIds = (e.fontIds||[]).filter(x => x !== fid);
+            updateDoc(doc(db,'users',uid,'oboeaki',e.id), { fontIds: e.fontIds });
+            renderFontRow();
+          } else {
+            openDetail(f2.id);
+          }
+        });
         bottomRow.appendChild(chip);
       });
       const addBtn = document.createElement('button');
@@ -7084,7 +7096,15 @@ function renderOboeakiList() {
   if (oboeakiSortMode === 'sep') {
     const ja = entries.filter(e => e.lang !== 'en');
     const en = entries.filter(e => e.lang === 'en');
-    ja.forEach(e => list.appendChild(makeCard(e)));
+    ja.forEach((e, i) => {
+      const w = makeCard(e);
+      // 最後のjaカードで、enもある場合はグレー罫線を非表示
+      if (i === ja.length - 1 && en.length) {
+        const gr = w.querySelector('div[style*="background:var(--c-border)"]');
+        if (gr) gr.style.display = 'none';
+      }
+      list.appendChild(w);
+    });
     if (ja.length && en.length) {
       const div = document.createElement('div');
       div.style.cssText = 'height:2px;background:linear-gradient(90deg,var(--c-lavender),var(--c-sky));border-radius:2px;margin:4px 0 16px;';
