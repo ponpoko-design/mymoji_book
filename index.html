@@ -1795,6 +1795,14 @@
         </div>
       </div>
     </div>
+    <!-- 強調ドラッグUI -->
+    <div id="pe-highlight-ui" style="display:none;position:absolute;top:0;left:0;right:0;bottom:0;touch-action:none;cursor:crosshair;">
+      <div id="pe-hl-dark-top"    style="position:absolute;left:0;right:0;top:0;background:rgba(0,0,0,0);pointer-events:none;transition:background 0.1s;"></div>
+      <div id="pe-hl-dark-bottom" style="position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,0);pointer-events:none;"></div>
+      <div id="pe-hl-dark-left"   style="position:absolute;top:0;bottom:0;left:0;background:rgba(0,0,0,0);pointer-events:none;"></div>
+      <div id="pe-hl-dark-right"  style="position:absolute;top:0;bottom:0;right:0;background:rgba(0,0,0,0);pointer-events:none;"></div>
+      <div id="pe-hl-frame" style="position:absolute;border:2px solid rgba(200,160,248,0.9);box-sizing:border-box;display:none;"></div>
+    </div>
     <div id="pe-header">
       <button id="photo-editor-close">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -1809,6 +1817,7 @@
       <button class="pe-tab active" id="pe-tab-adjust">明るさ・補正</button>
       <button class="pe-tab" id="pe-tab-rotate">回転</button>
       <button class="pe-tab" id="pe-tab-crop">クロップ</button>
+      <button class="pe-tab" id="pe-tab-highlight">強調</button>
     </div>
 
     <div class="pe-panel active" id="pe-panel-adjust">
@@ -1861,6 +1870,14 @@
       <div class="pe-btn-row" style="margin-top:0;">
         <button class="editor-btn" id="pe-crop-skip">クロップなし</button>
         <button class="editor-btn editor-btn-primary" id="pe-crop-apply">クロップを適用</button>
+      </div>
+    </div>
+
+    <div class="pe-panel" id="pe-panel-highlight">
+      <div style="color:rgba(255,255,255,0.6);font-size:13px;text-align:center;margin-bottom:8px;">注目させたい部分をドラッグして囲む</div>
+      <div class="pe-btn-row" style="margin-top:0;">
+        <button class="editor-btn" id="pe-highlight-clear">囲みを解除</button>
+        <button class="editor-btn editor-btn-primary" id="pe-highlight-apply">この強調を保存</button>
       </div>
     </div>
 
@@ -3766,6 +3783,8 @@ async function openDetail(id) {
         fontName: f.name || '',
         onEdit: () => {
           const origUrl = p.originalUrl || '';
+          const photoIdx2 = (f.photos||[]).findIndex(ph => ph.url === p.url);
+          const photoInfo2 = { fontId: id, usageId: null, photoIdx: photoIdx2, highlightRect: p.highlightRect || null };
           let editedBlobUrl = ''; // onApplyとonCloseで共有
           openPhotoEditor(p.url, async (blob, revertUrl) => {
             try {
@@ -4075,6 +4094,8 @@ function openUsageDetail(fontId, usageId, usages) {
         fontName: f ? f.name : '',
         onEdit: () => {
           const origUrl = p.originalUrl || '';
+          const photoIdx = (u.photos||[]).findIndex(ph => ph.url === p.url);
+          const photoInfo = { fontId, usageId, photoIdx, highlightRect: p.highlightRect || null };
           let editedBlobUrl = ''; // onApplyとonCloseで共有
           openPhotoEditor(p.url, async (blob, revertUrl) => {
             try {
@@ -4818,6 +4839,26 @@ function _lightboxShow() {
   if (lightboxOnEdit) editBtn.classList.add('visible');
   else editBtn.classList.remove('visible');
   $('lightbox-compare-btn').classList.toggle('active', compareList.some(c => c.url === item.url));
+
+  // highlightRect があればグレーオーバーレイを描画
+  const existingHlCanvas = document.getElementById('lightbox-hl-canvas');
+  if (existingHlCanvas) existingHlCanvas.remove();
+  if (item.highlightRect) {
+    img.onload = () => {
+      const r = item.highlightRect;
+      const iw = img.offsetWidth, ih = img.offsetHeight;
+      const canvas = document.createElement('canvas');
+      canvas.id = 'lightbox-hl-canvas';
+      canvas.width = iw; canvas.height = ih;
+      canvas.style.cssText = `position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;border-radius:12px;`;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.fillRect(0, 0, iw, ih);
+      ctx.clearRect(r.x * iw, r.y * ih, r.w * iw, r.h * ih);
+      img.parentElement.appendChild(canvas);
+    };
+    if (img.complete) img.onload();
+  }
   // 補足ボタン：このフォントのphotosに対してのみ表示（用例画面では非表示）
   const supplBtn = $('lightbox-supplement-btn');
   if (lightboxOnEdit || (item.fontId && item.photoIndex !== undefined)) {
@@ -5922,6 +5963,7 @@ function compressImage(file, maxSize, quality) {
 // ── Photo Editor ──────────────────────────
 // CSSフィルター方式：crossOrigin不要でFirebase Storage URLに対応
 let peOriginalSrc = '';
+let peCurrentPhotoInfo = null; // { fontId, usageId, photoIdx, highlightRect }
 let peCanvas = $('photo-editor-canvas');
 let peCtx = peCanvas.getContext('2d');
 let peOnApply = null;
@@ -5936,7 +5978,7 @@ let peTemp = 0;
 let peCropStart = null;
 let peCropRect = null;
 
-function openPhotoEditor(src, onApply, onClose, originalUrl) {
+function openPhotoEditor(src, onApply, onClose, originalUrl, photoInfo) {
   // iOSのfixed要素ずれを防ぐ：キーボードを閉じてスクロールをリセット
   if (document.activeElement) document.activeElement.blur();
   document.documentElement.scrollTop = 0;
@@ -5948,6 +5990,9 @@ function openPhotoEditor(src, onApply, onClose, originalUrl) {
   peOriginalSrc = src;
   peOnApply = onApply;
   peOnClose = onClose || null;
+  peCurrentPhotoInfo = photoInfo || null;
+  // 既存のhighlightRectを復元
+  peHighlightRect = photoInfo?.highlightRect || null;
 
   $('pe-brightness').value = 0; $('pe-brightness-val').textContent = '0';
   $('pe-contrast').value = 0;   $('pe-contrast-val').textContent = '0';
@@ -6032,22 +6077,155 @@ function peUpdatePreview() {
 }
 
 function peSetTab(tab) {
-  ['adjust','rotate','crop'].forEach(t => {
+  ['adjust','rotate','crop','highlight'].forEach(t => {
     $('pe-tab-'+t).classList.toggle('active', t === tab);
     $('pe-panel-'+t).classList.toggle('active', t === tab);
   });
   const isCrop = tab === 'crop';
+  const isHighlight = tab === 'highlight';
   $('pe-crop-ui').style.display = isCrop ? 'block' : 'none';
-  // クロップ時はタブ行を非表示、その分画像エリアが広がる
+  $('pe-highlight-ui').style.display = isHighlight ? 'block' : 'none';
+  // クロップ・強調時はタブ行を非表示
   const tabRow = document.querySelector('.pe-tab-row');
-  if (tabRow) tabRow.style.display = isCrop ? 'none' : 'flex';
+  if (tabRow) tabRow.style.display = (isCrop || isHighlight) ? 'none' : 'flex';
   const adjustBtnRow = $('pe-adjust-btn-row');
-  if (adjustBtnRow) adjustBtnRow.style.display = isCrop ? 'none' : 'flex';
+  if (adjustBtnRow) adjustBtnRow.style.display = (isCrop || isHighlight) ? 'none' : 'flex';
   if (isCrop) peSetupCrop();
+  if (isHighlight) peSetupHighlight();
 }
 
-['adjust','rotate','crop'].forEach(t => {
+['adjust','rotate','crop','highlight'].forEach(t => {
   $('pe-tab-'+t).addEventListener('click', () => peSetTab(t));
+});
+
+// ══ 強調機能 ══════════════════════════════
+let peHighlightRect = null; // {x,y,w,h} 画像座標比率(0-1)
+let peHlDragging = false;
+let peHlStartX = 0, peHlStartY = 0;
+
+function peSetupHighlight() {
+  const ui = $('pe-highlight-ui');
+  const frame = $('pe-hl-frame');
+  const img = $('photo-editor-img');
+  const area = $('pe-preview-area');
+
+  // 既存のhighlightRectがあれば表示
+  if (peHighlightRect) {
+    peHlShowRect(peHighlightRect, img, area);
+  }
+
+  function getRelPos(e, el) {
+    const rect = el.getBoundingClientRect();
+    const t = e.touches ? e.touches[0] : e;
+    return { x: t.clientX - rect.left, y: t.clientY - rect.top };
+  }
+
+  function onStart(e) {
+    e.preventDefault();
+    peHlDragging = true;
+    const p = getRelPos(e, ui);
+    peHlStartX = p.x; peHlStartY = p.y;
+    frame.style.display = 'block';
+    frame.style.left = p.x + 'px'; frame.style.top = p.y + 'px';
+    frame.style.width = '0'; frame.style.height = '0';
+    // グレーマスクをいったんリセット
+    ['pe-hl-dark-top','pe-hl-dark-bottom','pe-hl-dark-left','pe-hl-dark-right'].forEach(id => {
+      $(id).style.background = 'rgba(0,0,0,0)';
+    });
+  }
+  function onMove(e) {
+    if (!peHlDragging) return;
+    e.preventDefault();
+    const p = getRelPos(e, ui);
+    const x = Math.min(peHlStartX, p.x);
+    const y = Math.min(peHlStartY, p.y);
+    const w = Math.abs(p.x - peHlStartX);
+    const h = Math.abs(p.y - peHlStartY);
+    frame.style.left = x + 'px'; frame.style.top = y + 'px';
+    frame.style.width = w + 'px'; frame.style.height = h + 'px';
+    // グレーマスクをリアルタイム更新
+    peHlUpdateMask(x, y, w, h, ui.offsetWidth, ui.offsetHeight);
+  }
+  function onEnd(e) {
+    if (!peHlDragging) return;
+    peHlDragging = false;
+    // 画像に対する比率を計算
+    const imgRect = img.getBoundingClientRect();
+    const uiRect = ui.getBoundingClientRect();
+    const fl = parseFloat(frame.style.left), ft = parseFloat(frame.style.top);
+    const fw = parseFloat(frame.style.width), fh = parseFloat(frame.style.height);
+    if (fw < 10 || fh < 10) return; // 小さすぎる矩形は無視
+    // ui座標 → 画像内座標（比率）
+    const imgOffX = imgRect.left - uiRect.left;
+    const imgOffY = imgRect.top - uiRect.top;
+    peHighlightRect = {
+      x: Math.max(0, (fl - imgOffX) / imgRect.width),
+      y: Math.max(0, (ft - imgOffY) / imgRect.height),
+      w: Math.min(1, fw / imgRect.width),
+      h: Math.min(1, fh / imgRect.height),
+    };
+  }
+
+  ui.addEventListener('mousedown', onStart);
+  ui.addEventListener('mousemove', onMove);
+  ui.addEventListener('mouseup', onEnd);
+  ui.addEventListener('touchstart', onStart, { passive: false });
+  ui.addEventListener('touchmove', onMove, { passive: false });
+  ui.addEventListener('touchend', onEnd);
+}
+
+function peHlShowRect(rect, img, container) {
+  const frame = $('pe-hl-frame');
+  const imgRect = img.getBoundingClientRect();
+  const cRect = container.getBoundingClientRect();
+  const offX = imgRect.left - cRect.left;
+  const offY = imgRect.top - cRect.top;
+  const x = offX + rect.x * imgRect.width;
+  const y = offY + rect.y * imgRect.height;
+  const w = rect.w * imgRect.width;
+  const h = rect.h * imgRect.height;
+  frame.style.display = 'block';
+  frame.style.left = x + 'px'; frame.style.top = y + 'px';
+  frame.style.width = w + 'px'; frame.style.height = h + 'px';
+  peHlUpdateMask(x, y, w, h, container.offsetWidth, container.offsetHeight);
+}
+
+function peHlUpdateMask(x, y, w, h, cw, ch) {
+  const bg = 'rgba(0,0,0,0.5)';
+  $('pe-hl-dark-top').style.cssText    = `position:absolute;left:0;right:0;top:0;height:${y}px;background:${bg};pointer-events:none;`;
+  $('pe-hl-dark-bottom').style.cssText = `position:absolute;left:0;right:0;top:${y+h}px;bottom:0;background:${bg};pointer-events:none;`;
+  $('pe-hl-dark-left').style.cssText   = `position:absolute;left:0;top:${y}px;width:${x}px;height:${h}px;background:${bg};pointer-events:none;`;
+  $('pe-hl-dark-right').style.cssText  = `position:absolute;left:${x+w}px;top:${y}px;right:0;height:${h}px;background:${bg};pointer-events:none;`;
+}
+
+$('pe-highlight-clear').addEventListener('click', () => {
+  peHighlightRect = null;
+  $('pe-hl-frame').style.display = 'none';
+  ['pe-hl-dark-top','pe-hl-dark-bottom','pe-hl-dark-left','pe-hl-dark-right'].forEach(id => {
+    $(id).style.background = 'rgba(0,0,0,0)';
+  });
+});
+
+$('pe-highlight-apply').addEventListener('click', async () => {
+  // peCurrentPhotoInfo は用例写真エディタで設定
+  if (!peCurrentPhotoInfo) { peSetTab('adjust'); return; }
+  const { fontId, usageId, photoIdx } = peCurrentPhotoInfo;
+  const uid = auth.currentUser?.uid;
+  if (!uid) return;
+  const u = (fonts.find(x=>x.id===fontId)?.usages||[]).find(x=>x.id===usageId)
+         || await (async () => { const s = await getDocs(collection(db,'fonts',fontId,'usages')); return s.docs.find(d=>d.id===usageId)?.data(); })();
+  // Firestoreから最新取得
+  // ローカルのfontsデータから更新
+  const fontObj = fonts.find(x=>x.id===fontId);
+  if (fontObj) {
+    const usageObj = fontObj.usages?.find(x=>x.id===usageId);
+    if (usageObj && usageObj.photos && usageObj.photos[photoIdx] !== undefined) {
+      usageObj.photos[photoIdx].highlightRect = peHighlightRect || null;
+      await updateDoc(doc(db,'fonts',fontId,'usages',usageId), { photos: usageObj.photos });
+      showToast('強調エリアを保存しました');
+    }
+  }
+  peSetTab('adjust');
 });
 
 // クロップなし → 調整画面へ
@@ -6933,12 +7111,12 @@ function renderOboeakiList() {
     // ── 下段：フォントチップ＋＋ボタン（右揃え） ──
     const bottomRow = document.createElement('div');
     bottomRow.className = 'ob-bottom-row';
-    bottomRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end;margin-top:8px;padding:0 2px;';
+    bottomRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end;margin-top:10px;padding:0 2px;';
 
     // ── 罫線 ──
     const dividerEl = document.createElement('div');
     dividerEl.className = 'ob-card-divider';
-    dividerEl.style.cssText = 'height:1px;background:var(--c-border);margin-top:14px;';
+    dividerEl.style.cssText = 'height:1px;background:var(--c-border);margin-top:20px;';
 
     // 削除ボタン（枠外・上右、編集中のみ表示）
     const deleteBtn = document.createElement('button');
@@ -6999,8 +7177,8 @@ function renderOboeakiList() {
         const chip = document.createElement('button');
         chip.className = 'ob-font-chip';
         chip.dataset.id = f2.id;
-        chip.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:13px;padding:7px 8px 7px 16px;border-radius:50px;background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border:none;color:#5a4a8a;font-weight:600;cursor:pointer;font-family:inherit;touch-action:manipulation;';
-        chip.innerHTML = `${f2.name} <span style="font-size:11px;color:rgba(90,74,138,0.6);pointer-events:none;padding-right:8px;">✕</span>`;
+        chip.style.cssText = 'display:inline-flex;align-items:center;border:none;border-radius:50px;background:transparent;padding:0;cursor:pointer;font-family:inherit;touch-action:manipulation;';
+        chip.innerHTML = `<span style="display:inline-flex;align-items:center;background:#fff;border:1.5px solid #c8c0e0;border-radius:50px;padding:3px 10px 3px 14px;font-size:13px;font-weight:600;color:#5a4a8a;gap:8px;">${f2.name} <span style="font-size:11px;color:rgba(90,74,138,0.6);pointer-events:none;padding-right:4px;">✕</span></span>`;
         chip.addEventListener('mousedown', ev => ev.preventDefault());
         chip.addEventListener('click', ev => {
           ev.stopPropagation();
@@ -7032,7 +7210,7 @@ function renderOboeakiList() {
     function renderMemoDisplay() {
       memoTa.value = e.memo || '';
       memoDisplay.innerHTML = (e.memo||'').split('\n').filter(l=>l.trim())
-        .map(l=>`<div style="display:flex;align-items:baseline;gap:8px;padding:2px 0;"><span style="color:#9b7fe8;font-size:11px;flex-shrink:0;position:relative;top:-1px;">◆</span><span style="font-size:18px;line-height:1.5;color:var(--c-text);">${l}</span></div>`).join('')
+        .map(l=>`<div style="display:flex;align-items:baseline;gap:8px;padding:2px 0;"><span style="color:#9b7fe8;font-size:11px;flex-shrink:0;position:relative;top:-1px;">◆</span><span style="font-size:17px;line-height:1.4;color:var(--c-text);">${l}</span></div>`).join('')
         || '<span style="color:var(--c-text-sub);font-size:14px;">タップして編集…</span>';
     }
     renderMemoDisplay();
@@ -7279,12 +7457,12 @@ function buildQuizPool() {
     if (wantCheck && !wantBasic && (!font.checks || !font.checks.length)) continue;
 
     font.photos.forEach(photo => {
-      if (photo && photo.url && !photo.supplement) pool.push({ fontId: font.id, fontName: font.name, photoUrl: photo.url });
+      if (photo && photo.url && !photo.supplement) pool.push({ fontId: font.id, fontName: font.name, photoUrl: photo.url, highlightRect: photo.highlightRect || null });
     });
     if (font.usages) {
       font.usages.forEach(usage => {
         if (usage.photos) usage.photos.forEach(photo => {
-          if (photo && photo.url && !photo.supplement) pool.push({ fontId: font.id, fontName: font.name, photoUrl: photo.url });
+          if (photo && photo.url && !photo.supplement) pool.push({ fontId: font.id, fontName: font.name, photoUrl: photo.url, highlightRect: photo.highlightRect || null });
         });
       });
     }
@@ -7326,7 +7504,7 @@ function buildUsagePool() {
       if (usage.photos) {
         usage.photos.forEach(photo => {
           if (photo && photo.url && !photo.supplement) {
-            pool.push({ fontId: font.id, fontName: font.name, photoUrl: photo.url });
+            pool.push({ fontId: font.id, fontName: font.name, photoUrl: photo.url, highlightRect: photo.highlightRect || null });
           }
         });
       }
@@ -7415,7 +7593,31 @@ function renderQuizQuestion() {
   const ph  = $('quiz-photo-placeholder');
   img.style.display = 'none'; ph.style.display = 'flex';
   quizResetZoom();
-  img.onload = () => { img.style.display = 'block'; ph.style.display = 'none'; };
+
+  // 既存のhighlightオーバーレイを削除
+  const prevHl = document.getElementById('quiz-hl-canvas');
+  if (prevHl) prevHl.remove();
+
+  img.onload = () => {
+    img.style.display = 'block'; ph.style.display = 'none';
+    // highlightRectがあればグレーオーバーレイをcanvasで描画
+    if (q.highlightRect) {
+      const r = q.highlightRect;
+      const area = $('quiz-photo-area');
+      setTimeout(() => {
+        const iw = img.offsetWidth, ih = img.offsetHeight;
+        const canvas = document.createElement('canvas');
+        canvas.id = 'quiz-hl-canvas';
+        canvas.width = iw; canvas.height = ih;
+        canvas.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;border-radius:10px;';
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.fillRect(0, 0, iw, ih);
+        ctx.clearRect(r.x * iw, r.y * ih, r.w * iw, r.h * ih);
+        area.appendChild(canvas);
+      }, 50);
+    }
+  };
   img.src = q.photoUrl;
 
   const choices = buildChoices(q.fontName);
