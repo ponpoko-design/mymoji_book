@@ -6,7 +6,7 @@
 <meta name="format-detection" content="telephone=no">
 <title>MyMoji Book</title>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
-<script src="https://webfont.fontplus.jp/accessor/script/fontplus.js?KXzscaaeJDE%3D&box=h5a2eVCZExw%3D&pm=1&aa=1&ab=1&v=4"></script>
+<script src="https://webfont.fontplus.jp/accessor/script/fontplus.js?KXzscaaeJDE%3D&box=h5a2eVCZExw%3D&pm=1&aa=1&ab=1&v=5"></script>
 <style>
   :root {
     --c-lavender: #d3c3fc;
@@ -1149,7 +1149,7 @@
     <div class="app-header">
       <button class="back-btn" id="add-font-back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
       <h1>フォントを登録</h1>
-      <div></div>
+      <button class="header-btn sub-menu-btn" title="メニュー"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
     </div>
     <div class="form-page">
       <!-- 言語選択 -->
@@ -1211,7 +1211,7 @@
     <div class="app-header">
       <button class="back-btn" id="add-usage-back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
       <h1>用例を登録</h1>
-      <div></div>
+      <button class="header-btn sub-menu-btn" title="メニュー"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
     </div>
     <div class="form-page" id="add-usage-body">
       <!-- Step 1: search font -->
@@ -1449,7 +1449,7 @@
     <div class="app-header">
       <div></div>
       <h1 style="position:absolute;left:50%;transform:translateX(-50%);font-size:17px;font-weight:800;white-space:nowrap;">フォント覚えがき</h1>
-      <div></div>
+      <button class="header-btn sub-menu-btn" title="メニュー"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
     </div>
 
     <!-- 検索＋並び替え（ホームと同じピル型） -->
@@ -1515,7 +1515,7 @@
     <div class="app-header">
       <button class="back-btn" id="quiz-header-back" style="display:none;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
       <h1 id="quiz-header-title" style="position:absolute;left:50%;transform:translateX(-50%);font-size:17px;font-weight:800;white-space:nowrap;">文字クイズ</h1>
-      <div></div>
+      <button class="header-btn sub-menu-btn" title="メニュー"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
     </div>
 
     <!-- クイズコンテンツ（ヘッダー分オフセット） -->
@@ -2905,6 +2905,7 @@ window.goHomeWithFilter = function(lang, cat) {
 }
 
 $('menu-btn').addEventListener('click', openMenu);
+document.querySelectorAll('.sub-menu-btn').forEach(btn => btn.addEventListener('click', openMenu));
 $('menu-close').addEventListener('click', closeMenu);
 $('menu-overlay').addEventListener('click', closeMenu);
 $('menu-fontcount-btn').addEventListener('click', () => { closeMenu(); openFontCountPanel(); });
@@ -7875,6 +7876,8 @@ const MIHON_FONTS = [
   { group: '和文', reading: 'くっくはんど',                      label: 'クックハンド Std R',         value: "'FOT-クックハンド Std R'" },
   { group: '和文', reading: 'こぶりなごしっく',                  label: 'こぶりなゴシック StdN W3',  value: "'FP-こぶりなゴシック StdN W3'" },
   { group: '和文', reading: 'たづかねごしっく',                  label: 'タヅガネゴシック StdN Book', value: "'TazuganeGothicStdN-Book'" },
+  { group: '和文', reading: 'つくしあんてぃーくえるごしっく',          label: '筑紫アンティークLゴ Std B',  value: "'FOT-筑紫アンティークLゴ Std B'" },
+  { group: '和文', reading: 'つくしあんてぃーくえすごしっく',          label: '筑紫アンティークSゴ Std B',  value: "'FOT-筑紫アンティークSゴ Std B'" },
   { group: '和文', reading: 'つくしあんてぃーくまるごしっくおーぶい', label: '筑紫AN丸ゴOV StdN U',  value: "'筑紫AN丸ゴOV StdN U'" },
   { group: '和文', reading: 'つくしえーおーるどみんちょう',      label: '筑紫Aオールド明朝 Pr6 L',   value: "'FOT-筑紫Aオールド明朝 Pr6 L'" },
   { group: '和文', reading: 'つくしえーまるごしっく',            label: '筑紫A丸ゴシック Std M',      value: "'FOT-筑紫A丸ゴシック Std M'" },
@@ -8033,7 +8036,7 @@ function initMihonScreen() {
     "'FP-こぶりなゴシック StdN W3'","'FOT-つばめ Std R'","'FOT-筑紫Q明朝L Std L'",
     "'FOT-クックハンド Std R'","'TazuganeGothicStdN-Book'","'FOT-カッコウ Std B'",
     "'FOT-筑紫オールドゴシック Std R'","'FOT-筑紫オールドゴシック Std M'",
-    "'FOT-筑紫A丸ゴシック Std M'","'FOT-筑紫B丸ゴシック Std M'","'筑紫AN丸ゴOV StdN U'",
+    "'FOT-筑紫アンティークLゴ Std B'","'FOT-筑紫アンティークSゴ Std B'","'FOT-筑紫A丸ゴシック Std M'","'FOT-筑紫B丸ゴシック Std M'","'筑紫AN丸ゴOV StdN U'",
     "'FOT-UD角ゴ_ラージ Pr6N DB'","'FOT-テロップ明朝 ProN D'","'FP-ヒラギノ丸ゴ StdN W5'","'FP-ヒラギノUD角ゴ StdN W5'","'FP-ヒラギノUD丸ゴ StdN W5'","'FP-ヒラギノ角ゴ ProN W4'",
     "'AvenirLTPro-Book'","'CochinLTPro'","'GillSansMTPro-Book'","'NeueFrutigerWorld-Book'",
     "'AGaramondPro-Regular'","'LinoscriptStd'","'MinionPro-Regular'","'MistralStd'",
