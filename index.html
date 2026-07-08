@@ -250,10 +250,11 @@
   .nav-btn {
     flex: 1; background: none; border: none; cursor: pointer;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 4px; color: #b0a8c8; font-size: 12px; font-weight: 500;
-    transition: color 0.2s;
+    gap: 3px; color: #b0a8c8; font-size: 11px; font-weight: 500;
+    transition: color 0.2s; padding: 0 2px; min-width: 0;
   }
-  .nav-btn .icon { font-size: 26px; display: flex; align-items: center; justify-content: center; }
+  .nav-btn .icon { font-size: 24px; display: flex; align-items: center; justify-content: center; }
+  .nav-btn .icon svg { width: 24px; height: 24px; }
   .nav-btn.active {
     font-weight: 700;
     background: linear-gradient(135deg, #b8a0f0, #7ab8f5);
@@ -1468,15 +1469,20 @@
 
   <!-- 覚えがき新規/編集オーバーレイ -->
   <div id="oboeaki-overlay" style="display:none;position:fixed;inset:0;background:rgba(44,38,64,0.55);align-items:center;justify-content:center;z-index:300;">
-    <div style="background:#fff;border-radius:20px;padding:24px 20px 24px;width:calc(100% - 48px);max-width:500px;">
-      <div style="font-size:15px;font-weight:700;color:var(--c-text);margin-bottom:14px;" id="oboeaki-overlay-title">新規メモ</div>
+    <div style="background:#fff;border-radius:20px;padding:24px 20px 24px;width:calc(100% - 48px);max-width:500px;position:relative;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div style="font-size:15px;font-weight:700;color:var(--c-text);" id="oboeaki-overlay-title">新規メモ</div>
+        <button id="oboeaki-overlay-close" style="width:32px;height:32px;border-radius:50%;border:1.5px solid var(--c-border);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;flex-shrink:0;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--c-text-sub)" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
       <!-- 言語選択 -->
       <div style="display:flex;gap:8px;margin-bottom:14px;">
         <button class="oboeaki-lang-btn" id="ob-lng-ja" style="flex:1;padding:8px;border-radius:12px;border:1.5px solid var(--c-border);background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border-color:transparent;color:#5a4a8a;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;touch-action:manipulation;">日本語</button>
         <button class="oboeaki-lang-btn" id="ob-lng-en" style="flex:1;padding:8px;border-radius:12px;border:1.5px solid var(--c-border);background:#fff;color:var(--c-text-sub);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;touch-action:manipulation;">欧文</button>
       </div>
-      <!-- メモテキストエリア -->
-      <textarea id="oboeaki-memo-ta" placeholder="このフォントについてメモ…" style="width:100%;min-height:100px;border:1.5px solid var(--c-border);border-radius:14px;font-size:16px;padding:12px 14px;font-family:inherit;color:var(--c-text);background:rgba(255,255,255,0.95);resize:vertical;outline:none;line-height:1.7;margin-bottom:14px;"></textarea>
+      <!-- メモテキストエリア（フォント大きく） -->
+      <textarea id="oboeaki-memo-ta" placeholder="このフォントについてメモ…" style="width:100%;min-height:110px;border:1.5px solid var(--c-border);border-radius:14px;font-size:18px;padding:12px 14px;font-family:inherit;color:var(--c-text);background:rgba(255,255,255,0.95);resize:vertical;outline:none;line-height:1.7;margin-bottom:14px;"></textarea>
       <!-- 関連フォント -->
       <div style="margin-bottom:14px;">
         <div style="font-size:13px;color:var(--c-text-sub);margin-bottom:6px;font-weight:600;">関連フォント</div>
@@ -6691,8 +6697,11 @@ function initOboeaki() {
     renderOboeakiFontResults(e.target.value.trim());
   });
 
-  // 保存ボタン
+  // 保存ボタン（新規専用）
   $('oboeaki-save-btn').addEventListener('click', () => saveOboeakiEntry());
+
+  // ✕ 閉じるボタン
+  $('oboeaki-overlay-close').addEventListener('click', () => closeOboeakiOverlay());
 }
 
 function setOboeakiLang(lang) {
@@ -6750,23 +6759,14 @@ function renderOboeakiFontChips() {
 }
 
 function openOboeakiOverlay(entryId) {
-  oboeakiEditId = entryId;
+  // 新規専用（既存メモはインライン編集）
+  oboeakiEditId = null;
   oboeakiSelectedFontIds = [];
   $('oboeaki-font-search-wrap').style.display = 'none';
   $('oboeaki-font-search-input').value = '';
-
-  if (entryId) {
-    const e = oboeakiEntries.find(x => x.id === entryId);
-    if (!e) return;
-    $('oboeaki-overlay-title').textContent = 'メモを編集';
-    $('oboeaki-memo-ta').value = e.memo || '';
-    setOboeakiLang(e.lang || 'ja');
-    oboeakiSelectedFontIds = [...(e.fontIds || [])];
-  } else {
-    $('oboeaki-overlay-title').textContent = '新規メモ';
-    $('oboeaki-memo-ta').value = '';
-    setOboeakiLang('ja');
-  }
+  $('oboeaki-overlay-title').textContent = '新規メモ';
+  $('oboeaki-memo-ta').value = '';
+  setOboeakiLang('ja');
   renderOboeakiFontChips();
   const ov = $('oboeaki-overlay');
   ov.style.display = 'flex';
@@ -6830,9 +6830,8 @@ function renderOboeakiList() {
 
   const makeCard = (e) => {
     const card = document.createElement('div');
-    card.style.cssText = 'background:rgba(255,255,255,0.85);border:1px solid var(--c-border);border-radius:16px;padding:14px 16px;margin-bottom:14px;cursor:pointer;';
+    card.style.cssText = 'background:rgba(255,255,255,0.85);border:1px solid var(--c-border);border-radius:16px;padding:14px 16px;margin-bottom:14px;position:relative;';
     const date = e.createdAt?.toDate?.() ? (() => { const d = e.createdAt.toDate(); return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`; })() : '';
-    const memoHtml = (e.memo||'').split('\n').filter(l=>l.trim()).map(l=>`<div style="display:flex;align-items:baseline;gap:8px;padding:2px 0;"><span style="color:#9b7fe8;font-size:11px;flex-shrink:0;position:relative;top:-1px;">◆</span><span style="font-size:15px;line-height:1.5;color:var(--c-text);">${l}</span></div>`).join('');
     const fontChips = (e.fontIds||[]).map(fid => {
       const f = fonts.find(x => x.id === fid);
       return f ? `<button class="ob-font-chip" data-id="${f.id}" style="font-size:12px;padding:4px 12px;border-radius:20px;background:rgba(255,255,255,0.9);border:1px solid var(--c-border);color:var(--c-text-sub);cursor:pointer;font-family:inherit;touch-action:manipulation;">${f.name}</button>` : '';
@@ -6842,14 +6841,68 @@ function renderOboeakiList() {
         <span style="font-size:12px;padding:3px 10px;border-radius:20px;border:1.5px solid var(--c-text-sub);background:#fff;color:var(--c-text-sub);font-weight:700;">${e.lang==='en'?'欧文':'日本語'}</span>
         <span style="font-size:12px;color:#b0a8c8;margin-left:auto;">${date}</span>
       </div>
-      <div style="margin-bottom:10px;">${memoHtml}</div>
+      <div class="ob-memo-display" style="margin-bottom:10px;cursor:pointer;"></div>
+      <textarea class="ob-memo-ta" style="display:none;width:100%;min-height:80px;border:1.5px solid var(--c-border);border-radius:12px;font-size:16px;padding:10px 12px;font-family:inherit;color:var(--c-text);background:rgba(255,255,255,0.95);resize:vertical;outline:none;line-height:1.7;margin-bottom:10px;"></textarea>
+      <button class="ob-delete-btn" style="display:none;position:absolute;top:12px;right:12px;font-size:12px;padding:4px 12px;border-radius:20px;background:rgba(255,80,80,0.1);border:1px solid rgba(220,80,80,0.3);color:#cc4444;cursor:pointer;font-family:inherit;touch-action:manipulation;font-weight:600;">削除</button>
       ${fontChips || e.fontIds?.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">${fontChips}</div>` : ''}
     `;
-    // タップで編集
-    card.addEventListener('click', e2 => {
-      if (e2.target.closest('.ob-font-chip')) return;
-      openOboeakiOverlay(e.id);
+
+    // メモ表示エリアをレンダリング
+    const memoDisplay = card.querySelector('.ob-memo-display');
+    const memoTa = card.querySelector('.ob-memo-ta');
+    const deleteBtn = card.querySelector('.ob-delete-btn');
+    let oboeakiSaveTimer = null;
+
+    function renderMemoDisplay() {
+      memoTa.value = e.memo || '';
+      memoDisplay.innerHTML = (e.memo||'').split('\n').filter(l=>l.trim())
+        .map(l=>`<div style="display:flex;align-items:baseline;gap:8px;padding:2px 0;"><span style="color:#9b7fe8;font-size:11px;flex-shrink:0;position:relative;top:-1px;">◆</span><span style="font-size:15px;line-height:1.5;color:var(--c-text);">${l}</span></div>`).join('')
+        || '<span style="color:var(--c-text-sub);font-size:14px;">タップして編集…</span>';
+    }
+    renderMemoDisplay();
+
+    // メモ表示エリアをタップ → インライン編集モード
+    memoDisplay.addEventListener('click', () => {
+      memoDisplay.style.display = 'none';
+      memoTa.style.display = 'block';
+      deleteBtn.style.display = 'block';
+      memoTa.focus();
     });
+
+    // テキストエリアの自動保存（入力停止後に保存）
+    memoTa.addEventListener('input', () => {
+      clearTimeout(oboeakiSaveTimer);
+      oboeakiSaveTimer = setTimeout(async () => {
+        const uid = auth.currentUser?.uid;
+        if (!uid) return;
+        const newMemo = memoTa.value;
+        e.memo = newMemo;
+        await updateDoc(doc(db,'users',uid,'oboeaki',e.id), { memo: newMemo });
+      }, 800);
+    });
+
+    // 枠外タップで編集終了
+    memoTa.addEventListener('blur', () => {
+      memoTa.style.display = 'none';
+      deleteBtn.style.display = 'none';
+      memoDisplay.style.display = 'block';
+      renderMemoDisplay();
+    });
+
+    // 削除ボタン
+    deleteBtn.addEventListener('click', async (ev) => {
+      ev.stopPropagation();
+      const uid = auth.currentUser?.uid;
+      if (!uid) return;
+      if (!confirm('このメモを削除しますか？')) return;
+      try {
+        await deleteDoc(doc(db,'users',uid,'oboeaki',e.id));
+        oboeakiEntries = oboeakiEntries.filter(x => x.id !== e.id);
+        renderOboeakiList();
+        showToast('削除しました');
+      } catch(err) { showToast('削除に失敗しました'); }
+    });
+
     // フォントチップでopenDetail
     card.querySelectorAll('.ob-font-chip').forEach(btn => {
       btn.addEventListener('click', ev => { ev.stopPropagation(); openDetail(btn.dataset.id); });
