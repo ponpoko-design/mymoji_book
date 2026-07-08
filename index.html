@@ -6761,6 +6761,62 @@ function renderOboeakiFontChips() {
   wrap.appendChild(addBtn);
 }
 
+// カード内フォント追加：スライドインパネル
+let _cardFontSearchEntry = null;
+let _cardFontSearchCb = null;
+function openCardFontSearch(entry, callback) {
+  _cardFontSearchEntry = entry;
+  _cardFontSearchCb = callback;
+  // 既存パネルがあれば再利用
+  let panel = document.getElementById('card-font-search-panel');
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.id = 'card-font-search-panel';
+    panel.style.cssText = 'position:fixed;inset:0;background:rgba(44,38,64,0.45);display:flex;align-items:flex-end;justify-content:center;z-index:350;';
+    panel.innerHTML = `
+      <div style="background:#fff;border-radius:20px 20px 0 0;padding:20px 16px 36px;width:100%;max-width:var(--max-w);max-height:60vh;overflow-y:auto;">
+        <div style="font-size:15px;font-weight:700;color:var(--c-text);margin-bottom:12px;">フォントを追加</div>
+        <div class="search-box" style="margin-bottom:10px;border-radius:50px;padding:8px 16px;">
+          <span class="search-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
+          <input id="card-font-search-input" type="text" placeholder="フォント名で検索" autocomplete="off" style="border:none;background:none;outline:none;font-size:15px;color:var(--c-text);flex:1;font-family:inherit;">
+        </div>
+        <div id="card-font-search-results" style="overflow-y:auto;"></div>
+      </div>`;
+    panel.addEventListener('click', ev => { if (ev.target === panel) closeCardFontSearch(); });
+    document.body.appendChild(panel);
+    panel.querySelector('#card-font-search-input').addEventListener('input', ev => renderCardFontResults(ev.target.value));
+  }
+  panel.style.display = 'flex';
+  panel.querySelector('#card-font-search-input').value = '';
+  renderCardFontResults('');
+}
+function closeCardFontSearch() {
+  const p = document.getElementById('card-font-search-panel');
+  if (p) p.style.display = 'none';
+}
+function renderCardFontResults(q) {
+  const results = document.getElementById('card-font-search-results');
+  if (!results || !_cardFontSearchEntry) return;
+  let list = fonts.filter(f => !(_cardFontSearchEntry.fontIds||[]).includes(f.id));
+  if (q) list = list.filter(f => (f.name||'').toLowerCase().includes(q.toLowerCase()));
+  results.innerHTML = '';
+  list.slice(0,20).forEach(f => {
+    const btn = document.createElement('button');
+    btn.style.cssText = 'width:100%;text-align:left;padding:10px 12px;border:none;background:none;font-size:15px;color:var(--c-text);cursor:pointer;border-bottom:1px solid var(--c-border);font-family:inherit;touch-action:manipulation;';
+    btn.textContent = f.name;
+    btn.addEventListener('click', async () => {
+      const uid = auth.currentUser?.uid;
+      if (!uid) return;
+      _cardFontSearchEntry.fontIds = [...(_cardFontSearchEntry.fontIds||[]), f.id];
+      await updateDoc(doc(db,'users',uid,'oboeaki',_cardFontSearchEntry.id), { fontIds: _cardFontSearchEntry.fontIds });
+      closeCardFontSearch();
+      if (_cardFontSearchCb) _cardFontSearchCb();
+    });
+    results.appendChild(btn);
+  });
+  if (!list.length) results.innerHTML = '<div style="padding:10px 12px;font-size:14px;color:var(--c-text-sub);">見つかりませんでした</div>';
+}
+
 function openOboeakiOverlay(entryId) {
   // 新規専用（既存メモはインライン編集）
   oboeakiEditId = null;
@@ -6833,28 +6889,97 @@ function renderOboeakiList() {
 
   const makeCard = (e) => {
     const card = document.createElement('div');
-    card.style.cssText = 'background:rgba(255,255,255,0.85);border:1px solid var(--c-border);border-radius:16px;padding:14px 16px;margin-bottom:14px;position:relative;';
+    // カード本体は position:relative、削除ボタンは外側に絶対配置するためwrapperで包む
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'position:relative;margin-bottom:14px;';
+    card.style.cssText = 'background:rgba(255,255,255,0.85);border:1px solid var(--c-border);border-radius:16px;padding:14px 16px;';
     const date = e.createdAt?.toDate?.() ? (() => { const d = e.createdAt.toDate(); return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`; })() : '';
-    const fontChips = (e.fontIds||[]).map(fid => {
-      const f = fonts.find(x => x.id === fid);
-      return f ? `<button class="ob-font-chip" data-id="${f.id}" style="font-size:12px;padding:4px 12px;border-radius:20px;background:rgba(255,255,255,0.9);border:1px solid var(--c-border);color:var(--c-text-sub);cursor:pointer;font-family:inherit;touch-action:manipulation;">${f.name}</button>` : '';
-    }).join('');
+
     card.innerHTML = `
       <div class="ob-date-row" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-        <span style="font-size:12px;padding:3px 10px;border-radius:20px;border:1.5px solid var(--c-text-sub);background:#fff;color:var(--c-text-sub);font-weight:700;">${e.lang==='en'?'欧文':'日本語'}</span>
-        <span style="font-size:12px;color:#b0a8c8;margin-left:auto;">${date}</span>
+        <button class="ob-lang-ja" style="font-size:12px;padding:3px 10px;border-radius:20px;border:1.5px solid var(--c-text-sub);background:#fff;color:var(--c-text-sub);font-weight:700;cursor:pointer;font-family:inherit;touch-action:manipulation;">${e.lang==='en'?'日本語':'日本語'}</button>
+        <button class="ob-lang-en" style="font-size:12px;padding:3px 10px;border-radius:20px;border:1.5px solid var(--c-text-sub);background:#fff;color:var(--c-text-sub);font-weight:700;cursor:pointer;font-family:inherit;touch-action:manipulation;">欧文</button>
+        <span style="font-size:12px;color:#b0a8c8;margin-left:auto;" class="ob-date-label">${date}</span>
       </div>
       <div class="ob-memo-display" style="margin-bottom:10px;cursor:pointer;"></div>
       <textarea class="ob-memo-ta" style="display:none;width:100%;min-height:80px;border:1.5px solid var(--c-border);border-radius:12px;font-size:16px;padding:10px 12px;font-family:inherit;color:var(--c-text);background:rgba(255,255,255,0.95);resize:vertical;outline:none;line-height:1.7;margin-bottom:10px;"></textarea>
-      <button class="ob-delete-btn" style="display:none;position:absolute;top:12px;right:12px;font-size:12px;padding:4px 12px;border-radius:20px;background:rgba(255,80,80,0.1);border:1px solid rgba(220,80,80,0.3);color:#cc4444;cursor:pointer;font-family:inherit;touch-action:manipulation;font-weight:600;">削除</button>
-      ${fontChips || e.fontIds?.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">${fontChips}</div>` : ''}
+      <div class="ob-font-row" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:0;"></div>
     `;
 
-    // メモ表示エリアをレンダリング
+    // 削除ボタン：カードの外（wrapper右上）に配置
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'ob-delete-btn';
+    deleteBtn.textContent = '削除';
+    deleteBtn.style.cssText = 'display:none;position:absolute;top:-10px;right:8px;font-size:12px;padding:4px 12px;border-radius:20px;background:rgba(255,80,80,0.1);border:1px solid rgba(220,80,80,0.3);color:#cc4444;cursor:pointer;font-family:inherit;touch-action:manipulation;font-weight:600;z-index:2;';
+    wrapper.appendChild(card);
+    wrapper.appendChild(deleteBtn);
+
     const memoDisplay = card.querySelector('.ob-memo-display');
     const memoTa = card.querySelector('.ob-memo-ta');
-    const deleteBtn = card.querySelector('.ob-delete-btn');
+    const dateRow = card.querySelector('.ob-date-row');
+    const dateLabel = card.querySelector('.ob-date-label');
+    const fontRow = card.querySelector('.ob-font-row');
+    const langJaBtn = card.querySelector('.ob-lang-ja');
+    const langEnBtn = card.querySelector('.ob-lang-en');
     let oboeakiSaveTimer = null;
+    let cardEditMode = false;
+
+    // 言語ボタンの初期状態
+    function updateLangBtns() {
+      const isJa = e.lang !== 'en';
+      langJaBtn.style.background = isJa ? 'linear-gradient(135deg,var(--c-lavender),var(--c-sky))' : '#fff';
+      langJaBtn.style.borderColor = isJa ? 'transparent' : 'var(--c-text-sub)';
+      langJaBtn.style.color = isJa ? '#5a4a8a' : 'var(--c-text-sub)';
+      langEnBtn.style.background = !isJa ? 'linear-gradient(135deg,var(--c-lavender),var(--c-sky))' : '#fff';
+      langEnBtn.style.borderColor = !isJa ? 'transparent' : 'var(--c-text-sub)';
+      langEnBtn.style.color = !isJa ? '#5a4a8a' : 'var(--c-text-sub)';
+      // 通常表示時は言語ボタンをポインター無効（表示のみ）、編集時は有効
+      langJaBtn.style.pointerEvents = cardEditMode ? 'auto' : 'none';
+      langEnBtn.style.pointerEvents = cardEditMode ? 'auto' : 'none';
+    }
+    updateLangBtns();
+
+    // 言語切り替え
+    langJaBtn.addEventListener('mousedown', ev => ev.preventDefault()); // blurを防ぐ
+    langEnBtn.addEventListener('mousedown', ev => ev.preventDefault());
+    langJaBtn.addEventListener('click', async () => {
+      if (!cardEditMode) return;
+      e.lang = 'ja'; updateLangBtns();
+      const uid = auth.currentUser?.uid;
+      if (uid) await updateDoc(doc(db,'users',uid,'oboeaki',e.id), { lang: 'ja' });
+    });
+    langEnBtn.addEventListener('click', async () => {
+      if (!cardEditMode) return;
+      e.lang = 'en'; updateLangBtns();
+      const uid = auth.currentUser?.uid;
+      if (uid) await updateDoc(doc(db,'users',uid,'oboeaki',e.id), { lang: 'en' });
+    });
+
+    // フォントチップ行を描画（常に表示）
+    function renderFontRow() {
+      fontRow.innerHTML = '';
+      (e.fontIds||[]).forEach(fid => {
+        const f2 = fonts.find(x => x.id === fid);
+        if (!f2) return;
+        const chip = document.createElement('button');
+        chip.className = 'ob-font-chip';
+        chip.dataset.id = f2.id;
+        chip.style.cssText = 'font-size:12px;padding:4px 12px;border-radius:20px;background:rgba(255,255,255,0.9);border:1px solid var(--c-border);color:var(--c-text-sub);cursor:pointer;font-family:inherit;touch-action:manipulation;';
+        chip.textContent = f2.name;
+        chip.addEventListener('mousedown', ev => ev.preventDefault());
+        chip.addEventListener('click', ev => { ev.stopPropagation(); openDetail(f2.id); });
+        fontRow.appendChild(chip);
+      });
+      // ＋ボタン
+      const addBtn = document.createElement('button');
+      addBtn.className = 'ob-card-font-add-btn';
+      addBtn.style.cssText = 'width:24px;height:24px;border-radius:50%;border:1.5px solid var(--c-border);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;touch-action:manipulation;';
+      addBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-text-sub)" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+      addBtn.addEventListener('mousedown', ev => ev.preventDefault());
+      addBtn.addEventListener('click', () => openCardFontSearch(e, renderFontRow));
+      fontRow.appendChild(addBtn);
+    }
+    renderFontRow();
 
     function renderMemoDisplay() {
       memoTa.value = e.memo || '';
@@ -6864,55 +6989,55 @@ function renderOboeakiList() {
     }
     renderMemoDisplay();
 
-    // メモ表示エリアをタップ → インライン編集モード
+    // タップ → 編集モード
     memoDisplay.addEventListener('click', () => {
+      cardEditMode = true;
       memoDisplay.style.display = 'none';
       memoTa.style.display = 'block';
       deleteBtn.style.display = 'block';
-      const dateRow = card.querySelector('.ob-date-row');
-      if (dateRow) dateRow.style.display = 'none';
+      dateLabel.style.display = 'none';
+      updateLangBtns();
       memoTa.focus();
     });
 
-    // input時：800msタイマーで自動保存（フォント詳細と同じ）
+    // input時：800msタイマー保存
     memoTa.addEventListener('input', () => {
       clearTimeout(oboeakiSaveTimer);
       oboeakiSaveTimer = setTimeout(async () => {
         const uid = auth.currentUser?.uid;
         if (!uid) return;
-        const newMemo = memoTa.value;
-        e.memo = newMemo;
-        try {
-          await updateDoc(doc(db,'users',uid,'oboeaki',e.id), { memo: newMemo });
-        } catch(err) { console.error('oboeaki save error', err); }
+        e.memo = memoTa.value;
+        try { await updateDoc(doc(db,'users',uid,'oboeaki',e.id), { memo: e.memo }); }
+        catch(err) { console.error('oboeaki save error', err); }
       }, 800);
     });
 
-    // blur時：即時保存＋表示モードに戻す（フォント詳細と同じ）
+    // blur時：即時保存＋表示モードに戻す
     memoTa.addEventListener('blur', async () => {
-      // 未保存分を即時保存
       clearTimeout(oboeakiSaveTimer);
       const uid = auth.currentUser?.uid;
       if (uid) {
-        const newMemo = memoTa.value;
-        e.memo = newMemo;
-        try {
-          await updateDoc(doc(db,'users',uid,'oboeaki',e.id), { memo: newMemo });
-        } catch(err) { console.error('oboeaki blur save error', err); }
+        e.memo = memoTa.value;
+        try { await updateDoc(doc(db,'users',uid,'oboeaki',e.id), { memo: e.memo }); }
+        catch(err) { console.error('oboeaki blur save error', err); }
       }
-      // 表示モードに戻す
-      memoTa.style.display = 'none';
-      deleteBtn.style.display = 'none';
-      memoDisplay.style.display = 'block';
-      const dateRow = card.querySelector('.ob-date-row');
-      if (dateRow) dateRow.style.display = 'flex';
-      renderMemoDisplay();
+      // 言語ボタンのmousedownでblurが起きた場合は編集モードを維持
+      setTimeout(() => {
+        if (!card.contains(document.activeElement)) {
+          cardEditMode = false;
+          memoTa.style.display = 'none';
+          deleteBtn.style.display = 'none';
+          memoDisplay.style.display = 'block';
+          dateLabel.style.display = '';
+          updateLangBtns();
+          renderMemoDisplay();
+        }
+      }, 50);
     });
 
     // 削除ボタン
     deleteBtn.addEventListener('click', (ev) => {
-      ev.preventDefault();
-      ev.stopPropagation();
+      ev.preventDefault(); ev.stopPropagation();
       const uid = auth.currentUser?.uid;
       if (!uid) return;
       showConfirm('メモを削除', 'このメモを削除しますか？', async () => {
@@ -6925,11 +7050,7 @@ function renderOboeakiList() {
       });
     });
 
-    // フォントチップでopenDetail
-    card.querySelectorAll('.ob-font-chip').forEach(btn => {
-      btn.addEventListener('click', ev => { ev.stopPropagation(); openDetail(btn.dataset.id); });
-    });
-    return card;
+    return wrapper;
   };
 
   if (oboeakiSortMode === 'sep') {
