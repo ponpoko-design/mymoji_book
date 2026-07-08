@@ -3432,7 +3432,7 @@ async function openDetail(id) {
           </button>
         </div>
         <div id="detail-check-list" style="display:flex;flex-wrap:wrap;gap:8px;min-height:24px;">
-          ${(f.checks||[]).map(cid=>{const cf=fonts.find(x=>x.id===cid);return cf?`<button class="check-font-chip" data-id="${cid}" style="background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border:none;border-radius:50px;padding:6px 14px;font-size:13px;font-weight:600;color:#5a4a8a;cursor:pointer;font-family:inherit;touch-action:manipulation;display:flex;align-items:center;gap:6px;">${cf.name}<span class="check-remove" data-id="${cid}" style="opacity:0.6;font-size:11px;margin-left:2px;">✕</span></button>`:''}).join('')}
+          ${(f.checks||[]).map(cid=>{const cf=fonts.find(x=>x.id===cid);return cf?`<button class="check-font-chip" data-id="${cid}" style="background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border:none;border-radius:50px;padding:7px 8px 7px 16px;font-size:13px;font-weight:600;color:#5a4a8a;cursor:pointer;font-family:inherit;touch-action:manipulation;display:flex;align-items:center;gap:6px;">${cf.name}<span class="check-remove" data-id="${cid}" style="font-size:11px;color:rgba(90,74,138,0.6);pointer-events:none;">✕</span></button>`:''}).join('')}
         </div>
         <div id="detail-check-search-wrap" style="display:none;margin-top:10px;">
           <div class="search-box" style="margin-bottom:8px;">
@@ -3910,12 +3910,13 @@ async function openDetail(id) {
           const chip = document.createElement('button');
           chip.className = 'check-font-chip';
           chip.dataset.id = targetId;
-          chip.style.cssText = 'background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border:none;border-radius:50px;padding:6px 14px;font-size:13px;font-weight:600;color:#5a4a8a;cursor:pointer;font-family:inherit;touch-action:manipulation;display:flex;align-items:center;gap:6px;';
-          chip.innerHTML = `${targetFont.name}<span class="check-remove" data-id="${targetId}" style="opacity:0.6;font-size:11px;margin-left:2px;">✕</span>`;
+          chip.style.cssText = 'background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border:none;border-radius:50px;padding:7px 8px 7px 16px;font-size:13px;font-weight:600;color:#5a4a8a;cursor:pointer;font-family:inherit;touch-action:manipulation;display:flex;align-items:center;gap:6px;';
+          chip.innerHTML = `${targetFont.name} <span style="font-size:11px;color:rgba(90,74,138,0.6);pointer-events:none;">✕</span>`;
           chip.addEventListener('click', async e2 => {
-            const removeSpan = e2.target.closest('.check-remove');
-            if (removeSpan) {
-              const removeId = removeSpan.dataset.id;
+            const chipRect2 = chip.getBoundingClientRect();
+            const isRemove2 = e2.clientX >= chipRect2.right - 28;
+            if (isRemove2) {
+              const removeId = chip.dataset.id;
               const nc = (f.checks||[]).filter(x => x !== removeId);
               await updateDoc(doc(db,'fonts',id), { checks: nc });
               f.checks = nc;
@@ -3942,10 +3943,13 @@ async function openDetail(id) {
   // CHECKチップのタップ（フォントに飛ぶ）と✕（削除）
   $('detail-content').querySelectorAll('.check-font-chip').forEach(chip => {
     chip.addEventListener('click', async e => {
-      const removeSpan = e.target.closest('.check-remove');
-      if (removeSpan) {
+      // pointer-events:noneのspanを通過してbuttonに届く。X部分クリックはclientXで判定
+      // シンプルに：クリック位置がチップ右端20px以内なら削除
+      const chipRect = chip.getBoundingClientRect();
+      const isRemove = e.clientX >= chipRect.right - 28;
+      if (isRemove) {
         // 削除（双方向）
-        const removeId = removeSpan.dataset.id;
+        const removeId = chip.dataset.id;
         const newChecks = (f.checks||[]).filter(x => x !== removeId);
         await updateDoc(doc(db,'fonts',id), { checks: newChecks });
         f.checks = newChecks;
@@ -6756,7 +6760,7 @@ function renderOboeakiFontChips() {
     if (!f) return;
     const chip = document.createElement('button');
     chip.style.cssText = 'display:flex;align-items:center;gap:5px;font-size:12px;padding:4px 10px;border-radius:20px;background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border:none;color:#5a4a8a;font-weight:600;cursor:pointer;font-family:inherit;touch-action:manipulation;';
-    chip.innerHTML = `${f.name}<span style="opacity:0.6;font-size:10px;">✕</span>`;
+    chip.innerHTML = `${f.name} <span style="font-size:11px;color:rgba(90,74,138,0.6);pointer-events:none;">✕</span>`;
     chip.addEventListener('click', () => {
       oboeakiSelectedFontIds = oboeakiSelectedFontIds.filter(x => x !== fid);
       renderOboeakiFontChips();
@@ -7001,11 +7005,13 @@ function renderOboeakiList() {
         chip.className = 'ob-font-chip';
         chip.dataset.id = f2.id;
         chip.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:13px;padding:7px 8px 7px 16px;border-radius:50px;background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border:none;color:#5a4a8a;font-weight:600;cursor:pointer;font-family:inherit;touch-action:manipulation;';
-        chip.innerHTML = `${f2.name}<span class="ob-chip-remove" data-id="${f2.id}" style="display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(90,74,138,0.15);font-size:12px;color:#5a4a8a;flex-shrink:0;">✕</span>`;
+        chip.innerHTML = `${f2.name} <span style="font-size:11px;color:rgba(90,74,138,0.6);pointer-events:none;">✕</span>`;
         chip.addEventListener('mousedown', ev => ev.preventDefault());
         chip.addEventListener('click', ev => {
           ev.stopPropagation();
-          if (ev.target.closest('.ob-chip-remove')) {
+          const chipRect = chip.getBoundingClientRect();
+          const isRemove = ev.clientX >= chipRect.right - 28;
+          if (isRemove) {
             // ✕で削除
             const uid = auth.currentUser?.uid;
             if (!uid) return;
