@@ -4900,18 +4900,20 @@ function _lightboxShow() {
   else editBtn.classList.remove('visible');
   $('lightbox-compare-btn').classList.toggle('active', compareList.some(c => c.url === item.url));
 
-  // highlightRect があればグレーオーバーレイを描画（imgと同じwrapper内）
+  // highlightRect があればグレーオーバーレイを描画
   const existingHlCanvas = document.getElementById('lightbox-hl-canvas');
+  // 必ずonloadをリセット（前の画像のonloadが残らないように）
+  img.onload = null;
   if (existingHlCanvas) {
     existingHlCanvas.style.display = 'none';
     const ctx = existingHlCanvas.getContext('2d');
     ctx.clearRect(0, 0, existingHlCanvas.width, existingHlCanvas.height);
   }
   if (item.highlightRect) {
+    const r = item.highlightRect;
     const drawLbHighlight = () => {
       const canvas = document.getElementById('lightbox-hl-canvas');
       if (!canvas) return;
-      const r = item.highlightRect;
       const iw = img.offsetWidth, ih = img.offsetHeight;
       if (!iw || !ih) { setTimeout(drawLbHighlight, 50); return; }
       canvas.width = iw; canvas.height = ih;
