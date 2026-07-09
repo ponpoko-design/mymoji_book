@@ -3792,7 +3792,7 @@ async function openDetail(id) {
 
     // 短タップはライトボックス
     el.addEventListener('click', e => {
-      if (ctxMenu.classList.contains('active')) return;
+      if (_ctxMenu.classList.contains('active')) return;
       const url = el.dataset.url;
       const memo = el.dataset.memo;
       lightboxCurrentFontName = f.name || '';
