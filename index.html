@@ -804,7 +804,8 @@
     overscroll-behavior: none;
   }
   #lightbox.active { display: flex; }
-  #lightbox img { max-width: 94vw; max-height: 78vh; border-radius: 12px; object-fit: contain; touch-action: none; }
+  #lightbox-img-wrap { transform-origin: center center; }
+  #lightbox img { max-width: 94vw; max-height: 78vh; border-radius: 12px; object-fit: contain; touch-action: none; display: block; }
   #lightbox-memo { color: white; font-size: 15px; margin-top: 10px; max-width: 80vw; text-align: center; }
   #lightbox-actions { display: none; }
   /* ×ボタンと編集ボタンを右上に並べる */
@@ -1988,7 +1989,10 @@
   <button id="lightbox-compare-btn" title="比較に追加">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
   </button>
-  <img id="lightbox-img" src="" alt="">
+  <div id="lightbox-img-wrap" style="position:relative;display:flex;align-items:center;justify-content:center;max-width:94vw;max-height:78vh;">
+    <img id="lightbox-img" src="" alt="" style="max-width:94vw;max-height:78vh;border-radius:12px;object-fit:contain;touch-action:none;display:block;">
+    <canvas id="lightbox-hl-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;border-radius:12px;display:none;"></canvas>
+  </div>
   <button id="lightbox-prev" style="position:fixed;left:12px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.4);border:none;border-radius:50%;width:36px;height:36px;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:10;touch-action:manipulation;">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
   </button>
@@ -4879,24 +4883,30 @@ function _lightboxShow() {
   else editBtn.classList.remove('visible');
   $('lightbox-compare-btn').classList.toggle('active', compareList.some(c => c.url === item.url));
 
-  // highlightRect があればグレーオーバーレイを描画
+  // highlightRect があればグレーオーバーレイを描画（imgと同じwrapper内）
   const existingHlCanvas = document.getElementById('lightbox-hl-canvas');
-  if (existingHlCanvas) existingHlCanvas.remove();
+  if (existingHlCanvas) {
+    existingHlCanvas.style.display = 'none';
+    const ctx = existingHlCanvas.getContext('2d');
+    ctx.clearRect(0, 0, existingHlCanvas.width, existingHlCanvas.height);
+  }
   if (item.highlightRect) {
-    img.onload = () => {
+    const drawLbHighlight = () => {
+      const canvas = document.getElementById('lightbox-hl-canvas');
+      if (!canvas) return;
       const r = item.highlightRect;
       const iw = img.offsetWidth, ih = img.offsetHeight;
-      const canvas = document.createElement('canvas');
-      canvas.id = 'lightbox-hl-canvas';
+      if (!iw || !ih) { setTimeout(drawLbHighlight, 50); return; }
       canvas.width = iw; canvas.height = ih;
-      canvas.style.cssText = `position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;border-radius:12px;`;
+      canvas.style.display = 'block';
       const ctx = canvas.getContext('2d');
-      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.clearRect(0, 0, iw, ih);
+      ctx.fillStyle = 'rgba(0,0,0,0.55)';
       ctx.fillRect(0, 0, iw, ih);
       ctx.clearRect(r.x * iw, r.y * ih, r.w * iw, r.h * ih);
-      img.parentElement.appendChild(canvas);
     };
-    if (img.complete) img.onload();
+    img.onload = drawLbHighlight;
+    if (img.complete && img.naturalWidth) drawLbHighlight();
   }
   // 補足ボタン：このフォントのphotosに対してのみ表示（用例画面では非表示）
   const supplBtn = $('lightbox-supplement-btn');
@@ -4988,6 +4998,7 @@ let lbSwipeStartX = null, lbSwipeStartY = null;
 let lbLastPinchDist = null;
 
 const lbImg = $('lightbox-img');
+const lbWrap = $('lightbox-img-wrap');
 const lbEl = $('lightbox');
 
 lbEl.addEventListener('touchstart', e => {
@@ -5016,7 +5027,7 @@ lbEl.addEventListener('touchmove', e => {
     if (lbLastPinchDist) {
       lbScale *= dist / lbLastPinchDist;
       lbScale = Math.max(1, Math.min(6, lbScale));
-      lbImg.style.transform = `translate(${lbTx}px,${lbTy}px) scale(${lbScale})`;
+      lbWrap.style.transform = `translate(${lbTx}px,${lbTy}px) scale(${lbScale})`;
     }
     lbLastPinchDist = dist;
   } else if (e.touches.length === 1) {
@@ -5026,7 +5037,7 @@ lbEl.addEventListener('touchmove', e => {
       if (lbScale > 1) {
         // 拡大中は画像を移動
         lbTx += dx; lbTy += dy;
-        lbImg.style.transform = `translate(${lbTx}px,${lbTy}px) scale(${lbScale})`;
+        lbWrap.style.transform = `translate(${lbTx}px,${lbTy}px) scale(${lbScale})`;
       }
       lbSwipeStartX = e.touches[0].clientX;
       lbSwipeStartY = e.touches[0].clientY;
@@ -6259,23 +6270,22 @@ $('pe-highlight-apply').addEventListener('click', async () => {
           currentUsageData.photos = newPhotos;
         }
         showToast('強調エリアを保存しました');
-        // エディタを閉じてライトボックスに戻る
-        $('photo-editor').classList.remove('active');
-        // lightboxPhotosの該当エントリのhighlightRectを更新してライトボックスを再描画
+        // lightboxPhotosの該当エントリのhighlightRectを更新
         if (lightboxPhotos && lightboxPhotos[lightboxIndex]) {
           lightboxPhotos[lightboxIndex].highlightRect = peHighlightRect;
         }
-        // ライトボックスが開いていれば再描画（highlightRect反映）
-        if ($('lightbox').classList.contains('active')) {
-          _lightboxShow();
-        }
-        // ヒーロー画像も更新（用例詳細が表示中の場合）
-        if (currentUsageData && currentUsageData.id === usageId) {
-          currentUsageData.photos = newPhotos;
+        // エディタを閉じる
+        $('photo-editor').classList.remove('active');
+        // ライトボックスを再描画（少し待ってimgサイズが確定してから）
+        setTimeout(() => {
+          if ($('lightbox').classList.contains('active')) {
+            _lightboxShow();
+          }
+          // ヒーロー画像も更新
           const hlCanvas = document.getElementById('usage-hero-hl-canvas');
           const coverImg = document.getElementById('usage-cover-img');
-          if (hlCanvas && coverImg && newPhotos[0]) {
-            const hr = newPhotos[0].highlightRect;
+          if (hlCanvas && coverImg && newPhotos[photoIdx]) {
+            const hr = newPhotos[photoIdx].highlightRect;
             if (hr) {
               hlCanvas.style.display = 'block';
               const iw = coverImg.offsetWidth, ih = coverImg.offsetHeight;
@@ -6289,7 +6299,7 @@ $('pe-highlight-apply').addEventListener('click', async () => {
               hlCanvas.style.display = 'none';
             }
           }
-        }
+        }, 80);
       }
     } else {
       const fontRef = doc(db,'fonts',fontId);
