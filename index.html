@@ -1895,6 +1895,7 @@
     <div class="pe-panel" id="pe-panel-highlight">
       <div style="color:rgba(255,255,255,0.6);font-size:13px;text-align:center;margin-bottom:8px;">注目させたい部分をドラッグして囲む</div>
       <div class="pe-btn-row" style="margin-top:0;">
+        <button class="editor-btn" id="pe-highlight-none">強調なし</button>
         <button class="editor-btn" id="pe-highlight-clear">囲みを解除</button>
         <button class="editor-btn editor-btn-primary" id="pe-highlight-apply">この強調を保存</button>
       </div>
@@ -5989,7 +5990,7 @@ async function uploadPhotos(pathPrefix, filesArr, memosArr) {
   }
   const results = await Promise.all(tasks);
   // インデックス順に並び替え
-  return results.sort((a, b) => a.idx - b.idx).map(r => ({ url: r.url, memo: r.memo }));
+  return results.sort((a, b) => a.idx - b.idx).map(r => ({ url: r.url, memo: r.memo, highlightRect: null }));
 }
 
 function compressImage(file, maxSize, quality) {
@@ -6242,6 +6243,43 @@ $('pe-highlight-clear').addEventListener('click', () => {
   peHighlightRect = null;
   hlRect = { x: 0.1, y: 0.1, x2: 0.9, y2: 0.9 };
   updateHlUI();
+});
+
+// 強調なし：highlightRect:nullで即保存してライトボックスに戻る
+$('pe-highlight-none').addEventListener('click', async () => {
+  if (!peCurrentPhotoInfo) { peSetTab('adjust'); return; }
+  const { fontId, usageId, photoIdx } = peCurrentPhotoInfo;
+  const uid = auth.currentUser?.uid;
+  if (!uid) return;
+  peHighlightRect = null;
+  try {
+    if (usageId) {
+      const usageRef = doc(db,'fonts',fontId,'usages',usageId);
+      const usageSnap = await getDoc(usageRef);
+      if (!usageSnap.exists()) return;
+      const newPhotos = [...(usageSnap.data().photos || [])];
+      if (photoIdx >= 0 && photoIdx < newPhotos.length) {
+        newPhotos[photoIdx] = { ...newPhotos[photoIdx], highlightRect: null };
+        await updateDoc(usageRef, { photos: newPhotos });
+        const fontObj = fonts.find(x=>x.id===fontId);
+        if (fontObj?.usages) {
+          const uObj = fontObj.usages.find(x=>x.id===usageId);
+          if (uObj) uObj.photos = newPhotos;
+        }
+        if (currentUsageData && currentUsageData.id === usageId) currentUsageData.photos = newPhotos;
+        showToast('強調を解除しました');
+        if (lightboxPhotos && lightboxPhotos[lightboxIndex]) lightboxPhotos[lightboxIndex].highlightRect = null;
+        $('photo-editor').classList.remove('active');
+        setTimeout(() => {
+          if ($('lightbox').classList.contains('active')) _lightboxShow();
+          if (photoIdx === 0) {
+            const hlCanvas = document.getElementById('usage-hero-hl-canvas');
+            if (hlCanvas) hlCanvas.style.display = 'none';
+          }
+        }, 80);
+      }
+    }
+  } catch(err) { showToast('保存に失敗しました'); }
 });
 
 $('pe-highlight-apply').addEventListener('click', async () => {
