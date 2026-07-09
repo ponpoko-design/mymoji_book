@@ -6281,22 +6281,24 @@ $('pe-highlight-apply').addEventListener('click', async () => {
           if ($('lightbox').classList.contains('active')) {
             _lightboxShow();
           }
-          // ヒーロー画像も更新
-          const hlCanvas = document.getElementById('usage-hero-hl-canvas');
-          const coverImg = document.getElementById('usage-cover-img');
-          if (hlCanvas && coverImg && newPhotos[photoIdx]) {
-            const hr = newPhotos[photoIdx].highlightRect;
-            if (hr) {
-              hlCanvas.style.display = 'block';
-              const iw = coverImg.offsetWidth, ih = coverImg.offsetHeight;
-              hlCanvas.width = iw; hlCanvas.height = ih;
-              const ctx = hlCanvas.getContext('2d');
-              ctx.clearRect(0,0,iw,ih);
-              ctx.fillStyle = 'rgba(0,0,0,0.55)';
-              ctx.fillRect(0,0,iw,ih);
-              ctx.clearRect(hr.x*iw, hr.y*ih, hr.w*iw, hr.h*ih);
-            } else {
-              hlCanvas.style.display = 'none';
+          // ヒーロー画像も更新（強調したのが1枚目のときだけ）
+          if (photoIdx === 0) {
+            const hlCanvas = document.getElementById('usage-hero-hl-canvas');
+            const coverImg = document.getElementById('usage-cover-img');
+            if (hlCanvas && coverImg && newPhotos[0]) {
+              const hr = newPhotos[0].highlightRect;
+              if (hr) {
+                hlCanvas.style.display = 'block';
+                const iw = coverImg.offsetWidth, ih = coverImg.offsetHeight;
+                hlCanvas.width = iw; hlCanvas.height = ih;
+                const ctx = hlCanvas.getContext('2d');
+                ctx.clearRect(0,0,iw,ih);
+                ctx.fillStyle = 'rgba(0,0,0,0.55)';
+                ctx.fillRect(0,0,iw,ih);
+                ctx.clearRect(hr.x*iw, hr.y*ih, hr.w*iw, hr.h*ih);
+              } else {
+                hlCanvas.style.display = 'none';
+              }
             }
           }
         }, 80);
