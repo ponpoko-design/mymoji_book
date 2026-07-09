@@ -4066,6 +4066,7 @@ function openUsageDetail(fontId, usageId, usages) {
     ${photos.length > 0 ? `
     <div class="detail-hero" id="usage-hero-wrap" style="position:relative;background:var(--c-bg);">
       <img id="usage-cover-img" src="${photos[0].url}" alt="用例写真" style="width:100%;height:100%;object-fit:contain;">
+      <canvas id="usage-hero-hl-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;display:none;"></canvas>
       <div id="usage-hero-adjust-btn" style="position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,0.5);color:white;font-size:12px;padding:5px 12px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:5px;touch-action:manipulation;z-index:2;">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>
         調整
@@ -4163,6 +4164,25 @@ function openUsageDetail(fontId, usageId, usages) {
   if (usageAdjustBtn && photos.length > 0) {
     const usageCoverImg = $('usage-cover-img');
     const usageHeroWrap = $('usage-detail-content').querySelector('#usage-hero-wrap');
+
+    // highlightRectがあればcanvasでグレーオーバーレイを描画
+    function drawUsageHighlight() {
+      const hlCanvas = document.getElementById('usage-hero-hl-canvas');
+      if (!hlCanvas) return;
+      const hr = photos[0].highlightRect;
+      if (!hr) { hlCanvas.style.display = 'none'; return; }
+      hlCanvas.style.display = 'block';
+      const iw = usageCoverImg.offsetWidth, ih = usageCoverImg.offsetHeight;
+      hlCanvas.width = iw; hlCanvas.height = ih;
+      const ctx = hlCanvas.getContext('2d');
+      ctx.clearRect(0, 0, iw, ih);
+      ctx.fillStyle = 'rgba(0,0,0,0.55)';
+      ctx.fillRect(0, 0, iw, ih);
+      ctx.clearRect(hr.x * iw, hr.y * ih, hr.w * iw, hr.h * ih);
+    }
+    usageCoverImg.onload = () => drawUsageHighlight();
+    if (usageCoverImg.complete) drawUsageHighlight();
+
     let usageIsAdjustMode = false;
     let utx = 0, uty = 0, uscale = 1;
 
