@@ -56,6 +56,7 @@
     min-height: 100vh;
     position: relative;
     background: var(--c-bg);
+    overflow-x: hidden;
   }
 
   /* ── Fluid background blobs ── */
@@ -1019,6 +1020,86 @@
   .quiz-result-item.ng .ri-icon { color: #e05c7a; }
   .quiz-result-item .ri-name { font-weight: 700; color: var(--c-text); font-size: 16px; }
   .quiz-result-item .ri-ans  { font-size: 12px; color: var(--c-text-sub); margin-top: 2px; }
+
+  /* ── 覚えがき：画像パネル ── */
+  .ob-camera-btn {
+    display: flex; align-items: center; justify-content: center;
+    background: none; border: none; cursor: pointer;
+    padding: 2px 4px; border-radius: 8px;
+    color: var(--c-text-sub); position: relative;
+    flex-shrink: 0; touch-action: manipulation;
+    margin-left: auto;
+  }
+  .ob-camera-btn:active { opacity: .65; }
+  .ob-camera-badge {
+    position: absolute; top: -3px; right: -4px;
+    width: 14px; height: 14px;
+    background: linear-gradient(135deg,#b49afc,#8fb8ff);
+    border-radius: 50%; font-size: 9px; font-weight: 700;
+    color: #fff; display: flex; align-items: center; justify-content: center;
+  }
+  .ob-img-panel {
+    overflow: hidden; max-height: 0;
+    transition: max-height .28s ease;
+  }
+  .ob-img-panel.open { max-height: 220px; }
+  .ob-img-panel-inner {
+    display: flex; gap: 6px; padding: 10px 0 4px;
+  }
+  .ob-img-slot {
+    width: 64px; height: 64px; border-radius: 10px;
+    overflow: hidden; border: 1.5px solid var(--c-border);
+    cursor: pointer; flex-shrink: 0; position: relative;
+  }
+  .ob-img-slot img { width:100%; height:100%; object-fit:cover; display:block; }
+  .ob-img-slot-del {
+    position: absolute; top: 2px; right: 2px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: rgba(44,38,64,0.6); border: none;
+    color: #fff; font-size: 9px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; line-height: 1; touch-action: manipulation;
+  }
+  .ob-img-add {
+    width: 64px; height: 64px; border-radius: 10px;
+    border: 1.5px dashed var(--c-lavender);
+    background: rgba(211,195,252,0.10);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 3px; cursor: pointer; flex-shrink: 0;
+    color: var(--c-text-sub); font-size: 9px;
+    touch-action: manipulation;
+  }
+  .ob-img-add:active { background: rgba(211,195,252,0.25); }
+  /* 覚えがきモーダル内写真エリア */
+  .ob-modal-photo-row {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+  }
+  .ob-modal-thumb {
+    width: 54px; height: 54px; border-radius: 10px;
+    overflow: hidden; border: 1.5px solid var(--c-border);
+    flex-shrink: 0; position: relative;
+  }
+  .ob-modal-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+  .ob-modal-thumb-del {
+    position: absolute; top: 2px; right: 2px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: rgba(44,38,64,0.6); border: none;
+    color: #fff; font-size: 9px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; touch-action: manipulation;
+  }
+  .ob-modal-add-btn {
+    width: 54px; height: 54px; border-radius: 10px;
+    border: 1.5px dashed var(--c-lavender);
+    background: rgba(211,195,252,0.10);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 3px; cursor: pointer; flex-shrink: 0;
+    color: var(--c-text-sub); font-size: 9px;
+    touch-action: manipulation;
+  }
+  .ob-modal-add-btn:active { background: rgba(211,195,252,0.25); }
 </style>
 </head>
 <body>
@@ -1223,20 +1304,7 @@
           <span class="search-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
           <input type="text" id="usage-font-search" placeholder="フォント名で検索">
         </div>
-        <!-- カテゴリー絞り込み -->
-        <div class="cat-filter-wrap" style="padding:0 0 8px;">
-          <button class="cat-chip active" data-ucat="">すべて</button>
-          <button class="cat-chip" data-ucat="ゴシック">ゴシック</button>
-          <button class="cat-chip" data-ucat="明朝">明朝</button>
-          <button class="cat-chip" data-ucat="丸ゴ">丸ゴ</button>
-          <button class="cat-chip" data-ucat="セリフ">セリフ</button>
-          <button class="cat-chip" data-ucat="サンセリフ">サンセリフ</button>
-          <button class="cat-chip" data-ucat="UD">UD</button>
-          <button class="cat-chip" data-ucat="スクリプト">スクリプト</button>
-          <button class="cat-chip" data-ucat="ブラックレター">ブラックレター</button>
-          <button class="cat-chip" data-ucat="その他">その他</button>
-          <button class="cat-chip" data-ucat="__fav__">♡ お気に入り</button>
-        </div>
+
         <!-- あとで決めるボタン -->
         <div style="margin-bottom:14px;">
           <button class="btn-secondary" id="usage-skip-font" style="display:block;width:100%;padding:11px;">フォントがわからない場合はあとで決める →</button>
@@ -1486,6 +1554,12 @@
       </div>
       <!-- メモテキストエリア（フォント大きく） -->
       <textarea id="oboeaki-memo-ta" placeholder="このフォントについてメモ…" style="width:100%;min-height:110px;border:1.5px solid var(--c-border);border-radius:14px;font-size:16px;padding:12px 14px;font-family:inherit;color:var(--c-text);background:rgba(255,255,255,0.95);resize:vertical;outline:none;line-height:1.7;margin-bottom:14px;"></textarea>
+      <!-- 写真エリア（テキストエリア下） -->
+      <div class="ob-modal-photo-row" id="ob-modal-photo-row">
+        <button class="ob-modal-add-btn" id="ob-modal-photo-add" onclick="_obModalPhotoAdd()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--c-text-sub)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </button>
+      </div>
       <!-- 関連フォント -->
       <div style="margin-bottom:14px;">
         <div style="font-size:13px;color:var(--c-text-sub);margin-bottom:6px;font-weight:600;">関連フォント</div>
@@ -4086,8 +4160,11 @@ function openUsageDetail(fontId, usageId, usages) {
       ${(u.relatedUsages||[]).length > 0 ? `
       <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
         <span style="font-size:13px;color:var(--c-text-sub);">関連：</span>
-        ${(u.relatedUsages||[]).map(r=>`
-          <button class="usage-related-link" data-font-id="${r.fontId}" data-usage-id="${r.usageId}" style="background:var(--c-lavender);border:none;border-radius:20px;padding:4px 12px;font-size:13px;font-weight:600;color:var(--c-text);cursor:pointer;font-family:inherit;">${r.fontName}</button>
+        ${(u.relatedUsages||[]).map((r,ri)=>`
+          <span class="usage-related-wrap" data-font-id="${r.fontId}" data-usage-id="${r.usageId}" data-ri="${ri}" style="display:inline-flex;align-items:center;background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border-radius:50px;">
+            <button class="usage-related-link" data-font-id="${r.fontId}" data-usage-id="${r.usageId}" style="background:none;border:none;border-radius:50px 0 0 50px;padding:7px 4px 7px 16px;font-size:13px;font-weight:600;color:#5a4a8a;cursor:pointer;font-family:inherit;touch-action:manipulation;">${r.fontName}</button>
+            <button class="usage-related-del" data-ri="${ri}" style="background:none;border:none;padding:7px 14px 7px 8px;font-size:13px;color:rgba(90,74,138,0.7);cursor:pointer;touch-action:manipulation;border-radius:0 50px 50px 0;line-height:1;font-weight:700;">✕</button>
+          </span>
         `).join('')}
       </div>` : ''}
       ${photos.length?`
@@ -4373,6 +4450,17 @@ function openUsageDetail(fontId, usageId, usages) {
   $('usage-detail-content').querySelectorAll('.usage-related-link').forEach(btn => {
     btn.addEventListener('click', () => {
       openDetail(btn.dataset.fontId);
+    });
+  });
+  // 関連フォント ✕ 削除
+  $('usage-detail-content').querySelectorAll('.usage-related-del').forEach(btn => {
+    btn.addEventListener('click', async (ev) => {
+      ev.stopPropagation();
+      const ri = parseInt(btn.dataset.ri);
+      const uid2 = auth.currentUser?.uid; if (!uid2) return;
+      u.relatedUsages = (u.relatedUsages||[]).filter((_,i)=>i!==ri);
+      await updateDoc(doc(db,'fonts',fontId,'usages',u.id), { relatedUsages: u.relatedUsages });
+      openUsageDetail(fontId, u.id, usages);
     });
   });
 
@@ -5612,8 +5700,6 @@ function initAddUsage() {
   $('usage-font-results').innerHTML = '';
   selectedUsageFontIds = [];
   usageCatFilter = '';
-  // フィルターチップをリセット
-  document.querySelectorAll('[data-ucat]').forEach(b => b.classList.toggle('active', b.dataset.ucat === ''));
   const now = new Date();
   const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const today = jst.toISOString().split('T')[0];
@@ -5772,15 +5858,7 @@ function renderUsageFontList() {
 
 $('usage-font-search').addEventListener('input', () => renderUsageFontList());
 
-// 用例採集のカテゴリーフィルター
-document.querySelectorAll('[data-ucat]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('[data-ucat]').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    usageCatFilter = btn.dataset.ucat;
-    renderUsageFontList();
-  });
-});
+
 
 $('usage-skip-font').addEventListener('click', () => {
   selectedUsageFontIds = [];
@@ -6987,6 +7065,7 @@ let oboeakiSearchQ = '';
 let oboeakiEditId = null; // 編集中のエントリID（null=新規）
 let oboeakiSelectedFontIds = []; // 覚えがきオーバーレイで選択中のフォントID
 let oboeakiInited = false;
+let oboeakiSelectedPhotoUrls = []; // 新規メモで選択中の写真URL（実装時はStorage URL）
 
 async function loadOboeakiEntries() {
   const uid = auth.currentUser?.uid;
@@ -7163,6 +7242,10 @@ function openOboeakiOverlay(entryId) {
   $('oboeaki-memo-ta').value = '';
   setOboeakiLang('ja');
   renderOboeakiFontChips();
+  // 写真エリアリセット
+  oboeakiSelectedPhotoUrls = [];
+  window._obModalPhotoFiles = [];
+  _obModalPhotoRender();
   const ov = $('oboeaki-overlay');
   ov.style.display = 'flex';
   setTimeout(() => $('oboeaki-memo-ta').focus(), 100);
@@ -7170,6 +7253,55 @@ function openOboeakiOverlay(entryId) {
 
 function closeOboeakiOverlay() {
   $('oboeaki-overlay').style.display = 'none';
+}
+
+function _obModalPhotoRender() {
+  const row = $('ob-modal-photo-row');
+  if (!row) return;
+  // 既存サムネを削除（追加ボタンは残す）
+  Array.from(row.querySelectorAll('.ob-modal-thumb')).forEach(el => el.remove());
+  const addBtn = $('ob-modal-photo-add');
+  oboeakiSelectedPhotoUrls.forEach((url, idx) => {
+    const thumb = document.createElement('div');
+    thumb.className = 'ob-modal-thumb';
+    thumb.innerHTML = `<img src="${url}" alt=""><button class="ob-modal-thumb-del">✕</button>`;
+    thumb.querySelector('.ob-modal-thumb-del').addEventListener('click', ev => {
+      ev.stopPropagation();
+      oboeakiSelectedPhotoUrls.splice(idx, 1);
+      _obModalPhotoRender();
+    });
+    row.insertBefore(thumb, addBtn);
+  });
+  // 3枚で追加ボタン非表示
+  if (addBtn) addBtn.style.display = oboeakiSelectedPhotoUrls.length >= 3 ? 'none' : 'flex';
+}
+
+function _obModalPhotoAdd() {
+  if (oboeakiSelectedPhotoUrls.length >= 3) return;
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file'; fileInput.accept = 'image/*';
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files[0]; if (!file) return;
+    const uid = auth.currentUser?.uid; if (!uid) return;
+    try {
+      // 一時プレビュー用ObjectURL（保存時にStorageへアップロード）
+      const tempUrl = URL.createObjectURL(file);
+      // 実ファイルも保持しておく（saveOboeakiEntryで使用）
+      if (!window._obModalPhotoFiles) window._obModalPhotoFiles = [];
+      window._obModalPhotoFiles.push({ file, tempUrl });
+      oboeakiSelectedPhotoUrls.push(tempUrl);
+      _obModalPhotoRender();
+    } catch(err) { showToast('写真の読み込みに失敗しました'); }
+  });
+  fileInput.click();
+}
+
+async function _uploadOboeakiPhoto(uid, entryId, file) {
+  // 既存の compressImage + Firebase Storage（uploadPhotos と同じ方式）
+  const compressed = await compressImage(file, 2400, 0.92);
+  const storageRef = ref(storage, `users/${uid}/oboeaki/${entryId}/${Date.now()}_${file.name}`);
+  await uploadBytes(storageRef, compressed);
+  return await getDownloadURL(storageRef);
 }
 
 async function saveOboeakiEntry() {
@@ -7189,9 +7321,23 @@ async function saveOboeakiEntry() {
       if (idx >= 0) Object.assign(oboeakiEntries[idx], { memo, lang, fontIds });
     } else {
       // 新規
-      const ref2 = await addDoc(collection(db, 'users', uid, 'oboeaki'), { memo, lang, fontIds, createdAt: serverTimestamp() });
+      // まず新規docを作成してIDを取得
+      const ref2 = await addDoc(collection(db, 'users', uid, 'oboeaki'), { memo, lang, fontIds, photos: [], createdAt: serverTimestamp() });
+      // ファイルがあれば Storage にアップロード
+      let photos = [];
+      const files = (window._obModalPhotoFiles || []).map(x => x.file);
+      if (files.length > 0) {
+        const results = await Promise.all(files.map(async (file, idx) => {
+          const compressed = await compressImage(file, 2400, 0.92);
+          const storageRef = ref(storage, `users/${uid}/oboeaki/${ref2.id}/${Date.now()}_${idx}_${file.name}`);
+          await uploadBytes(storageRef, compressed);
+          return await getDownloadURL(storageRef);
+        }));
+        photos = results;
+        await updateDoc(ref2, { photos });
+      }
       const now = new Date();
-      oboeakiEntries.unshift({ id: ref2.id, memo, lang, fontIds, createdAt: { toDate: () => now, toMillis: () => now.getTime() } });
+      oboeakiEntries.unshift({ id: ref2.id, memo, lang, fontIds, photos, createdAt: { toDate: () => now, toMillis: () => now.getTime() } });
     }
     closeOboeakiOverlay();
     renderOboeakiList();
@@ -7253,6 +7399,16 @@ function renderOboeakiList() {
 
     topRow.appendChild(langJaBtn);
     topRow.appendChild(langEnBtn);
+    // カメラアイコン（日付の左・右寄せ）
+    const cameraBtn = document.createElement('button');
+    cameraBtn.className = 'ob-camera-btn';
+    const photoCount = (e.photos||[]).length;
+    const badgeHtml = photoCount > 0 ? `<span class="ob-camera-badge">${photoCount}</span>` : '';
+    cameraBtn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" opacity="${photoCount>0?1:0.4}"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>` + badgeHtml;
+    cameraBtn.addEventListener('click', () => {
+      imgPanel.classList.toggle('open');
+    });
+    topRow.appendChild(cameraBtn);
     topRow.appendChild(dateLabel);
 
     // ── メモ枠 ──
@@ -7262,6 +7418,68 @@ function renderOboeakiList() {
       <div class="ob-memo-display" style="cursor:pointer;min-height:24px;"></div>
       <textarea class="ob-memo-ta" style="display:none;width:100%;min-height:80px;border:1.5px solid var(--c-border);border-radius:12px;font-size:16px;padding:10px 12px;font-family:inherit;color:var(--c-text);background:rgba(255,255,255,0.95);resize:vertical;outline:none;line-height:1.7;"></textarea>
     `;
+
+    // ── 画像パネル（折り畳み） ──
+    const imgPanel = document.createElement('div');
+    imgPanel.className = 'ob-img-panel';
+    function renderImgPanel() {
+      imgPanel.innerHTML = '';
+      const inner = document.createElement('div');
+      inner.className = 'ob-img-panel-inner';
+      (e.photos||[]).forEach((url, idx) => {
+        const slot = document.createElement('div');
+        slot.className = 'ob-img-slot';
+        slot.innerHTML = `<img src="${url}" alt=""><button class="ob-img-slot-del">✕</button>`;
+        slot.querySelector('img').addEventListener('click', () => {
+          // 既存ライトボックスと同じ方式で開く
+          _lightboxShow(url);
+        });
+        slot.querySelector('.ob-img-slot-del').addEventListener('click', async ev => {
+          ev.stopPropagation();
+          const uid = auth.currentUser?.uid; if (!uid) return;
+          e.photos = (e.photos||[]).filter((_,i)=>i!==idx);
+          await updateDoc(doc(db,'users',uid,'oboeaki',e.id), { photos: e.photos });
+          const badge = cameraBtn.querySelector('.ob-camera-badge');
+          const cnt = e.photos.length;
+          cameraBtn.querySelector('svg').setAttribute('opacity', cnt>0?'1':'0.4');
+          if (badge) { if(cnt>0) badge.textContent=cnt; else badge.remove(); }
+          else if(cnt>0) { const b=document.createElement('span'); b.className='ob-camera-badge'; b.textContent=cnt; cameraBtn.appendChild(b); }
+          renderImgPanel();
+        });
+        inner.appendChild(slot);
+      });
+      // 追加ボタン（3枚未満のとき）
+      if ((e.photos||[]).length < 3) {
+        const addSlot = document.createElement('div');
+        addSlot.className = 'ob-img-add';
+        addSlot.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--c-lavender)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>';
+        addSlot.addEventListener('click', () => {
+          // 実装時：ファイルピッカー → Storage upload → URL取得
+          const fileInput = document.createElement('input');
+          fileInput.type = 'file'; fileInput.accept = 'image/*';
+          fileInput.addEventListener('change', async () => {
+            const file = fileInput.files[0]; if (!file) return;
+            const uid = auth.currentUser?.uid; if (!uid) return;
+            try {
+              const url = await _uploadOboeakiPhoto(uid, e.id, file);
+              e.photos = [...(e.photos||[]), url];
+              await updateDoc(doc(db,'users',uid,'oboeaki',e.id), { photos: e.photos });
+              const cnt = e.photos.length;
+              cameraBtn.querySelector('svg').setAttribute('opacity','1');
+              const badge = cameraBtn.querySelector('.ob-camera-badge');
+              if (badge) badge.textContent=cnt;
+              else { const b=document.createElement('span'); b.className='ob-camera-badge'; b.textContent=cnt; cameraBtn.appendChild(b); }
+              renderImgPanel();
+            } catch(err) { showToast('写真の追加に失敗しました'); }
+          });
+          fileInput.click();
+        });
+        inner.appendChild(addSlot);
+      }
+      imgPanel.appendChild(inner);
+    }
+    renderImgPanel();
+    card.appendChild(imgPanel);
 
     // ── 下段：フォントチップ＋＋ボタン（右揃え） ──
     const bottomRow = document.createElement('div');
@@ -8440,3 +8658,4 @@ function initMihonScreen() {
 
 </script>
 </body>
+</html>
