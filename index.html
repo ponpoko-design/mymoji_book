@@ -3369,6 +3369,37 @@ async function toggleBasic(id) {
 
 // ── Detail ────────────────────────────────
 let _lastDetailTime = 0;
+// ── コンテキストメニュー（グローバル）────────────────────
+const _ctxMenu = $('context-menu');
+const _ctxOverlay = $('context-overlay');
+
+function showContextMenu(x, y, items) {
+  _ctxMenu.innerHTML = items.map(item =>
+    `<button class="ctx-item ${item.danger?'danger':''}" data-action="${item.action}">${item.icon} ${item.label}</button>`
+  ).join('');
+  const menuW = 200, menuH = items.length * 50;
+  const left = Math.min(x, window.innerWidth - menuW - 12);
+  const top = Math.min(y, window.innerHeight - menuH - 12);
+  _ctxMenu.style.left = left + 'px';
+  _ctxMenu.style.top = top + 'px';
+  _ctxMenu.classList.add('active');
+  _ctxOverlay.classList.add('active');
+  return new Promise(resolve => {
+    _ctxMenu.querySelectorAll('.ctx-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        hideContextMenu();
+        resolve(btn.dataset.action);
+      });
+    });
+    _ctxOverlay.addEventListener('click', () => { hideContextMenu(); resolve(null); }, { once: true });
+  });
+}
+
+function hideContextMenu() {
+  _ctxMenu.classList.remove('active');
+  _ctxOverlay.classList.remove('active');
+}
+
 async function openDetail(id) {
   const now = Date.now();
   if (now - _lastDetailTime < 300) return;
@@ -3713,37 +3744,7 @@ async function openDetail(id) {
     heroWrapEl.addEventListener('pointercancel', e => { activePtrs.delete(e.pointerId); lastPinchDist = null; lastSinglePos = null; }, true);
   }
 
-  // ── コンテキストメニュー ────────────────────
-  let ctxMenu = $('context-menu');
-  let ctxOverlay = $('context-overlay');
-
-  function showContextMenu(x, y, items) {
-    ctxMenu.innerHTML = items.map(item =>
-      `<button class="ctx-item ${item.danger?'danger':''}" data-action="${item.action}">${item.icon} ${item.label}</button>`
-    ).join('');
-    // 画面外にはみ出ないよう調整
-    const menuW = 200, menuH = items.length * 50;
-    const left = Math.min(x, window.innerWidth - menuW - 12);
-    const top = Math.min(y, window.innerHeight - menuH - 12);
-    ctxMenu.style.left = left + 'px';
-    ctxMenu.style.top = top + 'px';
-    ctxMenu.classList.add('active');
-    ctxOverlay.classList.add('active');
-    return new Promise(resolve => {
-      ctxMenu.querySelectorAll('.ctx-item').forEach(btn => {
-        btn.addEventListener('click', () => {
-          hideContextMenu();
-          resolve(btn.dataset.action);
-        });
-      });
-      ctxOverlay.addEventListener('click', () => { hideContextMenu(); resolve(null); }, { once: true });
-    });
-  }
-
-  function hideContextMenu() {
-    ctxMenu.classList.remove('active');
-    ctxOverlay.classList.remove('active');
-  }
+  // ── コンテキストメニュー（グローバル関数を使用）────────────────────
 
   // 写真サムネイル長押し
   $('detail-content').querySelectorAll('.photo-thumb').forEach(el => {
@@ -4699,25 +4700,38 @@ async function saveEditUsage(fontId, usageId, newFontId) {
     };
 
     if (newFontId && newFontId !== fontId) {
-      // フォントが変わった → 旧フォントから削除して新フォントに追加
       const oldDoc = await getDocs(collection(db,'fonts',fontId,'usages'));
       const oldU = oldDoc.docs.find(d => d.id === usageId);
       if (oldU) {
         const existingData = oldU.data();
         await addDoc(collection(db,'fonts',newFontId,'usages'), { ...existingData, ...updateData });
         await deleteDoc(doc(db,'fonts',fontId,'usages',usageId));
-        // メモリ上も更新
         const oldFont = fonts.find(x => x.id === fontId);
         if (oldFont?.usages) oldFont.usages = oldFont.usages.filter(u => u.id !== usageId);
         const newFont = fonts.find(x => x.id === newFontId);
-        if (newFont) newFont._usagesLoaded = false; // 再ロードを促す
+        if (newFont) newFont._usagesLoaded = false;
       }
       showToast('フォントを変更して保存しました！');
       openDetail(newFontId);
     } else {
       await updateDoc(doc(db,'fonts',fontId,'usages',usageId), updateData);
+      // ローカルのusagesも更新
+      const fontObj = fonts.find(x => x.id === fontId);
+      if (fontObj?.usages) {
+        const uObj = fontObj.usages.find(x => x.id === usageId);
+        if (uObj) Object.assign(uObj, updateData);
+      }
       showToast('保存しました！');
-      openDetail(fontId);
+      // 用例詳細に直接戻る
+      const fontObj2 = fonts.find(x => x.id === fontId);
+      const usagesArr = fontObj2?.usages || [];
+      const updatedU = usagesArr.find(x => x.id === usageId);
+      if (updatedU) {
+        showScreen('screen-usage-detail');
+        openUsageDetail(fontId, usageId, usagesArr);
+      } else {
+        openDetail(fontId);
+      }
     }
   } catch(e) { console.error(e); showToast('エラーが発生しました'); }
   $('eu-submit').disabled = false; $('eu-submit').textContent = '保存する';
