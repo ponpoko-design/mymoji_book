@@ -4175,10 +4175,12 @@ function openUsageDetail(fontId, usageId, usages) {
     function drawUsageHighlight() {
       const hlCanvas = document.getElementById('usage-hero-hl-canvas');
       if (!hlCanvas) return;
-      const hr = photos[0].highlightRect;
-      if (!hr) { hlCanvas.style.display = 'none'; return; }
+      const hr = photos[0]?.highlightRect;
+      // highlightRectが有効な値か確認（nullやundefinedは強調なし）
+      if (!hr || typeof hr.x !== 'number') { hlCanvas.style.display = 'none'; return; }
       hlCanvas.style.display = 'block';
       const iw = usageCoverImg.offsetWidth, ih = usageCoverImg.offsetHeight;
+      if (!iw || !ih) { setTimeout(drawUsageHighlight, 50); return; }
       hlCanvas.width = iw; hlCanvas.height = ih;
       const ctx = hlCanvas.getContext('2d');
       ctx.clearRect(0, 0, iw, ih);
@@ -6246,7 +6248,8 @@ $('pe-highlight-clear').addEventListener('click', () => {
 });
 
 // 強調なし：highlightRect:nullで即保存してライトボックスに戻る
-$('pe-highlight-none').addEventListener('click', async () => {
+const peHlNoneBtn = $('pe-highlight-none');
+if (peHlNoneBtn) peHlNoneBtn.addEventListener('click', async () => {
   if (!peCurrentPhotoInfo) { peSetTab('adjust'); return; }
   const { fontId, usageId, photoIdx } = peCurrentPhotoInfo;
   const uid = auth.currentUser?.uid;
