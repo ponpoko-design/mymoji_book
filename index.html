@@ -4906,8 +4906,8 @@ function _lightboxShow() {
   img.onload = null;
   if (existingHlCanvas) {
     existingHlCanvas.style.display = 'none';
-    const ctx = existingHlCanvas.getContext('2d');
-    ctx.clearRect(0, 0, existingHlCanvas.width, existingHlCanvas.height);
+    existingHlCanvas.width = 0;
+    existingHlCanvas.height = 0;
   }
   if (item.highlightRect) {
     const r = item.highlightRect;
@@ -4942,6 +4942,7 @@ function _lightboxShow() {
   // ピンチ/スワイプリセット
   lbScale = 1; lbTx = 0; lbTy = 0;
   img.style.transform = '';
+  lbWrap.style.transform = '';
   $('lightbox').classList.add('active');
   // インジケーター更新
   _lightboxUpdateIndicator();
