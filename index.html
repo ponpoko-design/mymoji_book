@@ -1796,7 +1796,7 @@
       </div>
     </div>
     <!-- 強調ドラッグUI（クロップと同じデザイン） -->
-    <div id="pe-highlight-ui" style="display:none;position:absolute;top:0;left:0;right:0;bottom:0;touch-action:none;">
+    <div id="pe-highlight-ui" style="display:none;position:absolute;top:0;left:0;right:0;bottom:0;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;">
       <div id="pe-hl-dark-top"    style="position:absolute;left:0;right:0;top:0;background:rgba(0,0,0,0.55);pointer-events:none;"></div>
       <div id="pe-hl-dark-bottom" style="position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);pointer-events:none;"></div>
       <div id="pe-hl-dark-left"   style="position:absolute;top:0;bottom:0;left:0;background:rgba(0,0,0,0.55);pointer-events:none;"></div>
@@ -6036,7 +6036,7 @@ function openPhotoEditor(src, onApply, onClose, originalUrl, photoInfo) {
   img.style.transform = '';
   img.style.filter = '';
   img.style.clipPath = '';
-  peSetTab('adjust');
+  peSetTab('crop');
   $('photo-editor').classList.add('active');
 
   // 完了ボタンをロード中にdisabled
@@ -6228,18 +6228,20 @@ $('pe-highlight-apply').addEventListener('click', async () => {
       if (photoIdx >= 0 && photoIdx < newPhotos.length) {
         newPhotos[photoIdx] = { ...newPhotos[photoIdx], highlightRect: peHighlightRect };
         await updateDoc(usageRef, { photos: newPhotos });
-        // ローカルキャッシュ更新
+        // ローカルキャッシュ更新（currentUsageDataも更新）
         const fontObj = fonts.find(x=>x.id===fontId);
         if (fontObj?.usages) {
           const uObj = fontObj.usages.find(x=>x.id===usageId);
           if (uObj) uObj.photos = newPhotos;
         }
+        if (currentUsageData && currentUsageData.id === usageId) {
+          currentUsageData.photos = newPhotos;
+        }
         showToast('強調エリアを保存しました');
-        // エディタを閉じてonCloseで前の画面に戻る
-        const pe = $('photo-editor');
-        pe.classList.remove('active');
-        if (peOnClose) peOnClose();
-        else if (typeof openUsageDetail === 'function') openUsageDetail(fontId, usageId, fontObj?.usages || []);
+        // エディタを閉じて用例詳細を即再表示
+        $('photo-editor').classList.remove('active');
+        const fontObj2 = fonts.find(x=>x.id===fontId);
+        openUsageDetail(fontId, usageId, fontObj2?.usages || (currentUsageData ? [currentUsageData] : []));
       }
     } else {
       const fontRef = doc(db,'fonts',fontId);
