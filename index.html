@@ -7201,6 +7201,36 @@ function renderBackupStatus() {
 async function loadFontsWithBackup() {
   await loadFonts();
   migrateLastUsageAt(); // 既存用例のlastUsageAt移行（初回1回のみ、バックグラウンドで実行）
+
+  // 用例採集FAB（ページロード時に1回だけ登録）
+  const auFabEl = $('au-fab');
+  if (auFabEl) {
+    let auFabFired = false;
+    const auFabHandler = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (auFabFired) return;
+      auFabFired = true;
+      setTimeout(() => { auFabFired = false; }, 500);
+      try {
+        selectedUsageFontIds = [];
+        const now2 = new Date();
+        const jst2 = new Date(now2.getTime() + 9 * 60 * 60 * 1000);
+        const today2 = jst2.toISOString().split('T')[0];
+        if ($('au-date')) $('au-date').value = today2;
+        if ($('au-place')) $('au-place').value = '';
+        auPhotoFiles = [null,null,null,null,null];
+        auPhotoMemos = ['','','','',''];
+        if ($('usage-step1')) $('usage-step1').style.display = 'none';
+        if ($('usage-step2')) $('usage-step2').style.display = 'block';
+        auFabEl.style.display = 'none';
+        renderSelectedFontTags();
+        buildPhotoSlots('au-photos','au-photo-memos-wrap',auPhotoFiles,auPhotoMemos);
+      } catch(err) { console.error('au-fab error:', err); }
+    };
+    auFabEl.addEventListener('touchstart', auFabHandler, { passive: false });
+    auFabEl.addEventListener('click', auFabHandler);
+  }
   migrateLangField(); // langフィールド移行（初回1回のみ、バックグラウンドで実行）
   renderBackupStatus();
   if (getDropboxToken()) {
@@ -7256,35 +7286,6 @@ function initOboeaki() {
 
   // FAB
   $('oboeaki-fab').addEventListener('click', () => openOboeakiOverlay(null));
-  // 用例採集FAB
-  if ($('au-fab')) {
-    let auFabFired = false;
-    const auFabHandler = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (auFabFired) return;
-      auFabFired = true;
-      setTimeout(() => { auFabFired = false; }, 500);
-      try {
-        selectedUsageFontIds = [];
-        const now2 = new Date();
-        const jst2 = new Date(now2.getTime() + 9 * 60 * 60 * 1000);
-        const today2 = jst2.toISOString().split('T')[0];
-        if ($('au-date')) $('au-date').value = today2;
-        if ($('au-place')) $('au-place').value = '';
-        auPhotoFiles = [null,null,null,null,null];
-        auPhotoMemos = ['','','','',''];
-        if ($('usage-step1')) $('usage-step1').style.display = 'none';
-        if ($('usage-step2')) $('usage-step2').style.display = 'block';
-        $('au-fab').style.display = 'none';
-        renderSelectedFontTags();
-        buildPhotoSlots('au-photos','au-photo-memos-wrap',auPhotoFiles,auPhotoMemos);
-      } catch(e) { console.error('au-fab error:', e); }
-    };
-    $('au-fab').addEventListener('touchstart', auFabHandler, { passive: false });
-    $('au-fab').addEventListener('click', auFabHandler);
-  }
-
   // 言語ボタン
   $('ob-lng-ja').addEventListener('click', () => setOboeakiLang('ja'));
   $('ob-lng-en').addEventListener('click', () => setOboeakiLang('en'));
