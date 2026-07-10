@@ -7860,7 +7860,7 @@ $('quiz-start-btn').addEventListener('click', async () => {
     return;
   }
   // 用例系モードはusages必須なので事前ロード
-  if (quizMode === 'reverse' || quizMode === 'normal') {
+  if (quizMode === 'reverse' || quizMode === '4choice' || quizMode === 'compare') {
     const btn = $('quiz-start-btn');
     btn.disabled = true; btn.textContent = '読み込み中…';
     await ensureUsagesLoaded();
@@ -7879,6 +7879,9 @@ $('quiz-start-btn').addEventListener('click', async () => {
 
 // ── build pool ───────────────────────────
 function buildQuizPool() {
+  // 4択: フォント詳細photos ＋ 用例photos
+  // 比較: フォント詳細photosのみ
+  const isCompare = quizMode === 'compare';
   const vals       = [...document.querySelectorAll('.quiz-chip.selected')].map(c => c.dataset.val);
   const wantRandom = vals.includes('random');
   const wantJa     = vals.includes('ja');
@@ -7900,10 +7903,12 @@ function buildQuizPool() {
     if (wantBasic && !wantCheck && !font.basic) continue;
     if (wantCheck && !wantBasic && (!font.checks || !font.checks.length)) continue;
 
+    // フォント詳細photos（4択・比較 共通）
     font.photos.forEach(photo => {
       if (photo && photo.url && !photo.supplement) pool.push({ fontId: font.id, fontName: font.name, photoUrl: photo.url, highlightRect: photo.highlightRect || null });
     });
-    if (font.usages) {
+    // 用例photos（4択のみ・比較は除外）
+    if (!isCompare && font.usages) {
       font.usages.forEach(usage => {
         if (usage.photos) usage.photos.forEach(photo => {
           if (photo && photo.url && !photo.supplement) pool.push({ fontId: font.id, fontName: font.name, photoUrl: photo.url, highlightRect: photo.highlightRect || null });
