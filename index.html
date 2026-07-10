@@ -1043,10 +1043,10 @@
   }
   .ob-img-panel.open { max-height: 220px; }
   .ob-img-panel-inner {
-    display: flex; gap: 6px; padding: 10px 0 4px;
+    display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 0 4px;
   }
   .ob-img-slot {
-    width: 64px; height: 64px; border-radius: 10px;
+    width: calc((100% - 12px) / 3); aspect-ratio: 1; border-radius: 10px;
     overflow: hidden; border: 1.5px solid var(--c-border);
     cursor: pointer; flex-shrink: 0; position: relative;
   }
@@ -1060,7 +1060,7 @@
     cursor: pointer; line-height: 1; touch-action: manipulation;
   }
   .ob-img-add {
-    width: 64px; height: 64px; border-radius: 10px;
+    width: calc((100% - 12px) / 3); aspect-ratio: 1; border-radius: 10px;
     border: 1.5px dashed var(--c-lavender);
     background: rgba(211,195,252,0.10);
     display: flex; flex-direction: column;
@@ -6381,12 +6381,34 @@ if (peHlNoneBtn) peHlNoneBtn.addEventListener('click', async () => {
 
 $('pe-highlight-apply').addEventListener('click', async () => {
   if (!peCurrentPhotoInfo) { $('pe-apply').click(); return; }
-  const { fontId, usageId, photoIdx } = peCurrentPhotoInfo;
+  const { fontId, usageId, photoIdx, oboeakiId, oboeakiEntry } = peCurrentPhotoInfo;
   const uid = auth.currentUser?.uid;
   if (!uid) return;
   // hlRectを比率で保存
   peHighlightRect = { x: hlRect.x, y: hlRect.y, w: hlRect.x2 - hlRect.x, h: hlRect.y2 - hlRect.y };
   try {
+    // ── 覚えがき写真の強調保存 ──
+    if (oboeakiId) {
+      // photos配列はURL文字列なのでhighlightRectは別フィールドで管理
+      // ob_highlights: [{photoIdx, highlightRect}] として保存
+      const obRef = doc(db,'users',uid,'oboeaki',oboeakiId);
+      const obSnap = await getDoc(obRef);
+      if (!obSnap.exists()) { showToast('メモが見つかりません'); return; }
+      const obHighlights = obSnap.data().ob_highlights || [];
+      const existing = obHighlights.findIndex(h => h.photoIdx === photoIdx);
+      if (existing >= 0) obHighlights[existing].highlightRect = peHighlightRect;
+      else obHighlights.push({ photoIdx, highlightRect: peHighlightRect });
+      await updateDoc(obRef, { ob_highlights: obHighlights });
+      if (oboeakiEntry) oboeakiEntry.ob_highlights = obHighlights;
+      showToast('強調エリアを保存しました');
+      $('photo-editor').classList.remove('active');
+      // lightboxPhotosのhighlightRectを更新して再描画
+      if (lightboxPhotos && lightboxPhotos[lightboxIndex]) {
+        lightboxPhotos[lightboxIndex].highlightRect = peHighlightRect;
+      }
+      setTimeout(() => { if ($('lightbox').classList.contains('active')) _lightboxShow(); }, 80);
+      return;
+    }
     if (usageId) {
       const usageRef = doc(db,'fonts',fontId,'usages',usageId);
       const usageSnap = await getDoc(usageRef);
@@ -7400,7 +7422,7 @@ function renderOboeakiList() {
     topRow.appendChild(langEnBtn);
     // カメラ＋日付を右端にまとめるグループ
     const camDateGroup = document.createElement('div');
-    camDateGroup.style.cssText = 'display:flex;align-items:center;gap:8px;margin-left:auto;';
+    camDateGroup.style.cssText = 'display:flex;align-items:center;gap:12px;margin-left:auto;';
     const cameraBtn = document.createElement('button');
     cameraBtn.className = 'ob-camera-btn';
     const photoCount = (e.photos||[]).length;
@@ -7434,12 +7456,15 @@ function renderOboeakiList() {
         slot.innerHTML = `<img src="${url}" alt=""><button class="ob-img-slot-del">✕</button>`;
         slot.querySelector('img').addEventListener('click', () => {
           const uid3 = auth.currentUser?.uid;
+          const obHls = e.ob_highlights || [];
           const allPhotos = (e.photos||[]).map((pu, pi) => {
             const origUrl3 = '';
             let editedBlobUrl3 = '';
+            const hlEntry = obHls.find(h => h.photoIdx === pi);
             return {
               url: pu,
               memo: '',
+              highlightRect: hlEntry ? hlEntry.highlightRect : null,
               onEdit: () => {
                 openPhotoEditor(pu, async (blob, revertUrl) => {
                   try {
@@ -7471,7 +7496,7 @@ function renderOboeakiList() {
                   const latestUrl3 = editedBlobUrl3 || pu;
                   const updatedPhotos = (e.photos||[]).map((u2, i2) => ({ url: i2 === pi ? latestUrl3 : u2, memo: '' }));
                   openLightbox(latestUrl3, '', null, '', updatedPhotos, null);
-                }, origUrl3, null);
+                }, origUrl3, { fontId: null, usageId: null, photoIdx: pi, oboeakiId: e.id, oboeakiEntry: e });
               }
             };
           });
