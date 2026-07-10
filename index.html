@@ -7400,7 +7400,7 @@ function renderOboeakiList() {
     topRow.appendChild(langEnBtn);
     // カメラ＋日付を右端にまとめるグループ
     const camDateGroup = document.createElement('div');
-    camDateGroup.style.cssText = 'display:flex;align-items:center;gap:4px;margin-left:auto;';
+    camDateGroup.style.cssText = 'display:flex;align-items:center;gap:8px;margin-left:auto;';
     const cameraBtn = document.createElement('button');
     cameraBtn.className = 'ob-camera-btn';
     const photoCount = (e.photos||[]).length;
@@ -7433,8 +7433,48 @@ function renderOboeakiList() {
         slot.className = 'ob-img-slot';
         slot.innerHTML = `<img src="${url}" alt=""><button class="ob-img-slot-del">✕</button>`;
         slot.querySelector('img').addEventListener('click', () => {
-          // 既存のライトボックスと同じ方式で開く
-          const allPhotos = (e.photos||[]).map(u => ({ url: u, memo: '' }));
+          const uid3 = auth.currentUser?.uid;
+          const allPhotos = (e.photos||[]).map((pu, pi) => {
+            const origUrl3 = '';
+            let editedBlobUrl3 = '';
+            return {
+              url: pu,
+              memo: '',
+              onEdit: () => {
+                openPhotoEditor(pu, async (blob, revertUrl) => {
+                  try {
+                    if (revertUrl) {
+                      // 元に戻す
+                      e.photos = (e.photos||[]).map((u2, i2) => i2 === pi ? revertUrl : u2);
+                      if (uid3) await updateDoc(doc(db,'users',uid3,'oboeaki',e.id), { photos: e.photos });
+                      showToast('元の写真に戻しました');
+                      renderImgPanel();
+                      return;
+                    }
+                    // ① blobURLで即時反映
+                    editedBlobUrl3 = URL.createObjectURL(blob);
+                    e.photos = (e.photos||[]).map((u2, i2) => i2 === pi ? editedBlobUrl3 : u2);
+                    renderImgPanel();
+                    // ② バックグラウンドでStorageにアップロード
+                    if (uid3) {
+                      try {
+                        const storageRef = ref(storage, `users/${uid3}/oboeaki/${e.id}/${Date.now()}_edited.jpg`);
+                        await uploadBytes(storageRef, blob);
+                        const newUrl3 = await getDownloadURL(storageRef) + '&t=' + Date.now();
+                        e.photos = (e.photos||[]).map((u2) => u2 === editedBlobUrl3 ? newUrl3 : u2);
+                        await updateDoc(doc(db,'users',uid3,'oboeaki',e.id), { photos: e.photos });
+                      } catch(e3) { showToast('保存に失敗しました'); }
+                    }
+                  } catch(e3) { showToast('エラーが発生しました'); }
+                }, () => {
+                  // 編集後ライトボックスに戻る
+                  const latestUrl3 = editedBlobUrl3 || pu;
+                  const updatedPhotos = (e.photos||[]).map((u2, i2) => ({ url: i2 === pi ? latestUrl3 : u2, memo: '' }));
+                  openLightbox(latestUrl3, '', null, '', updatedPhotos, null);
+                }, origUrl3, null);
+              }
+            };
+          });
           openLightbox(url, '', null, '', allPhotos, null);
         });
         slot.querySelector('.ob-img-slot-del').addEventListener('click', async ev => {
