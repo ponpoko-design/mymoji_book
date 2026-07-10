@@ -5712,7 +5712,7 @@ $('add-usage-back').addEventListener('click', () => navLock(() => {
   }
 }));
 
-function initAddUsage() {
+async function initAddUsage() {
   $('usage-step1').style.display = 'block';
   $('usage-step2').style.display = 'none';
   $('usage-font-search').value = '';
@@ -5727,6 +5727,8 @@ function initAddUsage() {
   auPhotoFiles = [null,null,null,null,null];
   auPhotoMemos = ['','','','',''];
   buildPhotoSlots('au-photos','au-photo-memos-wrap',auPhotoFiles,auPhotoMemos);
+  // 用例写真をサムネに使うため全フォントの用例をロード
+  await ensureUsagesLoaded();
   renderUsageFontList();
 }
 
@@ -7453,24 +7455,30 @@ async function saveOboeakiEntry() {
       const idx = oboeakiEntries.findIndex(x => x.id === oboeakiEditId);
       if (idx >= 0) Object.assign(oboeakiEntries[idx], { memo, lang, fontIds });
     } else {
-      // 新規
-      // まず新規docを作成してIDを取得
+      // 新規：まずテキストだけ即時保存してモーダルを閉じる
       const ref2 = await addDoc(collection(db, 'users', uid, 'oboeaki'), { memo, lang, fontIds, photos: [], createdAt: serverTimestamp() });
-      // ファイルがあれば Storage にアップロード
-      let photos = [];
+      const now = new Date();
+      const newEntry = { id: ref2.id, memo, lang, fontIds, photos: [], createdAt: { toDate: () => now, toMillis: () => now.getTime() } };
+      oboeakiEntries.unshift(newEntry);
+      closeOboeakiOverlay();
+      renderOboeakiList();
+      showToast('保存しました');
+      // 写真はバックグラウンドでアップロード
       const files = (window._obModalPhotoFiles || []).map(x => x.file);
       if (files.length > 0) {
-        const results = await Promise.all(files.map(async (file, idx) => {
-          const compressed = await compressImage(file, 2400, 0.92);
-          const storageRef = ref(storage, `users/${uid}/oboeaki/${ref2.id}/${Date.now()}_${idx}_${file.name}`);
-          await uploadBytes(storageRef, compressed);
-          return await getDownloadURL(storageRef);
-        }));
-        photos = results;
-        await updateDoc(ref2, { photos });
+        try {
+          const results = await Promise.all(files.map(async (file, idx) => {
+            const compressed = await compressImage(file, 2400, 0.92);
+            const storageRef = ref(storage, `users/${uid}/oboeaki/${ref2.id}/${Date.now()}_${idx}_${file.name || 'photo.jpg'}`);
+            await uploadBytes(storageRef, compressed);
+            return await getDownloadURL(storageRef);
+          }));
+          newEntry.photos = results;
+          await updateDoc(ref2, { photos: results });
+          renderOboeakiList();
+        } catch(uploadErr) { console.error('photo upload error', uploadErr); }
       }
-      const now = new Date();
-      oboeakiEntries.unshift({ id: ref2.id, memo, lang, fontIds, photos, createdAt: { toDate: () => now, toMillis: () => now.getTime() } });
+      return;
     }
     closeOboeakiOverlay();
     renderOboeakiList();
