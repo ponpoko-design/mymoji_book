@@ -1545,7 +1545,7 @@
   <!-- 覚えがき新規/編集オーバーレイ -->
   <div id="oboeaki-overlay" style="display:none;position:fixed;inset:0;background:rgba(44,38,64,0.55);align-items:center;justify-content:center;z-index:300;">
     <div style="background:#fff;border-radius:20px;padding:24px 20px 24px;width:calc(100% - 48px);max-width:500px;position:relative;">
-      <div style="font-size:15px;font-weight:700;color:var(--c-text);margin-bottom:14px;" id="oboeaki-overlay-title">新規メモ</div>
+      <div style="font-size:15px;font-weight:700;color:var(--c-text);margin-bottom:14px;" id="oboeaki-overlay-title">新しい覚えがき</div>
       <!-- 言語選択 -->
       <div style="display:flex;gap:8px;margin-bottom:14px;">
         <button class="oboeaki-lang-btn" id="ob-lng-ja" style="flex:1;padding:10px;border-radius:50px;border:1.5px solid var(--c-border);background:linear-gradient(135deg,var(--c-lavender),var(--c-sky));border-color:transparent;color:#5a4a8a;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;touch-action:manipulation;">日本語</button>
@@ -7278,7 +7278,7 @@ function openOboeakiOverlay(entryId) {
   oboeakiSelectedFontIds = [];
   $('oboeaki-font-search-wrap').style.display = 'none';
   $('oboeaki-font-search-input').value = '';
-  $('oboeaki-overlay-title').textContent = '新規メモ';
+  $('oboeaki-overlay-title').textContent = '新しい覚えがき';
   $('oboeaki-memo-ta').value = '';
   setOboeakiLang('ja');
   renderOboeakiFontChips();
@@ -7305,9 +7305,24 @@ function _obModalPhotoRender() {
     const thumb = document.createElement('div');
     thumb.className = 'ob-modal-thumb';
     thumb.innerHTML = `<img src="${url}" alt=""><button class="ob-modal-thumb-del">✕</button>`;
+    thumb.querySelector('img').addEventListener('click', () => {
+      // タップで編集（他の写真と同じフロー）
+      openPhotoEditor(url, async (blob) => {
+        const editedUrl = URL.createObjectURL(blob);
+        // _obModalPhotoFiles の該当エントリも更新
+        if (window._obModalPhotoFiles && window._obModalPhotoFiles[idx]) {
+          window._obModalPhotoFiles[idx] = { file: blob, tempUrl: editedUrl };
+        }
+        oboeakiSelectedPhotoUrls[idx] = editedUrl;
+        _obModalPhotoRender();
+      }, () => {
+        // キャンセル → 何もしない
+      }, '', null);
+    });
     thumb.querySelector('.ob-modal-thumb-del').addEventListener('click', ev => {
       ev.stopPropagation();
       oboeakiSelectedPhotoUrls.splice(idx, 1);
+      if (window._obModalPhotoFiles) window._obModalPhotoFiles.splice(idx, 1);
       _obModalPhotoRender();
     });
     row.insertBefore(thumb, addBtn);
@@ -7320,18 +7335,20 @@ function _obModalPhotoAdd() {
   if (oboeakiSelectedPhotoUrls.length >= 3) return;
   const fileInput = document.createElement('input');
   fileInput.type = 'file'; fileInput.accept = 'image/*';
-  fileInput.addEventListener('change', async () => {
+  fileInput.addEventListener('change', () => {
     const file = fileInput.files[0]; if (!file) return;
-    const uid = auth.currentUser?.uid; if (!uid) return;
-    try {
-      // 一時プレビュー用ObjectURL（保存時にStorageへアップロード）
-      const tempUrl = URL.createObjectURL(file);
-      // 実ファイルも保持しておく（saveOboeakiEntryで使用）
+    const tempUrl = URL.createObjectURL(file);
+    // openPhotoEditor でクロップ・編集（他の写真追加と同じフロー）
+    openPhotoEditor(tempUrl, async (blob) => {
+      // 編集後blobURLをプレビューに追加
+      const editedUrl = URL.createObjectURL(blob);
       if (!window._obModalPhotoFiles) window._obModalPhotoFiles = [];
-      window._obModalPhotoFiles.push({ file, tempUrl });
-      oboeakiSelectedPhotoUrls.push(tempUrl);
+      window._obModalPhotoFiles.push({ file: blob, tempUrl: editedUrl });
+      oboeakiSelectedPhotoUrls.push(editedUrl);
       _obModalPhotoRender();
-    } catch(err) { showToast('写真の読み込みに失敗しました'); }
+    }, () => {
+      // 編集キャンセル → モーダルに戻るだけ
+    }, '', null);
   });
   fileInput.click();
 }
