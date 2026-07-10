@@ -2890,6 +2890,9 @@ const showScreen = id => {
   document.querySelectorAll('.nav-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.screen === id.replace('screen-',''));
   });
+  // 用例採集以外の画面ではau-fabを非表示
+  const auFab = $('au-fab');
+  if (auFab) auFab.style.display = id === 'screen-add-usage' ? 'flex' : 'none';
   window.scrollTo(0,0);
 };
 
@@ -5783,12 +5786,12 @@ async function initAddUsage() {
   auPhotoFiles = [null,null,null,null,null];
   auPhotoMemos = ['','','','',''];
   buildPhotoSlots('au-photos','au-photo-memos-wrap',auPhotoFiles,auPhotoMemos);
+  // FABをすぐ表示（step1のみ）
+  const auFab = $('au-fab');
+  if (auFab) auFab.style.display = 'flex';
   // 用例写真をサムネに使うため全フォントの用例をロード
   await ensureUsagesLoaded();
   renderUsageFontList();
-  // FAB表示（step1のみ）
-  const auFab = $('au-fab');
-  if (auFab) auFab.style.display = 'flex';
 }
 
 // ── 選択済みフォントタグを描画 ──────────────────────────────
