@@ -5774,22 +5774,23 @@ $('add-usage-back').addEventListener('click', () => navLock(() => {
 }));
 
 function initAddUsage() {
+  // step表示だけ即時（FABタップ可能な状態を最速で確保）
   $('usage-step1').style.display = 'block';
   $('usage-step2').style.display = 'none';
-  $('usage-font-search').value = '';
-  $('usage-font-results').innerHTML = '';
-  selectedUsageFontIds = [];
-  usageCatFilter = '';
-  const now = new Date();
-  const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const today = jst.toISOString().split('T')[0];
-  $('au-date').value = today;
-  $('au-place').value = '';
-  auPhotoFiles = [null,null,null,null,null];
-  auPhotoMemos = ['','','','',''];
-  buildPhotoSlots('au-photos','au-photo-memos-wrap',auPhotoFiles,auPhotoMemos);
-  // カード描画はバックグラウンドで。FABはすぐ使える状態にする
+  // 重い処理は次フレームへ
   setTimeout(() => {
+    $('usage-font-search').value = '';
+    $('usage-font-results').innerHTML = '';
+    selectedUsageFontIds = [];
+    usageCatFilter = '';
+    const now = new Date();
+    const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+    const today = jst.toISOString().split('T')[0];
+    $('au-date').value = today;
+    $('au-place').value = '';
+    auPhotoFiles = [null,null,null,null,null];
+    auPhotoMemos = ['','','','',''];
+    buildPhotoSlots('au-photos','au-photo-memos-wrap',auPhotoFiles,auPhotoMemos);
     renderUsageFontList();
     ensureUsagesLoaded().then(() => renderUsageFontList());
   }, 0);
@@ -5898,7 +5899,7 @@ function renderUsageFontList() {
     return true;
   }).sort((a, b) => {
     return b.lastUsageAt.toMillis() - a.lastUsageAt.toMillis();
-  });
+  }).slice(0, 15);
 
   wrap.innerHTML = '';
 
@@ -7257,9 +7258,13 @@ function initOboeaki() {
   $('oboeaki-fab').addEventListener('click', () => openOboeakiOverlay(null));
   // 用例採集FAB
   if ($('au-fab')) {
+    let auFabFired = false;
     const auFabHandler = (e) => {
       e.preventDefault();
       e.stopPropagation();
+      if (auFabFired) return;
+      auFabFired = true;
+      setTimeout(() => { auFabFired = false; }, 500);
       try {
         selectedUsageFontIds = [];
         const now2 = new Date();
