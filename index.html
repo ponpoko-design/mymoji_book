@@ -7080,7 +7080,7 @@ function renderBackupStatus() {
   }
 })();
 
-async function loadFontsWithBackup() {
+async async function loadFontsWithBackup() {
   await loadFonts();
   migrateLastUsageAt(); // 既存用例のlastUsageAt移行（初回1回のみ、バックグラウンドで実行）
   migrateLangField(); // langフィールド移行（初回1回のみ、バックグラウンドで実行）
