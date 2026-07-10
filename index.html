@@ -2971,6 +2971,28 @@ function openFontCountPanel() {
         </div>
         <div style="display:flex;flex-wrap:wrap;">${chipRow(enFonts, enCats, 'en')}</div>
       </div>
+      <!-- 仕切り -->
+      <div style="height:1px;background:var(--c-border);margin:18px 0 14px;"></div>
+      <!-- クイズ出題候補写真数 -->
+      <div style="padding-bottom:8px;">
+        <div style="font-size:13px;font-weight:700;color:var(--c-text-sub);letter-spacing:0.06em;margin-bottom:10px;">クイズ出題候補（写真枚数）</div>
+        ${(() => {
+          // フォント詳細photos（supplement除外）
+          let jaFontPhotos = 0, enFontPhotos = 0;
+          let jaUsagePhotos = 0, enUsagePhotos = 0;
+          for (const f of fonts) {
+            const isEn = getFontLangForCount(f) === 'en';
+            (f.photos||[]).forEach(p => { if (p && p.url && !p.supplement) { if (isEn) enFontPhotos++; else jaFontPhotos++; } });
+            (f.usages||[]).forEach(u => (u.photos||[]).forEach(p => { if (p && p.url && !p.supplement) { if (isEn) enUsagePhotos++; else jaUsagePhotos++; } }));
+          }
+          const row = (label, fp, up) =>
+          const row = (label, fp, up) =>
+            `<div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--c-border);">
+              <span style="font-size:13px;color:var(--c-text-sub);">${label}</span>
+              <span style="font-size:13px;color:var(--c-text);">詳細 <b>${fp}</b>枚　用例 <b>${up}</b>枚　合計 <b>${fp+up}</b>枚</span>
+            </div>`;
+        })()}
+      </div>
     `;
   }
   const panel = $('fontcount-panel');
@@ -7873,6 +7895,9 @@ $('quiz-start-btn').addEventListener('click', async () => {
       : '用例写真が少なすぎます。フォントを登録してください');
     return;
   }
+  if (pool.length < quizCount) {
+    showToast(`写真が${pool.length}枚しかないため、${pool.length}問で出題します`);
+  }
   if (quizMode === 'compare') startCompareQuiz(pool);
   else startQuiz(pool);
 });
@@ -8016,12 +8041,8 @@ function choiceHTML(name, idx, small) {
 
 // ── 4択 ─────────────────────────────────
 function startQuiz(pool) {
-  const seen = new Set();
-  quizQuestions = [];
-  for (const item of pool) {
-    if (!seen.has(item.fontName)) { seen.add(item.fontName); quizQuestions.push(item); }
-    if (quizQuestions.length >= quizCount) break;
-  }
+  // poolはシャッフル済み。quizCount分スライスして出題
+  quizQuestions = pool.slice(0, quizCount);
   quizCurrent = 0; quizScore = 0; quizLog = [];
   quizShowPlay();
   renderQuizQuestion();
