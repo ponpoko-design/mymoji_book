@@ -340,13 +340,11 @@
   .font-card {
     background: var(--c-card);
     border-radius: var(--radius);
-    padding: 0;
-    display: flex; align-items: stretch;
+    padding: 16px 18px;
+    display: flex; align-items: center; gap: 14px;
     box-shadow: 0 2px 16px rgba(155,127,232,0.08);
     border: 1px solid var(--c-border);
-    overflow: hidden;
     cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
-    gap: 0;
   }
   .font-card:active { transform: scale(0.98); box-shadow: 0 1px 8px rgba(155,127,232,0.1); }
 
@@ -391,15 +389,15 @@
   }
 
   .font-thumb {
-    width: 72px; flex-shrink: 0; align-self: stretch;
-    background: var(--c-border);
+    width: 52px; height: 52px; border-radius: 14px;
+    object-fit: cover; background: var(--c-border); flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
     font-size: 24px; color: var(--c-text-sub);
     overflow: hidden;
   }
   .font-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
-  .font-info { flex: 1; min-width: 0; padding: 14px 0 14px 16px; }
+  .font-info { flex: 1; min-width: 0; }
   .font-name { font-size: 18px; font-weight: 700; }
   .font-maker { font-size: 14px; color: var(--c-text-sub); margin-top: 2px; }
   .font-cat-badge {
@@ -1353,10 +1351,6 @@
         </div>
         <div id="usage-font-results" class="font-list" style="padding:0;"></div>
         </div>
-      <!-- カメラFAB（step1表示中） -->
-      <button id="au-fab" style="position:fixed;bottom:calc(var(--nav-h) + 16px);right:16px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#b8a0f0,#7ab8f5);border:none;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(150,120,240,0.35);z-index:50;touch-action:manipulation;">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-      </button>
       <!-- Step 2: form -->
       <div id="usage-step2" style="display:none;">
         <!-- 登録フォント欄 -->
@@ -1584,7 +1578,10 @@
     <div id="oboeaki-list" style="padding:0 16px 120px;overflow-y:auto;"></div>
 
     <!-- 新規メモFAB -->
-    <button id="oboeaki-fab" style="position:fixed;bottom:calc(var(--nav-h) + 16px);right:16px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#b8a0f0,#7ab8f5);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(150,120,240,0.35);z-index:50;touch-action:manipulation;">
+    <button id="au-fab" style="position:fixed;bottom:calc(var(--nav-h) + 16px);right:16px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#b8a0f0,#7ab8f5);border:none;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(150,120,240,0.35);z-index:50;touch-action:manipulation;">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+  </button>
+  <button id="oboeaki-fab" style="position:fixed;bottom:calc(var(--nav-h) + 16px);right:16px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#b8a0f0,#7ab8f5);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(150,120,240,0.35);z-index:50;touch-action:manipulation;">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 014 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
     </button>
   </div>
@@ -3274,7 +3271,8 @@ function renderFontList() {
 
   wrap.querySelectorAll('.font-card').forEach(el => {
     el.addEventListener('click', e => {
-      if (e.target.classList.contains('fav-btn')) return;
+      if (e.target.closest('.fav-btn')) return;
+      homeScrollY = window.scrollY;
       openDetail(el.dataset.id);
     });
   });
