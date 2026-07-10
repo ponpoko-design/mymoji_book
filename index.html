@@ -1572,7 +1572,7 @@
     <div id="oboeaki-list" style="padding:0 16px 120px;overflow-y:auto;"></div>
 
 
-  <button id="oboeaki-fab" style="position:fixed;bottom:calc(var(--nav-h) + 16px);right:16px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#b8a0f0,#7ab8f5);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(150,120,240,0.35);z-index:50;touch-action:manipulation;">
+  <button id="oboeaki-fab" style="position:fixed;bottom:calc(var(--nav-h) + 16px);right:16px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#b8a0f0,#7ab8f5);border:none;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(150,120,240,0.35);z-index:50;touch-action:manipulation;">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 014 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
     </button>
   </div>
@@ -2884,9 +2884,11 @@ const showScreen = id => {
   document.querySelectorAll('.nav-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.screen === id.replace('screen-',''));
   });
-  // au-fab：用例採集画面のみ表示
+  // FAB切り替え：画面に応じて1つだけ表示
   const auFab = $('au-fab');
+  const obFab = $('oboeaki-fab');
   if (auFab) auFab.style.display = id === 'screen-add-usage' ? 'flex' : 'none';
+  if (obFab) obFab.style.display = id === 'screen-oboeaki' ? 'flex' : 'none';
   window.scrollTo(0,0);
 };
 
