@@ -2887,7 +2887,9 @@ const showScreen = id => {
   // FAB切り替え：画面に応じて1つだけ表示
   const auFab = $('au-fab');
   const obFab = $('oboeaki-fab');
-  if (auFab) auFab.style.display = id === 'screen-add-usage' ? 'flex' : 'none';
+  const step2 = $('usage-step2');
+  const step2Visible = step2 && step2.style.display !== 'none';
+  if (auFab) auFab.style.display = (id === 'screen-add-usage' && !step2Visible) ? 'flex' : 'none';
   if (obFab) obFab.style.display = id === 'screen-oboeaki' ? 'flex' : 'none';
   window.scrollTo(0,0);
 };
@@ -5784,6 +5786,8 @@ function initAddUsage() {
   buildPhotoSlots('au-photos','au-photo-memos-wrap',auPhotoFiles,auPhotoMemos);
   // カード読み込みはバックグラウンドで（FABはすぐ使える）
   ensureUsagesLoaded().then(() => renderUsageFontList());
+  // step1表示中はFABを出す
+  if ($('au-fab')) $('au-fab').style.display = 'flex';
 }
 
 // ── 選択済みフォントタグを描画 ──────────────────────────────
@@ -7248,6 +7252,13 @@ function initOboeaki() {
     $('au-fab').addEventListener('click', () => {
       try {
         selectedUsageFontIds = [];
+        const now = new Date();
+        const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+        const today = jst.toISOString().split('T')[0];
+        if ($('au-date')) $('au-date').value = today;
+        if ($('au-place')) $('au-place').value = '';
+        auPhotoFiles = [null,null,null,null,null];
+        auPhotoMemos = ['','','','',''];
         if ($('usage-step1')) $('usage-step1').style.display = 'none';
         if ($('usage-step2')) $('usage-step2').style.display = 'block';
         $('au-fab').style.display = 'none';
