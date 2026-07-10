@@ -1081,12 +1081,13 @@
   }
   .ob-modal-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
   .ob-modal-thumb-del {
-    position: absolute; top: 2px; right: 2px;
-    width: 16px; height: 16px; border-radius: 50%;
-    background: rgba(44,38,64,0.6); border: none;
-    color: #fff; font-size: 9px;
+    position: absolute; top: 4px; right: 4px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: rgba(44,38,64,0.75); border: none;
+    color: #fff; font-size: 11px;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer; touch-action: manipulation;
+    z-index: 10; pointer-events: auto;
   }
   .ob-modal-add-btn {
     width: 100px; height: 100px; border-radius: 10px;
@@ -7304,7 +7305,7 @@ function _obModalPhotoRender() {
   oboeakiSelectedPhotoUrls.forEach((url, idx) => {
     const thumb = document.createElement('div');
     thumb.className = 'ob-modal-thumb';
-    thumb.innerHTML = `<img src="${url}" alt=""><button class="ob-modal-thumb-del">✕</button>`;
+    thumb.innerHTML = `<img src="${url}" alt="" style="pointer-events:none;"><button class="ob-modal-thumb-del" style="z-index:10;">✕</button>`;
     thumb.querySelector('img').addEventListener('click', () => {
       // タップで編集（他の写真と同じフロー）
       openPhotoEditor(url, async (blob) => {
@@ -7346,12 +7347,7 @@ function _obModalPhotoRender() {
           if (!window._obModalPhotoFiles) window._obModalPhotoFiles = [];
           window._obModalPhotoFiles.push({ file, tempUrl });
           oboeakiSelectedPhotoUrls.push(tempUrl);
-          showToast('写真追加: ' + oboeakiSelectedPhotoUrls.length + '枚');
           _obModalPhotoRender();
-          // デバッグ：rowの状態確認
-          const row2 = $('ob-modal-photo-row');
-          const thumbs = row2 ? row2.querySelectorAll('.ob-modal-thumb').length : -1;
-          showToast('サムネ数: ' + thumbs);
         }
         document.body.removeChild(input);
       });
