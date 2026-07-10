@@ -8068,18 +8068,27 @@ function renderQuizQuestion() {
     // highlightRectがあればグレーオーバーレイをcanvasで描画
     if (q.highlightRect) {
       const r = q.highlightRect;
-      const area = $('quiz-photo-area');
+      // canvasをquiz-photo-inner(imgと同じ親)に入れることでpinch transformに追従させる
+      const inner = $('quiz-photo-inner');
       setTimeout(() => {
         const iw = img.offsetWidth, ih = img.offsetHeight;
         const canvas = document.createElement('canvas');
         canvas.id = 'quiz-hl-canvas';
         canvas.width = iw; canvas.height = ih;
-        canvas.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;border-radius:10px;';
+        // imgと完全に重なる位置に絶対配置（innerはflexでimgをセンタリング済み）
+        canvas.style.cssText = 'position:absolute;pointer-events:none;border-radius:10px;';
+        // imgの位置に合わせてcanvasを配置
+        const imgRect = img.getBoundingClientRect();
+        const innerRect = inner.getBoundingClientRect();
+        canvas.style.left = (imgRect.left - innerRect.left) + 'px';
+        canvas.style.top  = (imgRect.top  - innerRect.top)  + 'px';
+        canvas.style.width  = iw + 'px';
+        canvas.style.height = ih + 'px';
         const ctx = canvas.getContext('2d');
         ctx.fillStyle = 'rgba(0,0,0,0.5)';
         ctx.fillRect(0, 0, iw, ih);
         ctx.clearRect(r.x * iw, r.y * ih, r.w * iw, r.h * ih);
-        area.appendChild(canvas);
+        inner.appendChild(canvas);
       }, 50);
     }
   };
