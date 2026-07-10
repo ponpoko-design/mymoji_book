@@ -2916,13 +2916,9 @@ function closeMenu() {
 async function openFontCountPanel() {
   // 用例を全フォント分ロードしてからカウント
   await ensureUsagesLoaded();
-  const getFontLangForCount = f => {
-    if (f.lang) return f.lang;
-    const EN_CATS_MENU = new Set(['セリフ','サンセリフ','スクリプト','ブラックレター']);
-    return EN_CATS_MENU.has(f.category) ? 'en' : 'ja';
-  };
-  const jaFonts = fonts.filter(f => getFontLangForCount(f) === 'ja');
-  const enFonts = fonts.filter(f => getFontLangForCount(f) === 'en');
+  // グローバルのgetFontLangを使用（カテゴリー+FONT_DB+langフィールド優先）
+  const jaFonts = fonts.filter(f => getFontLang(f) === 'ja');
+  const enFonts = fonts.filter(f => getFontLang(f) === 'en');
   const jaCats = ['ゴシック','明朝','丸ゴ','UD','その他'];
   const enCats = ['セリフ','サンセリフ','スクリプト','ブラックレター','その他'];
 
@@ -2950,7 +2946,7 @@ async function openFontCountPanel() {
     // クイズ出題候補写真数を事前計算
     let jaFontPhotos = 0, enFontPhotos = 0, jaUsagePhotos = 0, enUsagePhotos = 0;
     for (const f of fonts) {
-      const isEn = getFontLangForCount(f) === 'en';
+      const isEn = getFontLang(f) === 'en';
       (f.photos||[]).forEach(p => { if (p && p.url && !p.supplement) { if (isEn) enFontPhotos++; else jaFontPhotos++; } });
       (f.usages||[]).forEach(u => (u.photos||[]).forEach(p => { if (p && p.url && !p.supplement) { if (isEn) enUsagePhotos++; else jaUsagePhotos++; } }));
     }
@@ -7790,7 +7786,6 @@ let quizCount = 10;
 
 const jaNameSet = new Set(FONT_DB.ja.map(x => x.name));
 const enNameSet = new Set(FONT_DB.en.map(x => x.name));
-
 // ── chip / mode ─────────────────────────
 document.querySelectorAll('.quiz-chip').forEach(chip => {
   chip.addEventListener('click', () => {
@@ -7920,10 +7915,9 @@ function buildQuizPool() {
   for (const font of fonts) {
     if (!font.photos || !font.photos.length) continue;
     if (!wantRandom) {
-      const isJa = jaNameSet.has(font.name);
-      const isEn = enNameSet.has(font.name);
-      if (wantJa && !wantEn && !isJa) continue;
-      if (wantEn && !wantJa && !isEn) continue;
+      const lang = getFontLang(font);
+      if (wantJa && !wantEn && lang !== 'ja') continue;
+      if (wantEn && !wantJa && lang !== 'en') continue;
     }
     if (catFilters.length && !catFilters.includes(font.category)) continue;
     if (wantBasic && !wantCheck && !font.basic) continue;
@@ -7965,10 +7959,9 @@ function buildUsagePool() {
     if (!font.usages || !font.usages.length) continue;
     // 言語フィルター
     if (!wantRandom) {
-      const isJa = jaNameSet.has(font.name);
-      const isEn = enNameSet.has(font.name);
-      if (wantJa && !wantEn && !isJa) continue;
-      if (wantEn && !wantJa && !isEn) continue;
+      const lang = getFontLang(font);
+      if (wantJa && !wantEn && lang !== 'ja') continue;
+      if (wantEn && !wantJa && lang !== 'en') continue;
     }
     if (catFilters.length && !catFilters.includes(font.category)) continue;
     if (wantBasic && !wantCheck && !font.basic) continue;
@@ -7997,11 +7990,12 @@ function buildUsagePool() {
 const JA_CATS_QUIZ = new Set(['ゴシック','明朝','丸ゴ','UD']);
 function getFontLang(f) {
   if (f.lang) return f.lang;
-  if (jaNameSet.has(f.name)) return 'ja';
-  if (enNameSet.has(f.name)) return 'en';
+  const EN_CATS = new Set(['セリフ','サンセリフ','スクリプト','ブラックレター']);
+  if (EN_CATS.has(f.category)) return 'en';
   if (JA_CATS_QUIZ.has(f.category)) return 'ja';
-  if (f.category === 'セリフ' || f.category === 'サンセリフ') return 'en';
-  return null;
+  if (enNameSet.has(f.name)) return 'en';
+  if (jaNameSet.has(f.name)) return 'ja';
+  return 'ja'; // デフォルト
 }
 
 function buildChoices(correctName) {
