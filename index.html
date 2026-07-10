@@ -7346,7 +7346,12 @@ function _obModalPhotoRender() {
           if (!window._obModalPhotoFiles) window._obModalPhotoFiles = [];
           window._obModalPhotoFiles.push({ file, tempUrl });
           oboeakiSelectedPhotoUrls.push(tempUrl);
+          showToast('写真追加: ' + oboeakiSelectedPhotoUrls.length + '枚');
           _obModalPhotoRender();
+          // デバッグ：rowの状態確認
+          const row2 = $('ob-modal-photo-row');
+          const thumbs = row2 ? row2.querySelectorAll('.ob-modal-thumb').length : -1;
+          showToast('サムネ数: ' + thumbs);
         }
         document.body.removeChild(input);
       });
