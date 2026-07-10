@@ -5788,10 +5788,11 @@ function initAddUsage() {
   auPhotoFiles = [null,null,null,null,null];
   auPhotoMemos = ['','','','',''];
   buildPhotoSlots('au-photos','au-photo-memos-wrap',auPhotoFiles,auPhotoMemos);
-  // 先行描画（lastUsageAtありのフォントをすぐ表示）→ FABもすぐ使える
-  renderUsageFontList();
-  // バックグラウンドで用例写真を読み込んで再描画
-  ensureUsagesLoaded().then(() => renderUsageFontList());
+  // カード描画はバックグラウンドで。FABはすぐ使える状態にする
+  setTimeout(() => {
+    renderUsageFontList();
+    ensureUsagesLoaded().then(() => renderUsageFontList());
+  }, 0);
 }
 
 // ── 選択済みフォントタグを描画 ──────────────────────────────
@@ -7256,16 +7257,27 @@ function initOboeaki() {
   $('oboeaki-fab').addEventListener('click', () => openOboeakiOverlay(null));
   // 用例採集FAB
   if ($('au-fab')) {
-    $('au-fab').addEventListener('click', () => {
+    const auFabHandler = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       try {
         selectedUsageFontIds = [];
+        const now2 = new Date();
+        const jst2 = new Date(now2.getTime() + 9 * 60 * 60 * 1000);
+        const today2 = jst2.toISOString().split('T')[0];
+        if ($('au-date')) $('au-date').value = today2;
+        if ($('au-place')) $('au-place').value = '';
+        auPhotoFiles = [null,null,null,null,null];
+        auPhotoMemos = ['','','','',''];
         if ($('usage-step1')) $('usage-step1').style.display = 'none';
         if ($('usage-step2')) $('usage-step2').style.display = 'block';
         $('au-fab').style.display = 'none';
         renderSelectedFontTags();
         buildPhotoSlots('au-photos','au-photo-memos-wrap',auPhotoFiles,auPhotoMemos);
       } catch(e) { console.error('au-fab error:', e); }
-    });
+    };
+    $('au-fab').addEventListener('touchstart', auFabHandler, { passive: false });
+    $('au-fab').addEventListener('click', auFabHandler);
   }
 
   // 言語ボタン
