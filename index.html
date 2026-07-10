@@ -1028,7 +1028,6 @@
     padding: 2px 4px; border-radius: 8px;
     color: var(--c-text-sub); position: relative;
     flex-shrink: 0; touch-action: manipulation;
-    margin-left: auto;
   }
   .ob-camera-btn:active { opacity: .65; }
   .ob-camera-badge {
@@ -7395,11 +7394,13 @@ function renderOboeakiList() {
     const dateLabel = document.createElement('span');
     dateLabel.className = 'ob-date-label';
     dateLabel.textContent = date;
-    dateLabel.style.cssText = 'font-size:12px;color:var(--c-text-sub);margin-left:auto;font-weight:600;';
+    dateLabel.style.cssText = 'font-size:12px;color:var(--c-text-sub);font-weight:600;';
 
     topRow.appendChild(langJaBtn);
     topRow.appendChild(langEnBtn);
-    // カメラアイコン（日付の左・右寄せ）
+    // カメラ＋日付を右端にまとめるグループ
+    const camDateGroup = document.createElement('div');
+    camDateGroup.style.cssText = 'display:flex;align-items:center;gap:4px;margin-left:auto;';
     const cameraBtn = document.createElement('button');
     cameraBtn.className = 'ob-camera-btn';
     const photoCount = (e.photos||[]).length;
@@ -7408,8 +7409,9 @@ function renderOboeakiList() {
     cameraBtn.addEventListener('click', () => {
       imgPanel.classList.toggle('open');
     });
-    topRow.appendChild(cameraBtn);
-    topRow.appendChild(dateLabel);
+    camDateGroup.appendChild(cameraBtn);
+    camDateGroup.appendChild(dateLabel);
+    topRow.appendChild(camDateGroup);
 
     // ── メモ枠 ──
     const card = document.createElement('div');
@@ -7431,8 +7433,9 @@ function renderOboeakiList() {
         slot.className = 'ob-img-slot';
         slot.innerHTML = `<img src="${url}" alt=""><button class="ob-img-slot-del">✕</button>`;
         slot.querySelector('img').addEventListener('click', () => {
-          // 既存ライトボックスと同じ方式で開く
-          _lightboxShow(url);
+          // 既存のライトボックスと同じ方式で開く
+          const allPhotos = (e.photos||[]).map(u => ({ url: u, memo: '' }));
+          openLightbox(url, '', null, '', allPhotos, null);
         });
         slot.querySelector('.ob-img-slot-del').addEventListener('click', async ev => {
           ev.stopPropagation();
