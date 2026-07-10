@@ -2887,9 +2887,7 @@ const showScreen = id => {
   // FAB切り替え：画面に応じて1つだけ表示
   const auFab = $('au-fab');
   const obFab = $('oboeaki-fab');
-  const step2 = $('usage-step2');
-  const step2Visible = step2 && step2.style.display !== 'none';
-  if (auFab) auFab.style.display = (id === 'screen-add-usage' && !step2Visible) ? 'flex' : 'none';
+  if (auFab) auFab.style.display = id === 'screen-add-usage' ? 'flex' : 'none';
   if (obFab) obFab.style.display = id === 'screen-oboeaki' ? 'flex' : 'none';
   window.scrollTo(0,0);
 };
@@ -3202,6 +3200,12 @@ function renderCarousel() {
 function renderFontList() {
   const wrap = $('font-list');
   let list = [...fonts];
+  // デフォルトソート：updatedAt → lastUsageAt → createdAt の新しい順
+  list.sort((a, b) => {
+    const ta = a.updatedAt ? a.updatedAt.toMillis() : (a.lastUsageAt ? a.lastUsageAt.toMillis() : (a.createdAt ? a.createdAt.toMillis() : 0));
+    const tb = b.updatedAt ? b.updatedAt.toMillis() : (b.lastUsageAt ? b.lastUsageAt.toMillis() : (b.createdAt ? b.createdAt.toMillis() : 0));
+    return tb - ta;
+  });
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
     list = list.filter(f =>
@@ -3908,7 +3912,7 @@ async function openDetail(id) {
           const [selected] = newPhotos.splice(idx, 1);
           newPhotos.unshift(selected);
           try {
-            await updateDoc(doc(db,'fonts',id), { photos: newPhotos });
+            await updateDoc(doc(db,'fonts',id), { photos: newPhotos, updatedAt: serverTimestamp() });
             f2.photos = newPhotos;
             showToast('カバー写真を変更しました');
             openDetail(id);
@@ -3919,7 +3923,7 @@ async function openDetail(id) {
           const origUrl = f2.photos[idx].originalUrl;
           f2.photos[idx] = { ...f2.photos[idx], url: origUrl, originalUrl: null };
           try {
-            await updateDoc(doc(db,'fonts',id), { photos: f2.photos });
+            await updateDoc(doc(db,'fonts',id), { photos: f2.photos, updatedAt: serverTimestamp() });
             showToast('元の写真に戻しました');
             openDetail(id);
           } catch(e2) { showToast('エラーが発生しました'); }
@@ -3957,7 +3961,7 @@ async function openDetail(id) {
                 if (f2?.photos) {
                   const idx2 = f2.photos.findIndex(ph => ph.url === p.url);
                   if (idx2 >= 0) f2.photos[idx2] = { ...f2.photos[idx2], url: revertUrl, originalUrl: null };
-                  await updateDoc(doc(db,'fonts',id), { photos: f2.photos });
+                  await updateDoc(doc(db,'fonts',id), { photos: f2.photos, updatedAt: serverTimestamp() });
                   showToast('元の写真に戻しました');
                   openDetail(id);
                 }
@@ -3982,7 +3986,7 @@ async function openDetail(id) {
                 if (f2?.photos) {
                   const idx2 = f2.photos.findIndex(ph => ph.url === editedBlobUrl);
                   if (idx2 >= 0) f2.photos[idx2] = { ...f2.photos[idx2], url: newUrl };
-                  await updateDoc(doc(db,'fonts',id), { photos: f2.photos });
+                  await updateDoc(doc(db,'fonts',id), { photos: f2.photos, updatedAt: serverTimestamp() });
                 }
               } catch(e2) { showToast('保存に失敗しました'); }
             } catch(e2) { showToast('エラーが発生しました'); }
@@ -4031,7 +4035,7 @@ async function openDetail(id) {
           await uploadBytes(storageRef, compressed);
           const url = await getDownloadURL(storageRef);
           const newPhotos = [...(f2.photos||[]), { url, memo: '' }];
-          await updateDoc(doc(db,'fonts',id), { photos: newPhotos });
+          await updateDoc(doc(db,'fonts',id), { photos: newPhotos, updatedAt: serverTimestamp() });
           f2.photos = newPhotos;
           showToast('写真を追加しました');
           openDetail(id);
@@ -4079,7 +4083,7 @@ async function openDetail(id) {
           if (!targetFont) return;
           // 自分側に追加
           const newChecks = [...(f.checks||[]), targetId];
-          await updateDoc(doc(db,'fonts',id), { checks: newChecks });
+          await updateDoc(doc(db,'fonts',id), { checks: newChecks, updatedAt: serverTimestamp() });
           f.checks = newChecks;
           // 相手側にも自動追加（双方向リンク）
           const targetChecks = targetFont.checks || [];
@@ -4101,7 +4105,7 @@ async function openDetail(id) {
           chip.querySelector('.check-remove-btn').addEventListener('click', async () => {
             const removeId = chip.dataset.id;
             const nc = (f.checks||[]).filter(x => x !== removeId);
-            await updateDoc(doc(db,'fonts',id), { checks: nc });
+            await updateDoc(doc(db,'fonts',id), { checks: nc, updatedAt: serverTimestamp() });
             f.checks = nc;
             const tf = fonts.find(x=>x.id===removeId);
             if (tf) {
@@ -4124,7 +4128,7 @@ async function openDetail(id) {
   // CHECKチップ：フォント名→詳細、✕→削除（ボタン分離）
   async function removeCheckFont(removeId) {
     const newChecks = (f.checks||[]).filter(x => x !== removeId);
-    await updateDoc(doc(db,'fonts',id), { checks: newChecks });
+    await updateDoc(doc(db,'fonts',id), { checks: newChecks, updatedAt: serverTimestamp() });
     f.checks = newChecks;
     const targetFont = fonts.find(x=>x.id===removeId);
     if (targetFont) {
@@ -4168,9 +4172,9 @@ async function openDetail(id) {
     memoTimer = setTimeout(async () => {
       const newMemo = memoArea.value;
       try {
-        await updateDoc(doc(db,'fonts',id), { memo: newMemo });
+        await updateDoc(doc(db,'fonts',id), { memo: newMemo, updatedAt: serverTimestamp() });
         const f2 = fonts.find(x=>x.id===id);
-        if (f2) f2.memo = newMemo;
+        if (f2) { f2.memo = newMemo; f2.updatedAt = { toMillis: () => Date.now() }; }
         memoStatus.textContent = '保存しました ✓';
         setTimeout(() => { memoStatus.textContent = ''; }, 2000);
       } catch(e) { memoStatus.textContent = '保存に失敗しました'; }
@@ -5784,10 +5788,10 @@ function initAddUsage() {
   auPhotoFiles = [null,null,null,null,null];
   auPhotoMemos = ['','','','',''];
   buildPhotoSlots('au-photos','au-photo-memos-wrap',auPhotoFiles,auPhotoMemos);
-  // カード読み込みはバックグラウンドで（FABはすぐ使える）
+  // 先行描画（lastUsageAtありのフォントをすぐ表示）→ FABもすぐ使える
+  renderUsageFontList();
+  // バックグラウンドで用例写真を読み込んで再描画
   ensureUsagesLoaded().then(() => renderUsageFontList());
-  // step1表示中はFABを出す
-  if ($('au-fab')) $('au-fab').style.display = 'flex';
 }
 
 // ── 選択済みフォントタグを描画 ──────────────────────────────
@@ -5886,11 +5890,14 @@ $('usage-add-font-search').addEventListener('input', () => renderAddFontPanelLis
 
 function renderUsageFontList() {
   const wrap = $('usage-font-results');
-  // 最近登録した用例順（lastUsageAtが新しい順）
-  let list = [...fonts].filter(f => f.lastUsageAt).sort((a, b) => {
+  // 用例があるフォントのみ（lastUsageAtあり、かつusagesロード済みなら1件以上）
+  let list = [...fonts].filter(f => {
+    if (!f.lastUsageAt) return false;
+    if (f._usagesLoaded && (!f.usages || f.usages.length === 0)) return false;
+    return true;
+  }).sort((a, b) => {
     return b.lastUsageAt.toMillis() - a.lastUsageAt.toMillis();
   });
-  // 用例がないフォントはフォント未定カードの後ろに追加しない（用例があるものだけ）
 
   wrap.innerHTML = '';
 
@@ -6014,13 +6021,13 @@ $('au-submit').addEventListener('click', async () => {
         addDoc(collection(db,'fonts',fid,'usages'), usageData)
       ));
 
-      // 各フォントのlastUsageAtを更新（フォントリストのソートに使用）
+      // 各フォントのlastUsageAt・updatedAtを更新（フォントリストのソートに使用）
       await Promise.all(selectedUsageFontIds.map(fid =>
-        updateDoc(doc(db,'fonts',fid), { lastUsageAt: serverTimestamp() })
+        updateDoc(doc(db,'fonts',fid), { lastUsageAt: serverTimestamp(), updatedAt: serverTimestamp() })
       ));
       selectedUsageFontIds.forEach(fid => {
         const f = fonts.find(f => f.id === fid);
-        if (f) f.lastUsageAt = { toMillis: () => Date.now() };
+        if (f) { f.lastUsageAt = { toMillis: () => Date.now() }; f.updatedAt = { toMillis: () => Date.now() }; }
       });
 
       // 複数フォントの場合は相互にrelatedUsagesを書き込む
@@ -7252,13 +7259,6 @@ function initOboeaki() {
     $('au-fab').addEventListener('click', () => {
       try {
         selectedUsageFontIds = [];
-        const now = new Date();
-        const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-        const today = jst.toISOString().split('T')[0];
-        if ($('au-date')) $('au-date').value = today;
-        if ($('au-place')) $('au-place').value = '';
-        auPhotoFiles = [null,null,null,null,null];
-        auPhotoMemos = ['','','','',''];
         if ($('usage-step1')) $('usage-step1').style.display = 'none';
         if ($('usage-step2')) $('usage-step2').style.display = 'block';
         $('au-fab').style.display = 'none';
