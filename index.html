@@ -348,7 +348,7 @@
   }
   .font-card:active { transform: scale(0.98); box-shadow: 0 1px 8px rgba(155,127,232,0.1); }
 
-  /* 用例採集カード（横長サムネ＋用例バッジ） */
+  /* 用例採集カード（左：フォント詳細 / 右サムネ：用例詳細） */
   .usage-card-au {
     background: var(--c-card);
     border-radius: var(--radius);
@@ -356,27 +356,36 @@
     box-shadow: 0 2px 16px rgba(155,127,232,0.08);
     margin-bottom: 8px;
     display: flex; align-items: stretch;
-    overflow: hidden; cursor: pointer;
-    position: relative;
+    overflow: hidden; position: relative;
   }
-  .usage-card-au:active { transform: scale(0.98); }
-  .usage-card-au .au-thumb {
+  .au-left {
+    flex: 1; min-width: 0;
+    padding: 16px 12px 16px 18px;
+    display: flex; align-items: center;
+    cursor: pointer; transition: background .15s;
+  }
+  .au-left:active { background: rgba(211,195,252,0.15); }
+  .au-left-text { flex: 1; min-width: 0; }
+  .au-divider { width: 1px; background: var(--c-border); flex-shrink: 0; }
+  .au-right {
     width: 90px; flex-shrink: 0;
-    background: var(--c-border);
-    overflow: hidden; display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+    cursor: pointer; background: var(--c-border);
+    display: flex; align-items: center; justify-content: center;
   }
-  .usage-card-au .au-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
-  .usage-card-au .au-info {
-    flex:1; padding:14px 14px 14px 16px;
-    display:flex; align-items:center; gap:10px;
+  .au-right img { width:100%; height:100%; object-fit:cover; display:block; transition: opacity .15s; }
+  .au-right:active img { opacity: .82; }
+  .au-right:active .au-right-noimg { opacity: .7; }
+  .au-right-noimg {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px; color: var(--c-text-sub); width: 100%; height: 100%;
   }
-  .usage-card-au .au-text { flex:1; min-width:0; }
+  .au-right-noimg span { font-size: 9px; }
   .usage-badge {
-    position: absolute; top: 8px; right: 10px;
-    font-size: 10px; font-weight: 700; letter-spacing: .06em;
-    color: #7a5af8;
-    background: rgba(180,154,252,0.2);
-    padding: 2px 8px; border-radius: 20px;
+    position: absolute; top: 6px; right: 6px;
+    font-size: 9px; font-weight: 700; letter-spacing:.04em;
+    color: #fff; background: rgba(122,90,248,0.75);
+    padding: 2px 6px; border-radius: 20px; pointer-events: none;
   }
 
   .font-thumb {
@@ -5892,22 +5901,20 @@ function renderUsageFontList() {
       card.className = 'usage-card-au';
       card.dataset.unassignedId = u.id;
       card.innerHTML = `
-        <span class="usage-badge">用例</span>
-        <div class="au-thumb">
-          ${thumbUrl
-            ? `<img src="${thumbUrl}" alt="">`
-            : `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c0b8d8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>`}
-        </div>
-        <div class="au-info">
-          <div class="au-text">
+        <div class="au-left" style="cursor:default;">
+          <div class="au-left-text">
             <div class="font-name" style="color:var(--c-text-sub);">フォント未定</div>
             <div class="font-maker">${u.date||''}</div>
             <div class="font-maker">${u.place||'場所未記入'}</div>
           </div>
-          <span style="color:var(--c-text-sub);font-size:20px;">›</span>
+        </div>
+        <div class="au-divider"></div>
+        <div class="au-right">
+          ${thumbUrl ? `<img src="${thumbUrl}" alt="">` : `<div class="au-right-noimg"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--c-lavender)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg><span>用例詳細</span></div>`}
+          <span class="usage-badge">用例</span>
         </div>
       `;
-      card.addEventListener('click', () => { addUsageFrom = 'add-usage'; openUnassignedDetail(u.id); });
+      card.querySelector('.au-right').addEventListener('click', () => { addUsageFrom = 'add-usage'; openUnassignedDetail(u.id); });
       wrap.appendChild(card);
     });
   }
@@ -5930,27 +5937,29 @@ function renderUsageFontList() {
     card.className = 'usage-card-au';
     card.dataset.id = f.id;
     card.innerHTML = `
-      <span class="usage-badge">用例</span>
-      <div class="au-thumb">
-        ${thumbUrl
-          ? `<img src="${thumbUrl}" alt="">`
-          : `<svg width="28" height="28" viewBox="0 0 64 64" fill="none"><line x1="32" y1="8" x2="8" y2="56" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="32" y1="8" x2="56" y2="56" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="18" y1="38" x2="46" y2="38" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`}
-      </div>
-      <div class="au-info">
-        <div class="au-text">
-          <div class="font-name">${f.name}</div>
+      <div class="au-left">
+        <div class="au-left-text">
+          <div class="font-name">${f.name} <span style="color:var(--c-text-sub);font-size:16px;font-weight:400;">›</span></div>
           <div class="font-maker">${f.maker||''}</div>
           <div style="display:flex;align-items:center;gap:5px;margin-top:4px;">
             <span class="font-cat-badge" style="margin-top:0;">${f.category||''}</span>
             ${f.basic ? `<span style="display:inline-flex;align-items:center;">${CROWN_FILLED}</span>` : ''}
-            ${f.favorite ? '<span style="color:#e06090;display:flex;align-items:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="#e06090" stroke="#e06090" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></span>' : ''}
+            ${f.favorite ? '<span style="color:#e06090;"><svg width="14" height="14" viewBox="0 0 24 24" fill="#e06090" stroke="#e06090" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></span>' : ''}
           </div>
         </div>
-        <span style="color:var(--c-text-sub);font-size:20px;">›</span>
+      </div>
+      <div class="au-divider"></div>
+      <div class="au-right">
+        ${thumbUrl ? `<img src="${thumbUrl}" alt="">` : `<div class="au-right-noimg"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--c-lavender)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg><span>用例詳細</span></div>`}
+        <span class="usage-badge">用例</span>
       </div>
     `;
-    // カードタップ → 用例があれば用例詳細へ、なければ用例追加へ
-    card.addEventListener('click', () => {
+    // 左エリア → フォント詳細
+    card.querySelector('.au-left').addEventListener('click', () => {
+      openDetail(f.id);
+    });
+    // 右エリア（サムネ）→ 用例詳細があれば詳細へ、なければ用例追加へ
+    card.querySelector('.au-right').addEventListener('click', () => {
       if (usageId) {
         addUsageFrom = 'add-usage';
         openUsageDetail(f.id, usageId, f.usages);
