@@ -2986,7 +2986,6 @@ function openFontCountPanel() {
             (f.usages||[]).forEach(u => (u.photos||[]).forEach(p => { if (p && p.url && !p.supplement) { if (isEn) enUsagePhotos++; else jaUsagePhotos++; } }));
           }
           const row = (label, fp, up) =>
-          const row = (label, fp, up) =>
             `<div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--c-border);">
               <span style="font-size:13px;color:var(--c-text-sub);">${label}</span>
               <span style="font-size:13px;color:var(--c-text);">詳細 <b>${fp}</b>枚　用例 <b>${up}</b>枚　合計 <b>${fp+up}</b>枚</span>
@@ -7080,7 +7079,7 @@ function renderBackupStatus() {
   }
 })();
 
-async async function loadFontsWithBackup() {
+async function loadFontsWithBackup() {
   await loadFonts();
   migrateLastUsageAt(); // 既存用例のlastUsageAt移行（初回1回のみ、バックグラウンドで実行）
   migrateLangField(); // langフィールド移行（初回1回のみ、バックグラウンドで実行）
