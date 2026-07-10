@@ -1072,10 +1072,10 @@
   .ob-img-add:active { background: rgba(211,195,252,0.25); }
   /* 覚えがきモーダル内写真エリア */
   .ob-modal-photo-row {
-    display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+    display: flex; flex-wrap: wrap; align-items: flex-start; gap: 6px; margin-bottom: 14px;
   }
   .ob-modal-thumb {
-    width: 54px; height: 54px; border-radius: 10px;
+    width: calc((100% - 12px) / 3); aspect-ratio: 1; border-radius: 10px;
     overflow: hidden; border: 1.5px solid var(--c-border);
     flex-shrink: 0; position: relative;
   }
@@ -1089,7 +1089,7 @@
     cursor: pointer; touch-action: manipulation;
   }
   .ob-modal-add-btn {
-    width: 54px; height: 54px; border-radius: 10px;
+    width: calc((100% - 12px) / 3); aspect-ratio: 1; border-radius: 10px;
     border: 1.5px dashed var(--c-lavender);
     background: rgba(211,195,252,0.10);
     display: flex; flex-direction: column;
