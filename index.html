@@ -2913,7 +2913,9 @@ function closeMenu() {
 }
 
 // ── フォント登録数パネル ──
-function openFontCountPanel() {
+async function openFontCountPanel() {
+  // 用例を全フォント分ロードしてからカウント
+  await ensureUsagesLoaded();
   const getFontLangForCount = f => {
     if (f.lang) return f.lang;
     const EN_CATS_MENU = new Set(['セリフ','サンセリフ','スクリプト','ブラックレター']);
