@@ -348,6 +348,37 @@
   }
   .font-card:active { transform: scale(0.98); box-shadow: 0 1px 8px rgba(155,127,232,0.1); }
 
+  /* 用例採集カード（横長サムネ＋用例バッジ） */
+  .usage-card-au {
+    background: var(--c-card);
+    border-radius: var(--radius);
+    border: 1px solid var(--c-border);
+    box-shadow: 0 2px 16px rgba(155,127,232,0.08);
+    margin-bottom: 8px;
+    display: flex; align-items: stretch;
+    overflow: hidden; cursor: pointer;
+    position: relative;
+  }
+  .usage-card-au:active { transform: scale(0.98); }
+  .usage-card-au .au-thumb {
+    width: 90px; flex-shrink: 0;
+    background: var(--c-border);
+    overflow: hidden; display: flex; align-items: center; justify-content: center;
+  }
+  .usage-card-au .au-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+  .usage-card-au .au-info {
+    flex:1; padding:14px 14px 14px 16px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .usage-card-au .au-text { flex:1; min-width:0; }
+  .usage-badge {
+    position: absolute; top: 8px; right: 10px;
+    font-size: 10px; font-weight: 700; letter-spacing: .06em;
+    color: #7a5af8;
+    background: rgba(180,154,252,0.2);
+    padding: 2px 8px; border-radius: 20px;
+  }
+
   .font-thumb {
     width: 52px; height: 52px; border-radius: 14px;
     object-fit: cover; background: var(--c-border); flex-shrink: 0;
@@ -4489,8 +4520,15 @@ function openUsageDetail(fontId, usageId, usages) {
 }
 
 $('usage-detail-back').addEventListener('click', () => navLock(() => {
-  if (currentFontId) openDetail(currentFontId);
-  else showScreen('screen-home');
+  if (addUsageFrom === 'add-usage') {
+    addUsageFrom = 'nav';
+    showScreen('screen-add-usage');
+    initAddUsage();
+  } else if (currentFontId) {
+    openDetail(currentFontId);
+  } else {
+    showScreen('screen-home');
+  }
 }));
 
 // ── Usage Copy Modal ───────────────────────
@@ -5851,23 +5889,25 @@ function renderUsageFontList() {
     unassigned.forEach(u => {
       const thumbUrl = u.photos&&u.photos[0] ? u.photos[0].url : '';
       const card = document.createElement('div');
-      card.className = 'font-card';
-      card.style.cursor = 'pointer';
+      card.className = 'usage-card-au';
       card.dataset.unassignedId = u.id;
       card.innerHTML = `
-        <div class="font-thumb" style="pointer-events:none;">
+        <span class="usage-badge">用例</span>
+        <div class="au-thumb">
           ${thumbUrl
-            ? `<img src="${thumbUrl}" style="width:100%;height:100%;object-fit:cover;">`
+            ? `<img src="${thumbUrl}" alt="">`
             : `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c0b8d8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>`}
         </div>
-        <div class="font-info">
-          <div class="font-name" style="color:var(--c-text-sub);">フォント未定</div>
-          <div class="font-maker">${u.date||''}</div>
-          <div class="font-maker">${u.place||'場所未記入'}</div>
+        <div class="au-info">
+          <div class="au-text">
+            <div class="font-name" style="color:var(--c-text-sub);">フォント未定</div>
+            <div class="font-maker">${u.date||''}</div>
+            <div class="font-maker">${u.place||'場所未記入'}</div>
+          </div>
+          <span style="color:var(--c-text-sub);font-size:20px;">›</span>
         </div>
-        <span style="color:var(--c-text-sub);font-size:20px;">›</span>
       `;
-      card.addEventListener('click', () => openUnassignedDetail(u.id));
+      card.addEventListener('click', () => { addUsageFrom = 'add-usage'; openUnassignedDetail(u.id); });
       wrap.appendChild(card);
     });
   }
@@ -5887,29 +5927,32 @@ function renderUsageFontList() {
     }
     const thumbUrl = usagePhoto || (f.photos&&f.photos[0] ? f.photos[0].url : '');
     const card = document.createElement('div');
-    card.className = 'font-card';
-    card.style.cursor = 'pointer';
+    card.className = 'usage-card-au';
     card.dataset.id = f.id;
     card.innerHTML = `
-      <div class="font-thumb" style="pointer-events:none;">
+      <span class="usage-badge">用例</span>
+      <div class="au-thumb">
         ${thumbUrl
-          ? `<img src="${thumbUrl}" style="width:100%;height:100%;object-fit:cover;">`
+          ? `<img src="${thumbUrl}" alt="">`
           : `<svg width="28" height="28" viewBox="0 0 64 64" fill="none"><line x1="32" y1="8" x2="8" y2="56" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="32" y1="8" x2="56" y2="56" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="18" y1="38" x2="46" y2="38" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`}
       </div>
-      <div class="font-info">
-        <div class="font-name">${f.name}</div>
-        <div class="font-maker">${f.maker||''}</div>
-        <div style="display:flex;align-items:center;gap:5px;margin-top:5px;">
-          <span class="font-cat-badge" style="margin-top:0;">${f.category||''}</span>
-          ${f.basic ? `<span style="display:inline-flex;align-items:center;">${CROWN_FILLED}</span>` : ''}
+      <div class="au-info">
+        <div class="au-text">
+          <div class="font-name">${f.name}</div>
+          <div class="font-maker">${f.maker||''}</div>
+          <div style="display:flex;align-items:center;gap:5px;margin-top:4px;">
+            <span class="font-cat-badge" style="margin-top:0;">${f.category||''}</span>
+            ${f.basic ? `<span style="display:inline-flex;align-items:center;">${CROWN_FILLED}</span>` : ''}
+            ${f.favorite ? '<span style="color:#e06090;display:flex;align-items:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="#e06090" stroke="#e06090" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></span>' : ''}
+          </div>
         </div>
+        <span style="color:var(--c-text-sub);font-size:20px;">›</span>
       </div>
-      ${f.favorite ? '<span style="color:#e06090;display:flex;align-items:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="#e06090" stroke="#e06090" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></span>' : ''}
-      <span style="color:var(--c-text-sub);font-size:20px;">›</span>
     `;
     // カードタップ → 用例があれば用例詳細へ、なければ用例追加へ
     card.addEventListener('click', () => {
       if (usageId) {
+        addUsageFrom = 'add-usage';
         openUsageDetail(f.id, usageId, f.usages);
       } else {
         const fid = f.id;
