@@ -1336,21 +1336,14 @@
       <button class="header-btn sub-menu-btn" title="メニュー"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
     </div>
     <div class="form-page" id="add-usage-body">
-      <!-- Step 1: search font -->
+      <!-- Step 1: 最近登録した用例 -->
       <div id="usage-step1">
-        <p style="font-size: 16px;color:var(--c-text-sub);margin-bottom:12px;">用例を登録するフォントを選んでください</p>
-        <!-- 検索 -->
-        <div class="search-box" style="margin-bottom:10px;">
-          <span class="search-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
-          <input type="text" id="usage-font-search" placeholder="フォント名で検索">
-        </div>
-
-        <!-- あとで決めるボタン -->
-        <div style="margin-bottom:14px;">
-          <button class="btn-secondary" id="usage-skip-font" style="display:block;width:100%;padding:11px;">フォントがわからない場合はあとで決める →</button>
-        </div>
+        <p style="font-size:13px;font-weight:700;color:var(--c-text-sub);letter-spacing:0.08em;margin-bottom:12px;">最近登録した用例</p>
         <div id="usage-font-results" class="font-list" style="padding:0;"></div>
-        </div>
+        <!-- 検索・スキップ（非表示、JS互換のため残す） -->
+        <input type="text" id="usage-font-search" style="display:none;">
+        <button id="usage-skip-font" style="display:none;">あとで決める</button>
+      </div>
       <!-- Step 2: form -->
       <div id="usage-step2" style="display:none;">
         <!-- 登録フォント欄 -->
@@ -2890,9 +2883,9 @@ const showScreen = id => {
   document.querySelectorAll('.nav-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.screen === id.replace('screen-',''));
   });
-  // au-fab：用例採集Step1のときだけ表示（initAddUsageで制御）
+  // au-fab：用例採集画面のみ表示
   const auFab = $('au-fab');
-  if (auFab && id !== 'screen-add-usage') auFab.style.display = 'none';
+  if (auFab) auFab.style.display = id === 'screen-add-usage' ? 'flex' : 'none';
   window.scrollTo(0,0);
 };
 
@@ -5786,9 +5779,6 @@ async function initAddUsage() {
   auPhotoFiles = [null,null,null,null,null];
   auPhotoMemos = ['','','','',''];
   buildPhotoSlots('au-photos','au-photo-memos-wrap',auPhotoFiles,auPhotoMemos);
-  // FABをすぐ表示（step1のみ）
-  const auFab = $('au-fab');
-  if (auFab) auFab.style.display = 'flex';
   // 用例写真をサムネに使うため全フォントの用例をロード
   await ensureUsagesLoaded();
   renderUsageFontList();
@@ -5889,22 +5879,17 @@ $('usage-add-font-panel-close').addEventListener('click', () => {
 $('usage-add-font-search').addEventListener('input', () => renderAddFontPanelList());
 
 function renderUsageFontList() {
-  const q = ($('usage-font-search').value||'').toLowerCase();
   const wrap = $('usage-font-results');
-  let list = [...fonts];
-  if (q) list = list.filter(f => (f.name||'').toLowerCase().includes(q) || (f.maker||'').toLowerCase().includes(q));
-  if (usageCatFilter === '__fav__') list = list.filter(f => f.favorite);
-  else if (usageCatFilter) list = list.filter(f => f.category === usageCatFilter);
-  list.sort((a, b) => {
-    const ta = a.lastUsageAt ? a.lastUsageAt.toMillis() : 0;
-    const tb = b.lastUsageAt ? b.lastUsageAt.toMillis() : 0;
-    return tb - ta;
+  // 最近登録した用例順（lastUsageAtが新しい順）
+  let list = [...fonts].filter(f => f.lastUsageAt).sort((a, b) => {
+    return b.lastUsageAt.toMillis() - a.lastUsageAt.toMillis();
   });
+  // 用例がないフォントはフォント未定カードの後ろに追加しない（用例があるものだけ）
 
   wrap.innerHTML = '';
 
   // ── フォント未定の用例カード（新しい順、先頭に表示） ──
-  if (!q) {
+  {
     const unassigned = [...unassignedUsages].sort((a,b)=>{
       const ta = a.createdAt?.toMillis?.() || 0;
       const tb = b.createdAt?.toMillis?.() || 0;
