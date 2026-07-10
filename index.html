@@ -2945,6 +2945,19 @@ function openFontCountPanel() {
       </button>`;
     }).join('');
 
+    // クイズ出題候補写真数を事前計算
+    let jaFontPhotos = 0, enFontPhotos = 0, jaUsagePhotos = 0, enUsagePhotos = 0;
+    for (const f of fonts) {
+      const isEn = getFontLangForCount(f) === 'en';
+      (f.photos||[]).forEach(p => { if (p && p.url && !p.supplement) { if (isEn) enFontPhotos++; else jaFontPhotos++; } });
+      (f.usages||[]).forEach(u => (u.photos||[]).forEach(p => { if (p && p.url && !p.supplement) { if (isEn) enUsagePhotos++; else jaUsagePhotos++; } }));
+    }
+    const photoCountRow = (label, fp, up) =>
+      `<div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--c-border);">
+        <span style="font-size:13px;color:var(--c-text-sub);">${label}</span>
+        <span style="font-size:13px;color:var(--c-text);">詳細 <b>${fp}</b>枚　用例 <b>${up}</b>枚　合計 <b>${fp+up}</b>枚</span>
+      </div>`;
+
     content.innerHTML = `
       <!-- 総数 -->
       <div style="text-align:center;padding:10px 0 10px;">
@@ -2976,21 +2989,8 @@ function openFontCountPanel() {
       <!-- クイズ出題候補写真数 -->
       <div style="padding-bottom:8px;">
         <div style="font-size:13px;font-weight:700;color:var(--c-text-sub);letter-spacing:0.06em;margin-bottom:10px;">クイズ出題候補（写真枚数）</div>
-        ${(() => {
-          // フォント詳細photos（supplement除外）
-          let jaFontPhotos = 0, enFontPhotos = 0;
-          let jaUsagePhotos = 0, enUsagePhotos = 0;
-          for (const f of fonts) {
-            const isEn = getFontLangForCount(f) === 'en';
-            (f.photos||[]).forEach(p => { if (p && p.url && !p.supplement) { if (isEn) enFontPhotos++; else jaFontPhotos++; } });
-            (f.usages||[]).forEach(u => (u.photos||[]).forEach(p => { if (p && p.url && !p.supplement) { if (isEn) enUsagePhotos++; else jaUsagePhotos++; } }));
-          }
-          const row = (label, fp, up) =>
-            `<div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--c-border);">
-              <span style="font-size:13px;color:var(--c-text-sub);">${label}</span>
-              <span style="font-size:13px;color:var(--c-text);">詳細 <b>${fp}</b>枚　用例 <b>${up}</b>枚　合計 <b>${fp+up}</b>枚</span>
-            </div>`;
-        })()}
+        ${photoCountRow('日本語', jaFontPhotos, jaUsagePhotos)}
+        ${photoCountRow('欧文', enFontPhotos, enUsagePhotos)}
       </div>
     `;
   }
