@@ -4521,14 +4521,14 @@ function openUsageDetail(fontId, usageId, usages) {
   // 用例詳細メニュー（編集 / フォント未定に戻す）
   $('usage-detail-menu-btn').onclick = async (e) => {
     const items = [
-      { action: 'edit',       icon: '✏', label: '編集' },
-      { action: 'unassign',   icon: '↩', label: 'フォント未定に戻す' },
+      { action: 'edit',     icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>', label: '編集' },
+      { action: 'unassign', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 00-4-4H4"/></svg>', label: 'フォント未定に戻す' },
     ];
     const action = await showContextMenu(e.clientX, e.clientY, items);
     if (action === 'edit') {
       openEditUsage(fontId, u);
     } else if (action === 'unassign') {
-      const ok = await showConfirmAsync('フォント未定に戻す', 'この用例をフォント未定に戻しますか？');
+      const ok = await showConfirmAsync('フォント未定に戻す', 'この用例をフォント未定に戻しますか？', '未定にする');
       if (!ok) return;
       try {
         // unassigned_usagesにコピー
@@ -4710,16 +4710,17 @@ $('usage-copy-submit').addEventListener('click', async () => {
 
 
 let confirmCallback = null;
-function showConfirmAsync(title, msg) {
+function showConfirmAsync(title, msg, okLabel) {
   return new Promise(resolve => {
-    showConfirm(title, msg, () => resolve(true));
+    showConfirm(title, msg, () => resolve(true), okLabel);
     $('confirm-cancel').addEventListener('click', () => resolve(false), { once: true });
   });
 }
 
-function showConfirm(title, msg, onOk) {
+function showConfirm(title, msg, onOk, okLabel) {
   $('confirm-title').textContent = title;
   $('confirm-msg').textContent = msg;
+  $('confirm-ok').textContent = okLabel || '削除する';
   confirmCallback = onOk;
   $('confirm-dialog').classList.add('active');
 }
