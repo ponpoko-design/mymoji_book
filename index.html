@@ -1198,7 +1198,7 @@
     <div class="search-wrap">
       <div class="search-box">
         <span class="search-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
-        <input type="text" id="search-input" placeholder="フォント名・メーカー・メモで検索">
+        <input type="text" id="search-input" placeholder="フォント名・メーカー・メモ・用例で検索">
       </div>
       <div style="position:relative;">
         <button class="sort-btn" id="sort-btn" style="display:flex;align-items:center;gap:5px;">
@@ -3211,7 +3211,8 @@ function renderFontList() {
     list = list.filter(f =>
       (f.name||'').toLowerCase().includes(q) ||
       (f.maker||'').toLowerCase().includes(q) ||
-      (f.memo||'').toLowerCase().includes(q)
+      (f.memo||'').toLowerCase().includes(q) ||
+      (f.usages||[]).some(u => (u.place||'').toLowerCase().includes(q))
     );
     // フォント名に含まれるものを上位に、同グループ内は更新日（lastUsageAt or createdAt）の新しい順
     list.sort((a, b) => {
@@ -3292,8 +3293,9 @@ $('search-input').addEventListener('focus', () => {
   searchQuery = '';
   renderFontList();
 });
-$('search-input').addEventListener('input', e => {
+$('search-input').addEventListener('input', async e => {
   searchQuery = e.target.value;
+  if (searchQuery) await ensureUsagesLoaded();
   renderFontList();
 });
 // 検索ボックスをクリア・blur時もリセット
@@ -5781,7 +5783,7 @@ function initAddUsage() {
   setTimeout(() => {
     $('usage-font-search').value = '';
     $('usage-font-results').innerHTML = '';
-    selectedUsageFontIds = [];
+    if (addUsageFrom !== 'detail') selectedUsageFontIds = [];
     usageCatFilter = '';
     const now = new Date();
     const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
