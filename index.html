@@ -6029,9 +6029,17 @@ $('au-submit').addEventListener('click', async () => {
       await Promise.all(selectedUsageFontIds.map(fid =>
         updateDoc(doc(db,'fonts',fid), { lastUsageAt: serverTimestamp(), updatedAt: serverTimestamp() })
       ));
-      selectedUsageFontIds.forEach(fid => {
+      const nowMillis = Date.now();
+      selectedUsageFontIds.forEach((fid, i) => {
         const f = fonts.find(f => f.id === fid);
-        if (f) { f.lastUsageAt = { toMillis: () => Date.now() }; f.updatedAt = { toMillis: () => Date.now() }; }
+        if (f) {
+          f.lastUsageAt = { toMillis: () => nowMillis };
+          f.updatedAt = { toMillis: () => nowMillis };
+          // ローカルのusages配列にも追加（用例採集カードに即反映させるため）
+          if (!f.usages) f.usages = [];
+          f.usages.unshift({ id: refs[i].id, ...usageData, createdAt: { toMillis: () => nowMillis } });
+          f._usagesLoaded = true;
+        }
       });
 
       // 複数フォントの場合は相互にrelatedUsagesを書き込む
@@ -6059,10 +6067,16 @@ $('au-submit').addEventListener('click', async () => {
       });
       showToast('用例を登録しました！');
     }
+    const fromDetail = addUsageFrom === 'detail';
+    const detailFontId = fromDetail ? selectedUsageFontIds[0] : null;
     initAddUsage();
-    showScreen('screen-home');
-    renderHome();
     loadUnassignedUsages();
+    if (fromDetail && detailFontId) {
+      openDetail(detailFontId);
+    } else {
+      showScreen('screen-home');
+      renderHome();
+    }
   } catch(e) {
     console.error(e); showToast('エラーが発生しました');
   }
