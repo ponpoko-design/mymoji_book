@@ -1260,9 +1260,7 @@
     <div class="app-header">
       <button class="back-btn" id="usage-detail-back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
       <h1>用例詳細</h1>
-      <button class="edit-header-btn" id="usage-detail-edit-btn" title="編集">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-      </button>
+      <button class="edit-header-btn" id="usage-detail-menu-btn" title="メニュー" style="font-size:22px;letter-spacing:1px;padding:0 6px;line-height:1;">⋯</button>
     </div>
     <div id="usage-detail-content"></div>
   </div>
@@ -1339,10 +1337,12 @@
     <div class="form-page" id="add-usage-body">
       <!-- Step 1: 最近登録した用例 -->
       <div id="usage-step1">
-        <p style="font-size:13px;font-weight:700;color:var(--c-text-sub);letter-spacing:0.08em;margin-bottom:12px;">最近登録した用例</p>
+        <div class="search-box" style="margin-bottom:12px;">
+          <span class="search-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
+          <input type="text" id="usage-font-search" placeholder="フォント名・用例・未定で検索">
+        </div>
+        <p id="usage-list-label" style="font-size:13px;font-weight:700;color:var(--c-text-sub);letter-spacing:0.08em;margin-bottom:12px;">最近登録した用例</p>
         <div id="usage-font-results" class="font-list" style="padding:0;"></div>
-        <!-- 検索・スキップ（非表示、JS互換のため残す） -->
-        <input type="text" id="usage-font-search" style="display:none;">
         <button id="usage-skip-font" style="display:none;">あとで決める</button>
       </div>
       <!-- Step 2: form -->
@@ -4518,7 +4518,40 @@ function openUsageDetail(fontId, usageId, usages) {
     }
   }
 
-  $('usage-detail-edit-btn').onclick = () => openEditUsage(fontId, u);
+  // 用例詳細メニュー（編集 / フォント未定に戻す）
+  $('usage-detail-menu-btn').onclick = async (e) => {
+    const items = [
+      { action: 'edit',       icon: '✏', label: '編集' },
+      { action: 'unassign',   icon: '↩', label: 'フォント未定に戻す' },
+    ];
+    const action = await showContextMenu(e.clientX, e.clientY, items);
+    if (action === 'edit') {
+      openEditUsage(fontId, u);
+    } else if (action === 'unassign') {
+      const ok = await showConfirmAsync('フォント未定に戻す', 'この用例をフォント未定に戻しますか？');
+      if (!ok) return;
+      try {
+        // unassigned_usagesにコピー
+        const { id: _id, ...uData } = u;
+        await addDoc(collection(db, 'unassigned_usages'), {
+          ...uData,
+          createdAt: serverTimestamp(),
+          movedFromFont: fontId,
+        });
+        // 元の用例を削除
+        await deleteDoc(doc(db, 'fonts', fontId, 'usages', u.id));
+        // ローカル配列から削除
+        const fObj = fonts.find(x => x.id === fontId);
+        if (fObj?.usages) fObj.usages = fObj.usages.filter(x => x.id !== u.id);
+        await loadUnassignedUsages();
+        showToast('フォント未定に戻しました');
+        // 用例採集に戻る
+        addUsageFrom = 'nav';
+        showScreen('screen-add-usage');
+        renderUsageFontList();
+      } catch(err) { console.error(err); showToast('エラーが発生しました'); }
+    }
+  };
 
   // フォント名クリック → フォント詳細へ
   const fontLink = $('usage-detail-content').querySelector('#usage-detail-font-link');
@@ -4677,6 +4710,13 @@ $('usage-copy-submit').addEventListener('click', async () => {
 
 
 let confirmCallback = null;
+function showConfirmAsync(title, msg) {
+  return new Promise(resolve => {
+    showConfirm(title, msg, () => resolve(true));
+    $('confirm-cancel').addEventListener('click', () => resolve(false), { once: true });
+  });
+}
+
 function showConfirm(title, msg, onOk) {
   $('confirm-title').textContent = title;
   $('confirm-msg').textContent = msg;
@@ -5900,88 +5940,112 @@ $('usage-add-font-search').addEventListener('input', () => renderAddFontPanelLis
 function renderUsageFontList() {
   const wrap = $('usage-font-results');
   wrap.innerHTML = '';
+  const q = (($('usage-font-search')?.value) || '').trim().toLowerCase();
+  const isSearch = q.length > 0;
+  const label = $('usage-list-label');
+  if (label) label.textContent = isSearch ? '検索結果' : '最近登録した用例';
 
-  // ── フォント未定の用例カード（新しい順、先頭に表示） ──
-  const unassigned = [...unassignedUsages].sort((a,b)=>{
-    const ta = a.createdAt?.toMillis?.() || 0;
-    const tb = b.createdAt?.toMillis?.() || 0;
-    return tb - ta;
+  // ── フォント未定の用例 ──
+  const unassignedSorted = [...unassignedUsages].sort((a,b)=>{
+    return (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0);
   });
-  unassigned.forEach(u => {
-    const thumbUrl = u.photos&&u.photos[0] ? u.photos[0].url : '';
-    const card = document.createElement('div');
-    card.className = 'usage-card-au';
-    card.dataset.unassignedId = u.id;
-    card.innerHTML = `
-      <div class="au-left" style="cursor:default;">
-        <div class="au-left-text">
-          <div class="font-name" style="color:var(--c-text-sub);">フォント未定</div>
-          <div class="font-maker">${u.date||''}</div>
-          <div class="font-maker">${u.place||'場所未記入'}</div>
-        </div>
-      </div>
-      <div class="au-divider"></div>
-      <div class="au-right">
-        ${thumbUrl ? `<img src="${thumbUrl}" alt="">` : `<div class="au-right-noimg"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--c-lavender)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg><span>用例詳細</span></div>`}
-        <span class="usage-badge">用例</span>
-      </div>
-    `;
-    card.querySelector('.au-right').addEventListener('click', () => { addUsageFrom = 'add-usage'; addUsageScrollY = window.scrollY; openUnassignedDetail(u.id); });
-    wrap.appendChild(card);
-  });
+  const filteredUnassigned = isSearch
+    ? unassignedSorted.filter(u =>
+        'フォント未定'.includes(q) ||
+        'みてい'.includes(q) ||
+        (u.place||'').toLowerCase().includes(q) ||
+        (u.date||'').toLowerCase().includes(q)
+      )
+    : unassignedSorted;
 
-  // ── 用例単位カード（同一フォントでも用例ごとに1枚・createdAt新しい順・上限20件） ──
-  const usageItems = []; // { f, u } の配列
+  // ── フォント用例 ──
+  const usageItems = [];
   fonts.forEach(f => {
     if (!f._usagesLoaded || !f.usages || f.usages.length === 0) return;
-    f.usages.forEach(u => {
-      usageItems.push({ f, u });
-    });
+    f.usages.forEach(u => usageItems.push({ f, u }));
   });
-  usageItems.sort((a, b) => {
-    const ta = a.u.createdAt?.toMillis?.() || 0;
-    const tb = b.u.createdAt?.toMillis?.() || 0;
-    return tb - ta;
-  });
-  const displayItems = usageItems.slice(0, 20);
+  usageItems.sort((a, b) =>
+    (b.u.createdAt?.toMillis?.() || 0) - (a.u.createdAt?.toMillis?.() || 0)
+  );
+  const filteredItems = isSearch
+    ? usageItems.filter(({ f, u }) =>
+        (f.name||'').toLowerCase().includes(q) ||
+        (f.maker||'').toLowerCase().includes(q) ||
+        (u.place||'').toLowerCase().includes(q) ||
+        (u.date||'').toLowerCase().includes(q)
+      )
+    : usageItems.slice(0, 20);
 
-  if (!displayItems.length && !wrap.children.length) {
+  // ── 未定と用例をcreatedAt混合ソート ──
+  const unassignedWithMeta = filteredUnassigned.map(u => ({
+    type: 'unassigned', u,
+    ts: u.createdAt?.toMillis?.() || 0
+  }));
+  const assignedWithMeta = filteredItems.map(({ f, u }) => ({
+    type: 'assigned', f, u,
+    ts: u.createdAt?.toMillis?.() || 0
+  }));
+  const combined = [...unassignedWithMeta, ...assignedWithMeta]
+    .sort((a, b) => b.ts - a.ts);
+
+  if (!combined.length) {
     wrap.innerHTML = `<div style="color:var(--c-text-sub);font-size:15px;padding:12px 0;text-align:center;">見つかりません</div>`;
     return;
   }
 
-  displayItems.forEach(({ f, u }) => {
-    const thumbUrl = u.photos&&u.photos[0] ? u.photos[0].url : '';
+  combined.forEach(item => {
     const card = document.createElement('div');
     card.className = 'usage-card-au';
-    card.dataset.id = f.id;
-    card.dataset.usageId = u.id;
-    card.innerHTML = `
-      <div class="au-left">
-        <div class="au-left-text">
-          <div class="font-name">${f.name} <span style="color:var(--c-text-sub);font-size:16px;font-weight:400;">›</span></div>
-          <div class="font-maker">${f.maker||''}</div>
-          <div class="font-maker" style="margin-top:2px;">${u.place||''}</div>
+    if (item.type === 'unassigned') {
+      const u = item.u;
+      const thumbUrl = u.photos&&u.photos[0] ? u.photos[0].url : '';
+      card.dataset.unassignedId = u.id;
+      card.innerHTML = `
+        <div class="au-left" style="cursor:default;">
+          <div class="au-left-text">
+            <div class="font-name" style="color:var(--c-text-sub);">フォント未定</div>
+            <div class="font-maker">${u.date||''}</div>
+            <div class="font-maker">${u.place||'場所未記入'}</div>
+          </div>
         </div>
-      </div>
-      <div class="au-divider"></div>
-      <div class="au-right">
-        ${thumbUrl ? `<img src="${thumbUrl}" alt="">` : `<div class="au-right-noimg"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div>`}
-        <span class="usage-badge">用例</span>
-      </div>
-    `;
-    // 左エリア → フォント詳細
-    card.querySelector('.au-left').addEventListener('click', () => {
-      addUsageFrom = 'add-usage';
-      addUsageScrollY = window.scrollY;
-      openDetail(f.id);
-    });
-    // 右エリア → 用例詳細
-    card.querySelector('.au-right').addEventListener('click', () => {
-      addUsageFrom = 'add-usage';
-      addUsageScrollY = window.scrollY;
-      openUsageDetail(f.id, u.id, f.usages);
-    });
+        <div class="au-divider"></div>
+        <div class="au-right">
+          ${thumbUrl ? `<img src="${thumbUrl}" alt="">` : `<div class="au-right-noimg"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--c-lavender)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg><span>用例詳細</span></div>`}
+          <span class="usage-badge">用例</span>
+        </div>
+      `;
+      card.querySelector('.au-right').addEventListener('click', () => {
+        addUsageFrom = 'add-usage'; addUsageScrollY = window.scrollY;
+        openUnassignedDetail(u.id);
+      });
+    } else {
+      const { f, u } = item;
+      const thumbUrl = u.photos&&u.photos[0] ? u.photos[0].url : '';
+      card.dataset.id = f.id;
+      card.dataset.usageId = u.id;
+      card.innerHTML = `
+        <div class="au-left">
+          <div class="au-left-text">
+            <div class="font-name">${f.name} <span style="color:var(--c-text-sub);font-size:16px;font-weight:400;">›</span></div>
+            <div class="font-maker">${f.maker||''}</div>
+            <div class="font-maker" style="margin-top:2px;">${u.place||''}</div>
+          </div>
+        </div>
+        <div class="au-divider"></div>
+        <div class="au-right">
+          ${thumbUrl ? `<img src="${thumbUrl}" alt="">` : `<div class="au-right-noimg"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div>`}
+          <span class="usage-badge">用例</span>
+        </div>
+      `;
+      card.querySelector('.au-left').addEventListener('click', () => {
+        addUsageFrom = 'add-usage'; addUsageScrollY = window.scrollY;
+        openDetail(f.id);
+      });
+      card.querySelector('.au-right').addEventListener('click', () => {
+        addUsageFrom = 'add-usage'; addUsageScrollY = window.scrollY;
+        openUsageDetail(f.id, u.id, f.usages);
+      });
+    }
     wrap.appendChild(card);
   });
 }
