@@ -244,18 +244,21 @@
     display: flex;
     z-index: 100;
   }
-  @media (min-width: 768px) {
-    .nav-btn { font-size: 14px; gap: 6px; }
-    .nav-btn .icon svg { width: 28px; height: 28px; }
-  }
   .nav-btn {
-    flex: 1; background: none; border: none; cursor: pointer;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 3px; color: #b0a8c8; font-size: 11px; font-weight: 500;
-    transition: color 0.2s; padding: 0 2px; min-width: 0;
+    flex: 1 1 0; width: 0; /* 5等分 */
+    background: none; border: none; cursor: pointer;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 3px; color: #b0a8c8;
+    font-size: clamp(9px, 2.2vw, 12px);
+    font-weight: 500;
+    transition: color 0.2s;
+    padding: 6px 0;
+    min-width: 0; overflow: hidden;
   }
-  .nav-btn .icon { font-size: 24px; display: flex; align-items: center; justify-content: center; }
-  .nav-btn .icon svg { width: 24px; height: 24px; }
+  .nav-btn .icon { display: flex; align-items: center; justify-content: center; }
+  .nav-btn .icon svg { width: clamp(22px, 5.5vw, 28px); height: clamp(22px, 5.5vw, 28px); }
+  .nav-btn span:last-child { white-space: nowrap; }
   .nav-btn.active {
     font-weight: 700;
     background: linear-gradient(135deg, #b8a0f0, #7ab8f5);
@@ -267,13 +270,6 @@
   .nav-btn .icon-filled { display: none; }
   .nav-btn.active .icon-outline { display: none; }
   .nav-btn.active .icon-filled { display: block; }
-  /* よく使う3つをやや広く、残り2つをコンパクトに */
-  #nav-home, #nav-add-font, #nav-add-usage { flex: 1.1; }
-  #nav-oboeaki, #nav-quiz { flex: 0.9; }
-  #nav-home { position: relative; left: -2px; }
-  #nav-add-font { position: relative; left: -5px; }
-  #nav-add-usage { flex: 1.2; }
-  #nav-oboeaki { position: relative; left: 3px; }
 
   /* ── Login ── */
   .login-logo {
