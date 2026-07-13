@@ -245,7 +245,7 @@
     z-index: 100;
   }
   .nav-btn {
-    flex: 1 1 0; width: 0; /* 5等分 */
+    flex: 1 1 20%; /* 5等分 */
     background: none; border: none; cursor: pointer;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
@@ -254,11 +254,11 @@
     font-weight: 500;
     transition: color 0.2s;
     padding: 6px 0;
-    min-width: 0; overflow: hidden;
+    box-sizing: border-box;
   }
   .nav-btn .icon { display: flex; align-items: center; justify-content: center; }
-  .nav-btn .icon svg { width: 24px; height: 24px; }
-  .nav-btn span:last-child { white-space: nowrap; }
+  .nav-btn .icon svg { width: 24px; height: 24px; display: block; }
+  .nav-btn > span:last-child { font-size: 10px; letter-spacing: -0.02em; }
   .nav-btn.active {
     font-weight: 700;
     background: linear-gradient(135deg, #b8a0f0, #7ab8f5);
