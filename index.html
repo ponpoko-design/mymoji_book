@@ -2106,7 +2106,6 @@
   <div id="lightbox-img-wrap" style="position:relative;display:flex;align-items:center;justify-content:center;">
     <img id="lightbox-img" src="" alt="" style="max-width:94vw;max-height:78vh;border-radius:12px;object-fit:contain;touch-action:none;display:block;">
     <div id="lightbox-hl-overlay" style="display:none;position:absolute;inset:0;pointer-events:none;border-radius:12px;overflow:hidden;">
-      <div id="lightbox-hl-dark" style="position:absolute;inset:0;background:rgba(0,0,0,0.55);"></div>
       <div id="lightbox-hl-spot" style="position:absolute;background:transparent;box-shadow:0 0 0 9999px rgba(0,0,0,0.55);border-radius:2px;"></div>
     </div>
   </div>
@@ -4332,27 +4331,9 @@ function openUsageDetail(fontId, usageId, usages) {
     const usageCoverImg = $('usage-cover-img');
     const usageHeroWrap = $('usage-detail-content').querySelector('#usage-hero-wrap');
 
-    // highlightRectがあればcanvasでグレーオーバーレイを描画
-    function drawUsageHighlight() {
-      const hlCanvas = document.getElementById('usage-hero-hl-canvas');
-      if (!hlCanvas) return;
-      const hr = photos[0]?.highlightRect;
-      // highlightRectが有効な値か確認（nullやundefinedは強調なし）
-      if (!hr || typeof hr.x !== 'number') { hlCanvas.style.display = 'none'; return; }
-      hlCanvas.style.display = 'block';
-      const iw = usageCoverImg.offsetWidth, ih = usageCoverImg.offsetHeight;
-      if (!iw || !ih) { setTimeout(drawUsageHighlight, 50); return; }
-      const dpr1 = window.devicePixelRatio || 1;
-      hlCanvas.width = iw * dpr1; hlCanvas.height = ih * dpr1;
-      const ctx = hlCanvas.getContext('2d');
-      ctx.scale(dpr1, dpr1);
-      ctx.clearRect(0, 0, iw, ih);
-      ctx.fillStyle = 'rgba(0,0,0,0.55)';
-      ctx.fillRect(0, 0, iw, ih);
-      ctx.clearRect(hr.x * iw, hr.y * ih, hr.w * iw, hr.h * ih);
-    }
-    usageCoverImg.onload = () => drawUsageHighlight();
-    if (usageCoverImg.complete) drawUsageHighlight();
+    // ヒーロー画像は強調なし・元画像をそのまま表示
+    const hlCanvas = document.getElementById('usage-hero-hl-canvas');
+    if (hlCanvas) hlCanvas.style.display = 'none';
 
     let usageIsAdjustMode = false;
     let utx = 0, uty = 0, uscale = 1;
@@ -6683,28 +6664,7 @@ $('pe-highlight-apply').addEventListener('click', async () => {
           if ($('lightbox').classList.contains('active')) {
             _lightboxShow();
           }
-          // ヒーロー画像も更新（強調したのが1枚目のときだけ）
-          if (photoIdx === 0) {
-            const hlCanvas = document.getElementById('usage-hero-hl-canvas');
-            const coverImg = document.getElementById('usage-cover-img');
-            if (hlCanvas && coverImg && newPhotos[0]) {
-              const hr = newPhotos[0].highlightRect;
-              if (hr) {
-                hlCanvas.style.display = 'block';
-                const iw = coverImg.offsetWidth, ih = coverImg.offsetHeight;
-                const dpr3 = window.devicePixelRatio || 1;
-                hlCanvas.width = iw * dpr3; hlCanvas.height = ih * dpr3;
-                const ctx = hlCanvas.getContext('2d');
-                ctx.scale(dpr3, dpr3);
-                ctx.clearRect(0,0,iw,ih);
-                ctx.fillStyle = 'rgba(0,0,0,0.55)';
-                ctx.fillRect(0,0,iw,ih);
-                ctx.clearRect(hr.x*iw, hr.y*ih, hr.w*iw, hr.h*ih);
-              } else {
-                hlCanvas.style.display = 'none';
-              }
-            }
-          }
+          // ヒーロー画像は強調なし（ライトボックスのみ対応）
         }, 80);
       }
     } else {
