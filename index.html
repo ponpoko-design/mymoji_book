@@ -3962,7 +3962,7 @@ async function openDetail(id) {
           const photoIdx2 = (f.photos||[]).findIndex(ph => ph.url === p.url);
           const photoInfo2 = { fontId: id, usageId: null, photoIdx: photoIdx2, highlightRect: p.highlightRect || null };
           let editedBlobUrl = ''; // onApplyとonCloseで共有
-          openPhotoEditor(p.url, async (blob, revertUrl) => {
+          openPhotoEditor(origUrl || p.url, async (blob, revertUrl) => {
             try {
               if (revertUrl) {
                 const f2 = fonts.find(x => x.id === id);
@@ -4280,7 +4280,7 @@ function openUsageDetail(fontId, usageId, usages) {
           const photoIdx = (u.photos||[]).findIndex(ph => ph.url === p.url);
           const photoInfo = { fontId, usageId, photoIdx, highlightRect: p.highlightRect || null };
           let editedBlobUrl = ''; // onApplyとonCloseで共有
-          openPhotoEditor(p.url, async (blob, revertUrl) => {
+          openPhotoEditor(origUrl || p.url, async (blob, revertUrl) => {
             try {
               if (revertUrl) {
                 const newPhotos = [...(u.photos||[])];
@@ -5940,6 +5940,14 @@ $('usage-add-font-panel-close').addEventListener('click', () => {
 // パネル内検索
 $('usage-add-font-search').addEventListener('input', () => renderAddFontPanelList());
 
+// 覚えがき写真エントリのURL取得ヘルパー（文字列・オブジェクト両対応）
+function obPhotoUrl(p) { return typeof p === 'string' ? p : (p?.url || ''); }
+function obPhotoOrigUrl(p) { return typeof p === 'string' ? p : (p?.originalUrl || p?.url || ''); }
+function obPhotoToObj(p, url, originalUrl) {
+  const orig = originalUrl || (typeof p === 'string' ? p : p?.originalUrl) || url;
+  return { url, originalUrl: orig };
+}
+
 function renderUsageFontList() {
   const wrap = $('usage-font-results');
   wrap.innerHTML = '';
@@ -6876,6 +6884,25 @@ $('pe-apply').addEventListener('click', async () => {
       setTimeout(rej, 8000); // 8秒タイムアウト
     });
 
+    // 何も変更がなければ元のblobをそのまま返す（再エンコードによる劣化を防ぐ）
+    const noAdjust = peBrightness === 0 && peContrast === 0 && peSaturation === 0 && peBlacks === 0 && peTemp === 0;
+    const noRotation = (peRotation % 360) === 0;
+    const noCrop = !peCropRect;
+    if (noAdjust && noRotation && noCrop) {
+      // XHRで取得したblobをそのまま使う
+      const srcUrl = displayImg.src;
+      if (srcUrl.startsWith('blob:')) {
+        const res2 = await fetch(srcUrl);
+        const originalBlob = await res2.blob();
+        if (peOnApply) peOnApply(originalBlob);
+        $('photo-editor').classList.remove('active');
+        if (peOnClose) peOnClose();
+        $('pe-apply').disabled = false;
+        $('pe-apply').textContent = '完了';
+        return;
+      }
+    }
+
     const rot = peRotation % 360;
     const sw = displayImg.naturalWidth;
     const sh = displayImg.naturalHeight;
@@ -6955,7 +6982,7 @@ $('pe-apply').addEventListener('click', async () => {
       if (peOnApply) peOnApply(resultBlob);
       $('photo-editor').classList.remove('active');
       if (peOnClose) peOnClose();
-    }, 'image/jpeg', 0.95);
+    }, 'image/jpeg', 0.92);
 
   } catch(err) {
     console.error('pe-apply error:', err);
@@ -7764,15 +7791,17 @@ function renderOboeakiList() {
       imgPanel.innerHTML = '';
       const inner = document.createElement('div');
       inner.className = 'ob-img-panel-inner';
-      (e.photos||[]).forEach((url, idx) => {
+      (e.photos||[]).forEach((photoEntry, idx) => {
+        const url = obPhotoUrl(photoEntry);
         const slot = document.createElement('div');
         slot.className = 'ob-img-slot';
         slot.innerHTML = `<img src="${url}" alt=""><button class="ob-img-slot-del">✕</button>`;
         slot.querySelector('img').addEventListener('click', () => {
           const uid3 = auth.currentUser?.uid;
           const obHls = e.ob_highlights || [];
-          const allPhotos = (e.photos||[]).map((pu, pi) => {
-            const origUrl3 = '';
+          const allPhotos = (e.photos||[]).map((pe2, pi) => {
+            const pu = obPhotoUrl(pe2);
+            const origUrl3 = obPhotoOrigUrl(pe2);
             let editedBlobUrl3 = '';
             const hlEntry = obHls.find(h => h.photoIdx === pi);
             return {
@@ -7780,11 +7809,13 @@ function renderOboeakiList() {
               memo: '',
               highlightRect: hlEntry ? hlEntry.highlightRect : null,
               onEdit: () => {
-                openPhotoEditor(pu, async (blob, revertUrl) => {
+                openPhotoEditor(origUrl3 || pu, async (blob, revertUrl) => {
                   try {
                     if (revertUrl) {
                       // 元に戻す
-                      e.photos = (e.photos||[]).map((u2, i2) => i2 === pi ? revertUrl : u2);
+                      e.photos = (e.photos||[]).map((pe3, i2) =>
+                        i2 === pi ? obPhotoToObj(pe3, revertUrl, null) : pe3
+                      );
                       if (uid3) await updateDoc(doc(db,'users',uid3,'oboeaki',e.id), { photos: e.photos });
                       showToast('元の写真に戻しました');
                       renderImgPanel();
@@ -7792,7 +7823,9 @@ function renderOboeakiList() {
                     }
                     // ① blobURLで即時反映
                     editedBlobUrl3 = URL.createObjectURL(blob);
-                    e.photos = (e.photos||[]).map((u2, i2) => i2 === pi ? editedBlobUrl3 : u2);
+                    e.photos = (e.photos||[]).map((pe3, i2) =>
+                      i2 === pi ? obPhotoToObj(pe3, editedBlobUrl3, origUrl3) : pe3
+                    );
                     renderImgPanel();
                     // ② バックグラウンドでStorageにアップロード
                     if (uid3) {
@@ -7800,15 +7833,20 @@ function renderOboeakiList() {
                         const storageRef = ref(storage, `users/${uid3}/oboeaki/${e.id}/${Date.now()}_edited.jpg`);
                         await uploadBytes(storageRef, blob);
                         const newUrl3 = await getDownloadURL(storageRef) + '&t=' + Date.now();
-                        e.photos = (e.photos||[]).map((u2) => u2 === editedBlobUrl3 ? newUrl3 : u2);
+                        e.photos = (e.photos||[]).map((pe3) =>
+                          obPhotoUrl(pe3) === editedBlobUrl3
+                            ? obPhotoToObj(pe3, newUrl3, origUrl3)
+                            : pe3
+                        );
                         await updateDoc(doc(db,'users',uid3,'oboeaki',e.id), { photos: e.photos });
                       } catch(e3) { showToast('保存に失敗しました'); }
                     }
                   } catch(e3) { showToast('エラーが発生しました'); }
                 }, () => {
-                  // 編集後ライトボックスに戻る
                   const latestUrl3 = editedBlobUrl3 || pu;
-                  const updatedPhotos = (e.photos||[]).map((u2, i2) => ({ url: i2 === pi ? latestUrl3 : u2, memo: '' }));
+                  const updatedPhotos = (e.photos||[]).map((pe3, i2) => ({
+                    url: i2 === pi ? latestUrl3 : obPhotoUrl(pe3), memo: ''
+                  }));
                   openLightbox(latestUrl3, '', null, '', updatedPhotos, null);
                 }, origUrl3, { fontId: null, usageId: null, photoIdx: pi, oboeakiId: e.id, oboeakiEntry: e });
               }
@@ -7820,7 +7858,6 @@ function renderOboeakiList() {
           ev.stopPropagation();
           const uid = auth.currentUser?.uid; if (!uid) return;
           e.photos = (e.photos||[]).filter((_,i)=>i!==idx);
-          // ob_highlights: 削除したidxを除外し、それ以降のidxをデクリメント
           e.ob_highlights = (e.ob_highlights||[])
             .filter(h => h.photoIdx !== idx)
             .map(h => h.photoIdx > idx ? { ...h, photoIdx: h.photoIdx - 1 } : h);
@@ -7848,7 +7885,7 @@ function renderOboeakiList() {
             const uid = auth.currentUser?.uid; if (!uid) return;
             try {
               const url = await _uploadOboeakiPhoto(uid, e.id, file);
-              e.photos = [...(e.photos||[]), url];
+              e.photos = [...(e.photos||[]), { url, originalUrl: url }];
               await updateDoc(doc(db,'users',uid,'oboeaki',e.id), { photos: e.photos });
               const cnt = e.photos.length;
               cameraBtn.querySelector('svg').setAttribute('opacity','1');
