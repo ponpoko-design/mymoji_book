@@ -6652,9 +6652,12 @@ $('pe-highlight-apply').addEventListener('click', async () => {
           currentUsageData.photos = newPhotos;
         }
         showToast('強調エリアを保存しました');
-        // lightboxPhotosの該当エントリのhighlightRectを更新
+        // lightboxPhotosの該当エントリを更新
+        // urlをoriginalUrl優先にして高画質で表示
         if (lightboxPhotos && lightboxPhotos[lightboxIndex]) {
           lightboxPhotos[lightboxIndex].highlightRect = peHighlightRect;
+          const origUrl = newPhotos[photoIdx].originalUrl;
+          if (origUrl) lightboxPhotos[lightboxIndex].url = origUrl;
         }
         // エディタを閉じる
         $('photo-editor').classList.remove('active');
@@ -6698,6 +6701,12 @@ $('pe-highlight-apply').addEventListener('click', async () => {
         const fontObj = fonts.find(x=>x.id===fontId);
         if (fontObj) fontObj.photos = newPhotos;
         showToast('強調エリアを保存しました');
+        // lightboxPhotosのurlをoriginalUrl優先に更新
+        if (lightboxPhotos && lightboxPhotos[lightboxIndex]) {
+          lightboxPhotos[lightboxIndex].highlightRect = peHighlightRect;
+          const origUrl = newPhotos[photoIdx].originalUrl;
+          if (origUrl) lightboxPhotos[lightboxIndex].url = origUrl;
+        }
         const pe = $('photo-editor');
         pe.classList.remove('active');
         if (peOnClose) peOnClose();
