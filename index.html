@@ -5123,6 +5123,7 @@ function _lightboxShow() {
   const existingHlCanvas = document.getElementById('lightbox-hl-canvas');
   // 必ずonloadをリセット（前の画像のonloadが残らないように）
   img.onload = null;
+  img.style.opacity = ''; // highlightなしのときはimgを表示
   if (existingHlCanvas) {
     existingHlCanvas.style.display = 'none';
     existingHlCanvas.width = 0;
@@ -5145,12 +5146,22 @@ function _lightboxShow() {
       canvas.style.width = iw + 'px';
       canvas.style.height = ih + 'px';
       canvas.style.display = 'block';
+      img.style.opacity = '0'; // imgはcanvasで代替するので非表示
       const ctx = canvas.getContext('2d');
       ctx.scale(dpr2, dpr2);
-      ctx.clearRect(0, 0, iw, ih);
+      // まず画像全体をcanvasに描画（高解像度）
+      ctx.drawImage(img, 0, 0, iw, ih);
+      // その上に暗いオーバーレイ
       ctx.fillStyle = 'rgba(0,0,0,0.55)';
       ctx.fillRect(0, 0, iw, ih);
-      ctx.clearRect(r.x * iw, r.y * ih, r.w * iw, r.h * ih);
+      // 強調エリアだけ画像を再描画（オーバーレイを上書き）
+      const rx = r.x * iw, ry = r.y * ih, rw = r.w * iw, rh = r.h * ih;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(rx, ry, rw, rh);
+      ctx.clip();
+      ctx.drawImage(img, 0, 0, iw, ih);
+      ctx.restore();
     };
     img.onload = drawLbHighlight;
     if (img.complete && img.naturalWidth) drawLbHighlight();
