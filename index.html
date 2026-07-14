@@ -2105,7 +2105,7 @@
   </button>
   <div id="lightbox-img-wrap" style="position:relative;display:flex;align-items:center;justify-content:center;">
     <img id="lightbox-img" src="" alt="" style="max-width:94vw;max-height:78vh;border-radius:12px;object-fit:contain;touch-action:none;display:block;">
-    <canvas id="lightbox-hl-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;border-radius:12px;display:none;"></canvas>
+    <canvas id="lightbox-hl-canvas" style="position:absolute;top:0;left:0;pointer-events:none;border-radius:12px;display:none;"></canvas>
   </div>
   <button id="lightbox-prev" style="position:fixed;left:12px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.4);border:none;border-radius:50%;width:36px;height:36px;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:10;touch-action:manipulation;">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
@@ -5133,10 +5133,17 @@ function _lightboxShow() {
     const drawLbHighlight = () => {
       const canvas = document.getElementById('lightbox-hl-canvas');
       if (!canvas) return;
-      const iw = img.offsetWidth, ih = img.offsetHeight;
+      if (!img.naturalWidth || !img.naturalHeight) { setTimeout(drawLbHighlight, 50); return; }
+      // object-fit:containで実際に描画されているサイズを計算
+      const nw = img.naturalWidth, nh = img.naturalHeight;
+      const bw = img.offsetWidth, bh = img.offsetHeight;
+      const scale = Math.min(bw / nw, bh / nh);
+      const iw = Math.round(nw * scale), ih = Math.round(nh * scale);
       if (!iw || !ih) { setTimeout(drawLbHighlight, 50); return; }
       const dpr2 = window.devicePixelRatio || 1;
       canvas.width = iw * dpr2; canvas.height = ih * dpr2;
+      canvas.style.width = iw + 'px';
+      canvas.style.height = ih + 'px';
       canvas.style.display = 'block';
       const ctx = canvas.getContext('2d');
       ctx.scale(dpr2, dpr2);
