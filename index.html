@@ -3950,7 +3950,7 @@ async function openDetail(id) {
       lightboxCurrentFontName = f.name || '';
       // 全写真配列を渡してスワイプ対応
       const photosArr = photos.map((p, pi) => ({
-        url: p.url,
+        url: p.originalUrl || p.url,
         memo: p.memo || '',
         isDetailPhoto: true,
         supplement: !!p.supplement,
@@ -4266,7 +4266,7 @@ function openUsageDetail(fontId, usageId, usages) {
       const memo = el.dataset.memo;
       // 全写真配列を渡してスワイプ対応
       const photosArr = (u.photos || []).map((p, pi) => ({
-        url: p.url,
+        url: p.originalUrl || p.url,
         memo: p.memo || '',
         isDetailPhoto: true,
         supplement: !!p.supplement,
