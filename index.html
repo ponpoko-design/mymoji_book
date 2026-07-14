@@ -5135,32 +5135,33 @@ function _lightboxShow() {
       const canvas = document.getElementById('lightbox-hl-canvas');
       if (!canvas) return;
       if (!img.naturalWidth || !img.naturalHeight) { setTimeout(drawLbHighlight, 50); return; }
-      // object-fit:containで実際に描画されているサイズを計算
+      // 元画像のフル解像度をcanvasに使う
       const nw = img.naturalWidth, nh = img.naturalHeight;
+      // CSSで表示するサイズ（object-fit:containの実際のサイズ）
       const bw = img.offsetWidth, bh = img.offsetHeight;
       const scale = Math.min(bw / nw, bh / nh);
-      const iw = Math.round(nw * scale), ih = Math.round(nh * scale);
-      if (!iw || !ih) { setTimeout(drawLbHighlight, 50); return; }
-      const dpr2 = window.devicePixelRatio || 1;
-      canvas.width = iw * dpr2; canvas.height = ih * dpr2;
-      canvas.style.width = iw + 'px';
-      canvas.style.height = ih + 'px';
+      const dispW = Math.round(nw * scale), dispH = Math.round(nh * scale);
+      if (!dispW || !dispH) { setTimeout(drawLbHighlight, 50); return; }
+      // canvasのピクセルは元画像の解像度で作る（最大で元画像サイズ）
+      canvas.width = nw; canvas.height = nh;
+      // CSSでは表示サイズに縮小（object-fit:containと同じ見た目）
+      canvas.style.width = dispW + 'px';
+      canvas.style.height = dispH + 'px';
       canvas.style.display = 'block';
-      img.style.opacity = '0'; // imgはcanvasで代替するので非表示
+      img.style.opacity = '0';
       const ctx = canvas.getContext('2d');
-      ctx.scale(dpr2, dpr2);
-      // まず画像全体をcanvasに描画（高解像度）
-      ctx.drawImage(img, 0, 0, iw, ih);
-      // その上に暗いオーバーレイ
+      // 元画像フル解像度で描画
+      ctx.drawImage(img, 0, 0, nw, nh);
+      // 暗いオーバーレイ
       ctx.fillStyle = 'rgba(0,0,0,0.55)';
-      ctx.fillRect(0, 0, iw, ih);
-      // 強調エリアだけ画像を再描画（オーバーレイを上書き）
-      const rx = r.x * iw, ry = r.y * ih, rw = r.w * iw, rh = r.h * ih;
+      ctx.fillRect(0, 0, nw, nh);
+      // 強調エリアだけ再描画（元画像の座標系で）
+      const rx = r.x * nw, ry = r.y * nh, rw = r.w * nw, rh = r.h * nh;
       ctx.save();
       ctx.beginPath();
       ctx.rect(rx, ry, rw, rh);
       ctx.clip();
-      ctx.drawImage(img, 0, 0, iw, ih);
+      ctx.drawImage(img, 0, 0, nw, nh);
       ctx.restore();
     };
     img.onload = drawLbHighlight;
