@@ -4339,8 +4339,10 @@ function openUsageDetail(fontId, usageId, usages) {
       hlCanvas.style.display = 'block';
       const iw = usageCoverImg.offsetWidth, ih = usageCoverImg.offsetHeight;
       if (!iw || !ih) { setTimeout(drawUsageHighlight, 50); return; }
-      hlCanvas.width = iw; hlCanvas.height = ih;
+      const dpr1 = window.devicePixelRatio || 1;
+      hlCanvas.width = iw * dpr1; hlCanvas.height = ih * dpr1;
       const ctx = hlCanvas.getContext('2d');
+      ctx.scale(dpr1, dpr1);
       ctx.clearRect(0, 0, iw, ih);
       ctx.fillStyle = 'rgba(0,0,0,0.55)';
       ctx.fillRect(0, 0, iw, ih);
@@ -5133,9 +5135,11 @@ function _lightboxShow() {
       if (!canvas) return;
       const iw = img.offsetWidth, ih = img.offsetHeight;
       if (!iw || !ih) { setTimeout(drawLbHighlight, 50); return; }
-      canvas.width = iw; canvas.height = ih;
+      const dpr2 = window.devicePixelRatio || 1;
+      canvas.width = iw * dpr2; canvas.height = ih * dpr2;
       canvas.style.display = 'block';
       const ctx = canvas.getContext('2d');
+      ctx.scale(dpr2, dpr2);
       ctx.clearRect(0, 0, iw, ih);
       ctx.fillStyle = 'rgba(0,0,0,0.55)';
       ctx.fillRect(0, 0, iw, ih);
@@ -6668,8 +6672,10 @@ $('pe-highlight-apply').addEventListener('click', async () => {
               if (hr) {
                 hlCanvas.style.display = 'block';
                 const iw = coverImg.offsetWidth, ih = coverImg.offsetHeight;
-                hlCanvas.width = iw; hlCanvas.height = ih;
+                const dpr3 = window.devicePixelRatio || 1;
+                hlCanvas.width = iw * dpr3; hlCanvas.height = ih * dpr3;
                 const ctx = hlCanvas.getContext('2d');
+                ctx.scale(dpr3, dpr3);
                 ctx.clearRect(0,0,iw,ih);
                 ctx.fillStyle = 'rgba(0,0,0,0.55)';
                 ctx.fillRect(0,0,iw,ih);
@@ -8412,7 +8418,8 @@ function renderQuizQuestion() {
         const iw = img.offsetWidth, ih = img.offsetHeight;
         const canvas = document.createElement('canvas');
         canvas.id = 'quiz-hl-canvas';
-        canvas.width = iw; canvas.height = ih;
+        const dpr4 = window.devicePixelRatio || 1;
+        canvas.width = iw * dpr4; canvas.height = ih * dpr4;
         // imgと完全に重なる位置に絶対配置（innerはflexでimgをセンタリング済み）
         canvas.style.cssText = 'position:absolute;pointer-events:none;border-radius:10px;';
         // imgの位置に合わせてcanvasを配置
@@ -8423,6 +8430,7 @@ function renderQuizQuestion() {
         canvas.style.width  = iw + 'px';
         canvas.style.height = ih + 'px';
         const ctx = canvas.getContext('2d');
+        ctx.scale(dpr4, dpr4);
         ctx.fillStyle = 'rgba(0,0,0,0.5)';
         ctx.fillRect(0, 0, iw, ih);
         ctx.clearRect(r.x * iw, r.y * ih, r.w * iw, r.h * ih);
