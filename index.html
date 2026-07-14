@@ -6330,7 +6330,7 @@ async function uploadPhotos(pathPrefix, filesArr, memosArr) {
   }
   const results = await Promise.all(tasks);
   // インデックス順に並び替え
-  return results.sort((a, b) => a.idx - b.idx).map(r => ({ url: r.url, memo: r.memo, highlightRect: null }));
+  return results.sort((a, b) => a.idx - b.idx).map(r => ({ url: r.url, originalUrl: r.url, memo: r.memo, highlightRect: null }));
 }
 
 function compressImage(file, maxSize, quality) {
