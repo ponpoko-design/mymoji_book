@@ -2105,7 +2105,10 @@
   </button>
   <div id="lightbox-img-wrap" style="position:relative;display:flex;align-items:center;justify-content:center;">
     <img id="lightbox-img" src="" alt="" style="max-width:94vw;max-height:78vh;border-radius:12px;object-fit:contain;touch-action:none;display:block;">
-    <canvas id="lightbox-hl-canvas" style="position:absolute;top:0;left:0;pointer-events:none;border-radius:12px;display:none;"></canvas>
+    <div id="lightbox-hl-overlay" style="display:none;position:absolute;inset:0;pointer-events:none;border-radius:12px;overflow:hidden;">
+      <div id="lightbox-hl-dark" style="position:absolute;inset:0;background:rgba(0,0,0,0.55);"></div>
+      <div id="lightbox-hl-spot" style="position:absolute;background:transparent;box-shadow:0 0 0 9999px rgba(0,0,0,0.55);border-radius:2px;"></div>
+    </div>
   </div>
   <button id="lightbox-prev" style="position:fixed;left:12px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.4);border:none;border-radius:50%;width:36px;height:36px;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:10;touch-action:manipulation;">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
@@ -5123,7 +5126,9 @@ function _lightboxShow() {
   const existingHlCanvas = document.getElementById('lightbox-hl-canvas');
   // 必ずonloadをリセット（前の画像のonloadが残らないように）
   img.onload = null;
-  img.style.opacity = ''; // highlightなしのときはimgを表示
+  img.style.opacity = '';
+  const existingOverlay = document.getElementById('lightbox-hl-overlay');
+  if (existingOverlay) existingOverlay.style.display = 'none';
   if (existingHlCanvas) {
     existingHlCanvas.style.display = 'none';
     existingHlCanvas.width = 0;
@@ -5131,39 +5136,34 @@ function _lightboxShow() {
   }
   if (item.highlightRect) {
     const r = item.highlightRect;
-    // 新しいImageオブジェクトでフル解像度ロード（CSSリサイズの影響を受けない）
-    const hlImage = new Image();
-    hlImage.crossOrigin = 'anonymous';
-    hlImage.onload = () => {
-      const canvas = document.getElementById('lightbox-hl-canvas');
-      if (!canvas) return;
-      const nw = hlImage.naturalWidth, nh = hlImage.naturalHeight;
-      // CSSで表示するサイズ
-      const bw = img.offsetWidth || window.innerWidth * 0.94;
-      const bh = img.offsetHeight || window.innerHeight * 0.78;
+    const drawLbHighlight = () => {
+      const overlay = document.getElementById('lightbox-hl-overlay');
+      const spot = document.getElementById('lightbox-hl-spot');
+      if (!overlay || !spot) return;
+      // imgの実際の表示サイズを取得（object-fit:containの描画エリア）
+      if (!img.naturalWidth || !img.naturalHeight) { setTimeout(drawLbHighlight, 50); return; }
+      const nw = img.naturalWidth, nh = img.naturalHeight;
+      const bw = img.offsetWidth, bh = img.offsetHeight;
+      if (!bw || !bh) { setTimeout(drawLbHighlight, 50); return; }
       const scale = Math.min(bw / nw, bh / nh);
-      const dispW = Math.round(nw * scale), dispH = Math.round(nh * scale);
-      canvas.width = nw; canvas.height = nh;
-      canvas.style.width = dispW + 'px';
-      canvas.style.height = dispH + 'px';
-      canvas.style.display = 'block';
-      img.style.opacity = '0';
-      const ctx = canvas.getContext('2d');
-      // フル解像度で描画
-      ctx.drawImage(hlImage, 0, 0, nw, nh);
-      // 暗いオーバーレイ
-      ctx.fillStyle = 'rgba(0,0,0,0.55)';
-      ctx.fillRect(0, 0, nw, nh);
-      // 強調エリアだけ再描画
-      const rx = r.x * nw, ry = r.y * nh, rw = r.w * nw, rh = r.h * nh;
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(rx, ry, rw, rh);
-      ctx.clip();
-      ctx.drawImage(hlImage, 0, 0, nw, nh);
-      ctx.restore();
+      const dispW = nw * scale, dispH = nh * scale;
+      const offsetX = (bw - dispW) / 2;
+      const offsetY = (bh - dispH) / 2;
+      // overlayをimgと同じ位置・サイズに設定
+      overlay.style.display = 'block';
+      overlay.style.left = offsetX + 'px';
+      overlay.style.top = offsetY + 'px';
+      overlay.style.width = dispW + 'px';
+      overlay.style.height = dispH + 'px';
+      // 強調エリアをspotに設定（%ではなくpxで）
+      spot.style.left = (r.x * dispW) + 'px';
+      spot.style.top = (r.y * dispH) + 'px';
+      spot.style.width = (r.w * dispW) + 'px';
+      spot.style.height = (r.h * dispH) + 'px';
+      img.style.opacity = '';
     };
-    hlImage.src = item.url;
+    if (img.complete && img.naturalWidth) drawLbHighlight();
+    else { const _prev = img.onload; img.onload = () => { if(_prev) _prev(); drawLbHighlight(); }; }
   }
   // 補足ボタン：このフォントのphotosに対してのみ表示（用例画面では非表示）
   const supplBtn = $('lightbox-supplement-btn');
