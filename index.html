@@ -5107,7 +5107,6 @@ function openLightbox(url, memo, onEdit, fontName, photosArr, fontId) {
 function _lightboxShow() {
   const item = lightboxPhotos[lightboxIndex];
   const img = $('lightbox-img');
-  alert('[LB] url=' + item.url.substring(0,80) + '\nhasHL=' + !!item.highlightRect);
   img.src = item.url;
   $('lightbox-memo').textContent = item.memo || '';
   lightboxCurrentUrl = item.url;
@@ -5132,41 +5131,39 @@ function _lightboxShow() {
   }
   if (item.highlightRect) {
     const r = item.highlightRect;
-    const drawLbHighlight = () => {
+    // 新しいImageオブジェクトでフル解像度ロード（CSSリサイズの影響を受けない）
+    const hlImage = new Image();
+    hlImage.crossOrigin = 'anonymous';
+    hlImage.onload = () => {
       const canvas = document.getElementById('lightbox-hl-canvas');
       if (!canvas) return;
-      if (!img.naturalWidth || !img.naturalHeight) { setTimeout(drawLbHighlight, 50); return; }
-      // 元画像のフル解像度をcanvasに使う
-      const nw = img.naturalWidth, nh = img.naturalHeight;
-      // CSSで表示するサイズ（object-fit:containの実際のサイズ）
-      const bw = img.offsetWidth, bh = img.offsetHeight;
+      const nw = hlImage.naturalWidth, nh = hlImage.naturalHeight;
+      // CSSで表示するサイズ
+      const bw = img.offsetWidth || window.innerWidth * 0.94;
+      const bh = img.offsetHeight || window.innerHeight * 0.78;
       const scale = Math.min(bw / nw, bh / nh);
       const dispW = Math.round(nw * scale), dispH = Math.round(nh * scale);
-      if (!dispW || !dispH) { setTimeout(drawLbHighlight, 50); return; }
-      // canvasのピクセルは元画像の解像度で作る（最大で元画像サイズ）
       canvas.width = nw; canvas.height = nh;
-      // CSSでは表示サイズに縮小（object-fit:containと同じ見た目）
       canvas.style.width = dispW + 'px';
       canvas.style.height = dispH + 'px';
       canvas.style.display = 'block';
       img.style.opacity = '0';
       const ctx = canvas.getContext('2d');
-      // 元画像フル解像度で描画
-      ctx.drawImage(img, 0, 0, nw, nh);
+      // フル解像度で描画
+      ctx.drawImage(hlImage, 0, 0, nw, nh);
       // 暗いオーバーレイ
       ctx.fillStyle = 'rgba(0,0,0,0.55)';
       ctx.fillRect(0, 0, nw, nh);
-      // 強調エリアだけ再描画（元画像の座標系で）
+      // 強調エリアだけ再描画
       const rx = r.x * nw, ry = r.y * nh, rw = r.w * nw, rh = r.h * nh;
       ctx.save();
       ctx.beginPath();
       ctx.rect(rx, ry, rw, rh);
       ctx.clip();
-      ctx.drawImage(img, 0, 0, nw, nh);
+      ctx.drawImage(hlImage, 0, 0, nw, nh);
       ctx.restore();
     };
-    img.onload = drawLbHighlight;
-    if (img.complete && img.naturalWidth) drawLbHighlight();
+    hlImage.src = item.url;
   }
   // 補足ボタン：このフォントのphotosに対してのみ表示（用例画面では非表示）
   const supplBtn = $('lightbox-supplement-btn');
