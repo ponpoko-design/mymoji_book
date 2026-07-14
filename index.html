@@ -4038,7 +4038,7 @@ async function openDetail(id) {
         if (!file) { document.body.removeChild(input); return; }
         photoAddBtn.style.opacity = '0.4';
         try {
-          const compressed = await compressImage(file, 2400, 0.92);
+          const compressed = await compressImage(file, 3000, 0.92);
           const storageRef = ref(storage, `fonts/${Date.now()}_${file.name}`);
           await uploadBytes(storageRef, compressed);
           const url = await getDownloadURL(storageRef);
@@ -6289,7 +6289,7 @@ async function uploadPhotos(pathPrefix, filesArr, memosArr) {
     const memo = memosArr[i] || '';
     const idx = i;
     tasks.push(
-      compressImage(file, 2400, 0.92).then(async compressed => {
+      compressImage(file, 3000, 0.92).then(async compressed => {
         const storageRef = ref(storage, `${pathPrefix}/${Date.now()}_${idx}_${file.name}`);
         await uploadBytes(storageRef, compressed);
         const url = await getDownloadURL(storageRef);
@@ -7627,7 +7627,7 @@ function _obModalPhotoFileSelected(input) {
 
 async function _uploadOboeakiPhoto(uid, entryId, file) {
   // 既存の compressImage + Firebase Storage（uploadPhotos と同じ方式）
-  const compressed = await compressImage(file, 2400, 0.92);
+  const compressed = await compressImage(file, 3000, 0.92);
   const storageRef = ref(storage, `users/${uid}/oboeaki/${entryId}/${Date.now()}_${file.name}`);
   await uploadBytes(storageRef, compressed);
   return await getDownloadURL(storageRef);
@@ -7662,7 +7662,7 @@ async function saveOboeakiEntry() {
       if (files.length > 0) {
         try {
           const results = await Promise.all(files.map(async (file, idx) => {
-            const compressed = await compressImage(file, 2400, 0.92);
+            const compressed = await compressImage(file, 3000, 0.92);
             const storageRef = ref(storage, `users/${uid}/oboeaki/${ref2.id}/${Date.now()}_${idx}_${file.name || 'photo.jpg'}`);
             await uploadBytes(storageRef, compressed);
             return await getDownloadURL(storageRef);
