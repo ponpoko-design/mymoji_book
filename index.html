@@ -5107,6 +5107,7 @@ function openLightbox(url, memo, onEdit, fontName, photosArr, fontId) {
 function _lightboxShow() {
   const item = lightboxPhotos[lightboxIndex];
   const img = $('lightbox-img');
+  alert('[LB] url=' + item.url.substring(0,80) + '\nhasHL=' + !!item.highlightRect);
   img.src = item.url;
   $('lightbox-memo').textContent = item.memo || '';
   lightboxCurrentUrl = item.url;
