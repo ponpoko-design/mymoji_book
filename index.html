@@ -2845,14 +2845,18 @@ function normalizeReading(str) {
 }
 // フォント名・読み方に対する検索マッチ順位（小さいほど上位）
 // 0: フォント名が前方一致  1: フォント名に部分一致
-// 2: 読み方（ひらがな正規化）に部分一致  3: マッチなし（呼び出し側で別条件により含まれている場合のみ）
+// 2: 読み方が前方一致      3: 読み方に部分一致
+// 4: マッチなし（呼び出し側で別条件により含まれている場合のみ）
 function fontMatchRank(f, q, qHira) {
   const name = (f.name || '').toLowerCase();
   if (q && name.startsWith(q)) return 0;
   if (q && name.includes(q)) return 1;
   const reading = normalizeReading(f.reading);
-  if (reading && qHira && reading.includes(qHira)) return 2;
-  return 3;
+  if (reading && qHira) {
+    if (reading.startsWith(qHira)) return 2;
+    if (reading.includes(qHira)) return 3;
+  }
+  return 4;
 }
 function fontReadingMatches(f, q, qHira) {
   const reading = normalizeReading(f.reading);
@@ -6217,14 +6221,14 @@ function renderUsageFontList() {
     type: 'assigned', f, u,
     ts: u.createdAt?.toMillis?.() || 0
   }));
-  // 検索時：0=フォント名前方一致 1=フォント名部分一致 2=読み方一致 3=その他一致（メーカー/場所/日付/未定）
+  // 検索時：0=フォント名前方一致 1=フォント名部分一致 2=読み方前方一致 3=読み方部分一致 4=その他一致（メーカー/場所/日付/未定）
   // 同順位内はcreatedAtの新しい順
   const rankOf = (item) => {
     if (item.type === 'assigned') return fontMatchRank(item.f, q, qHira);
     const u = item.u;
     if ('フォント未定'.startsWith(q) && q) return 0;
     if ('フォント未定'.includes(q) || (qHira && 'みてい'.includes(qHira))) return 1;
-    return 3;
+    return 4;
   };
   const combined = [...unassignedWithMeta, ...assignedWithMeta]
     .sort((a, b) => {
