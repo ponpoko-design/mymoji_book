@@ -4194,11 +4194,14 @@ async function openDetail(id) {
         fontId: id,
         fontName: f.name || '',
         onEdit: () => {
-          const origUrl = p.originalUrl || '';
+          // f.photosは保存のたびに新しい配列に置き換わるため、
+          // 閉じ込めた p ではなく毎回ここで最新のデータを読み直す（連続編集での巻き戻り防止）
+          const livePhoto = (f.photos && f.photos[pi]) || p;
+          const origUrl = livePhoto.originalUrl || '';
           const photoIdx2 = pi; // URL一致だと重複URLで誤ったindexを拾うため、mapで確定済みのpiを直接使う
-          const photoInfo2 = { fontId: id, usageId: null, photoIdx: photoIdx2, highlightRect: p.highlightRect || null };
+          const photoInfo2 = { fontId: id, usageId: null, photoIdx: photoIdx2, highlightRect: livePhoto.highlightRect || null };
           let editedBlobUrl = ''; // onApplyとonCloseで共有
-          openPhotoEditor(origUrl || p.url, async (blob, revertUrl) => {
+          openPhotoEditor(origUrl || livePhoto.url, async (blob, revertUrl) => {
             try {
               if (revertUrl) {
                 const f2 = fonts.find(x => x.id === id);
@@ -4513,11 +4516,14 @@ function openUsageDetail(fontId, usageId, usages) {
         photoIdx: pi,
         fontName: f ? f.name : '',
         onEdit: () => {
-          const origUrl = p.originalUrl || '';
+          // u.photos[pi]は保存のたびに新しいオブジェクトに置き換わるため、
+          // 閉じ込めた p ではなく毎回ここで最新のデータを読み直す（連続編集での巻き戻り防止）
+          const livePhoto = (u.photos && u.photos[pi]) || p;
+          const origUrl = livePhoto.originalUrl || '';
           const photoIdx = pi; // URL一致だと重複URLで誤ったindexを拾うため、mapで確定済みのpiを直接使う
-          const photoInfo = { fontId, usageId, photoIdx, highlightRect: p.highlightRect || null };
+          const photoInfo = { fontId, usageId, photoIdx, highlightRect: livePhoto.highlightRect || null };
           let editedBlobUrl = ''; // onApplyとonCloseで共有
-          openPhotoEditor(origUrl || p.url, async (blob, revertUrl) => {
+          openPhotoEditor(origUrl || livePhoto.url, async (blob, revertUrl) => {
             try {
               if (revertUrl) {
                 const newPhotos = [...(u.photos||[])];
