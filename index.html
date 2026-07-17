@@ -4194,7 +4194,7 @@ async function openDetail(id) {
         fontName: f.name || '',
         onEdit: () => {
           const origUrl = p.originalUrl || '';
-          const photoIdx2 = (f.photos||[]).findIndex(ph => ph.url === p.url);
+          const photoIdx2 = pi; // URL一致だと重複URLで誤ったindexを拾うため、mapで確定済みのpiを直接使う
           const photoInfo2 = { fontId: id, usageId: null, photoIdx: photoIdx2, highlightRect: p.highlightRect || null };
           let editedBlobUrl = ''; // onApplyとonCloseで共有
           openPhotoEditor(origUrl || p.url, async (blob, revertUrl) => {
@@ -4512,7 +4512,7 @@ function openUsageDetail(fontId, usageId, usages) {
         fontName: f ? f.name : '',
         onEdit: () => {
           const origUrl = p.originalUrl || '';
-          const photoIdx = (u.photos||[]).findIndex(ph => ph.url === p.url);
+          const photoIdx = pi; // URL一致だと重複URLで誤ったindexを拾うため、mapで確定済みのpiを直接使う
           const photoInfo = { fontId, usageId, photoIdx, highlightRect: p.highlightRect || null };
           let editedBlobUrl = ''; // onApplyとonCloseで共有
           openPhotoEditor(origUrl || p.url, async (blob, revertUrl) => {
@@ -6846,11 +6846,25 @@ $('pe-highlight-clear').addEventListener('click', () => {
 const peHlNoneBtn = $('pe-highlight-none');
 if (peHlNoneBtn) peHlNoneBtn.addEventListener('click', async () => {
   if (!peCurrentPhotoInfo) { peSetTab('adjust'); return; }
-  const { fontId, usageId, photoIdx } = peCurrentPhotoInfo;
+  const { fontId, usageId, photoIdx, oboeakiId, oboeakiEntry } = peCurrentPhotoInfo;
   const uid = auth.currentUser?.uid;
   if (!uid) return;
   peHighlightRect = null;
   try {
+    if (oboeakiId) {
+      // ── 覚えがき写真の強調解除 ──
+      const obRef = doc(db,'users',uid,'oboeaki',oboeakiId);
+      const obSnap = await getDoc(obRef);
+      if (!obSnap.exists()) { showToast('メモが見つかりません'); return; }
+      const obHighlights = (obSnap.data().ob_highlights || []).filter(h => h.photoIdx !== photoIdx);
+      await updateDoc(obRef, { ob_highlights: obHighlights });
+      if (oboeakiEntry) oboeakiEntry.ob_highlights = obHighlights;
+      showToast('強調を解除しました');
+      if (lightboxPhotos && lightboxPhotos[lightboxIndex]) lightboxPhotos[lightboxIndex].highlightRect = null;
+      $('photo-editor').classList.remove('active');
+      setTimeout(() => { if ($('lightbox').classList.contains('active')) _lightboxShow(); }, 80);
+      return;
+    }
     if (usageId) {
       const usageRef = doc(db,'fonts',fontId,'usages',usageId);
       const usageSnap = await getDoc(usageRef);
@@ -6876,6 +6890,28 @@ if (peHlNoneBtn) peHlNoneBtn.addEventListener('click', async () => {
           }
         }, 80);
       }
+      return;
+    }
+    // ── フォント本体PHOTOS欄の強調解除 ──
+    const fontRef = doc(db,'fonts',fontId);
+    const fontSnap = await getDoc(fontRef);
+    if (!fontSnap.exists()) return;
+    const newPhotos = [...(fontSnap.data().photos || [])];
+    if (photoIdx >= 0 && photoIdx < newPhotos.length) {
+      newPhotos[photoIdx] = { ...newPhotos[photoIdx], highlightRect: null };
+      await updateDoc(fontRef, { photos: newPhotos });
+      const fontObj = fonts.find(x=>x.id===fontId);
+      if (fontObj) fontObj.photos = newPhotos;
+      showToast('強調を解除しました');
+      if (lightboxPhotos && lightboxPhotos[lightboxIndex]) lightboxPhotos[lightboxIndex].highlightRect = null;
+      $('photo-editor').classList.remove('active');
+      setTimeout(() => {
+        if ($('lightbox').classList.contains('active')) {
+          _lightboxShow();
+        } else {
+          openDetail(fontId);
+        }
+      }, 80);
     }
   } catch(err) { showToast('保存に失敗しました'); }
 });
@@ -6964,8 +7000,15 @@ $('pe-highlight-apply').addEventListener('click', async () => {
         }
         const pe = $('photo-editor');
         pe.classList.remove('active');
-        if (peOnClose) peOnClose();
-        else openDetail(fontId);
+        // 今表示していたスワイプ位置(lightboxIndex)を保ったまま再表示する
+        // （以前はpeOnClose()経由でphotosArr=nullの単独モードに戻ってしまい、1枚目に戻ったように見える不具合があった）
+        setTimeout(() => {
+          if ($('lightbox').classList.contains('active')) {
+            _lightboxShow();
+          } else {
+            openDetail(fontId);
+          }
+        }, 80);
       }
     }
   } catch(err) {
