@@ -2066,6 +2066,11 @@
       <span id="menu-fontcount-badge" style="font-size:14px;font-weight:800;background:linear-gradient(135deg,#9b7fe8,#5aaae8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">—</span>
     </button>
   </div>
+  <!-- 一覧書き出し（読み方確認用・一時機能） -->
+  <div style="padding:16px 20px;border-bottom:1px solid var(--c-border);">
+    <button id="menu-export-fonts" style="width:100%;padding:10px 16px;border-radius:50px;border:1.5px solid var(--c-border);background:none;font-size:14px;color:var(--c-text);cursor:pointer;font-family:inherit;touch-action:manipulation;text-align:left;">フォント一覧を書き出し（テキスト）</button>
+    <div style="font-size:12px;color:var(--c-text-sub);margin-top:8px;line-height:1.6;">登録済みフォントの「フォント名・読み方・メーカー・カテゴリ・言語」をテキストファイルでダウンロードします（読み方確認用の一時機能）。</div>
+  </div>
   <!-- アカウントセクション -->
   <div style="padding:20px;">
     <div style="font-size:12px;font-weight:700;color:var(--c-text-sub);letter-spacing:0.08em;margin-bottom:12px;">ACCOUNT</div>
@@ -3104,6 +3109,35 @@ $('menu-close').addEventListener('click', closeMenu);
 $('menu-overlay').addEventListener('click', closeMenu);
 $('menu-fontcount-btn').addEventListener('click', () => { closeMenu(); openFontCountPanel(); });
 $('fontcount-back').addEventListener('click', closeFontCountPanel);
+
+// ── フォント一覧書き出し（読み方確認用・一時機能） ──
+$('menu-export-fonts').addEventListener('click', () => {
+  closeMenu();
+  const list = [...fonts].sort((a, b) => (a.name||'').localeCompare(b.name||'', 'ja'));
+  const lines = [
+    'フォント名\t読み方\tメーカー\tカテゴリ\t言語',
+    ...list.map(f => [
+      f.name || '',
+      f.reading || '',
+      f.maker || '',
+      f.category || '',
+      f.lang || ''
+    ].join('\t'))
+  ];
+  const text = lines.join('\n');
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const stamp = `${String(now.getFullYear()).slice(2)}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}`;
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `mymoji_fonts_${stamp}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
 
 $('menu-logout').addEventListener('click', async () => {
   closeMenu();
