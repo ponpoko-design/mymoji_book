@@ -2844,19 +2844,19 @@ function normalizeReading(str) {
   return kataToHira((str || '').toLowerCase());
 }
 // フォント名・読み方に対する検索マッチ順位（小さいほど上位）
-// 0: フォント名が前方一致  1: フォント名に部分一致
-// 2: 読み方が前方一致      3: 読み方に部分一致
-// 4: マッチなし（呼び出し側で別条件により含まれている場合のみ）
+// 0: フォント名 or 読み方が「前方一致」（入力した文字列で始まる）
+// 1: フォント名 or 読み方に「部分一致」（前方一致ではないが含む）
+// 2: マッチなし（呼び出し側で別条件により含まれている場合のみ）
 function fontMatchRank(f, q, qHira) {
   const name = (f.name || '').toLowerCase();
-  if (q && name.startsWith(q)) return 0;
-  if (q && name.includes(q)) return 1;
   const reading = normalizeReading(f.reading);
-  if (reading && qHira) {
-    if (reading.startsWith(qHira)) return 2;
-    if (reading.includes(qHira)) return 3;
-  }
-  return 4;
+  const nameStarts = !!(q && name.startsWith(q));
+  const readStarts = !!(reading && qHira && reading.startsWith(qHira));
+  if (nameStarts || readStarts) return 0;
+  const nameIncludes = !!(q && name.includes(q));
+  const readIncludes = !!(reading && qHira && reading.includes(qHira));
+  if (nameIncludes || readIncludes) return 1;
+  return 2;
 }
 function fontReadingMatches(f, q, qHira) {
   const reading = normalizeReading(f.reading);
@@ -3438,7 +3438,7 @@ function renderFontList() {
       (f.usages||[]).some(u => (u.place||'').toLowerCase().includes(q)) ||
       fontReadingMatches(f, q, qHira)
     );
-    // 1) フォント名の前方一致 → 2) 部分一致 → 3) 読み方一致 → 4) その他（メーカー/メモ/用例地）
+    // 0) 名前 or 読み方が前方一致 → 1) 名前 or 読み方に部分一致 → 2) その他（メーカー/メモ/用例地）
     // 同順位内は更新日（lastUsageAt or createdAt）の新しい順
     list.sort((a, b) => {
       const ra = fontMatchRank(a, q, qHira);
@@ -5908,12 +5908,39 @@ function initAddFont() {
   buildPhotoSlots('af-photos','af-photo-memos-wrap',afPhotoFiles,afPhotoMemos);
 }
 
+// ── 読み方の自動探索（登録済みフォント＋マスター辞書から） ──
+function findAutoReading(name, lang) {
+  if (!name) return null;
+  const regList = fonts.filter(f => f.reading && f.reading.trim());
+  const dbList = FONT_DB[lang] || [];
+  // 完全一致（登録済みフォントを優先）
+  let hit = regList.find(f => f.name === name) || dbList.find(f => f.name === name);
+  if (hit) return hit.reading || null;
+  // 前方一致（例：「秀英角ゴシック 金」→ベース「秀英角ゴシック」の読みを流用）
+  const candidates = [...regList, ...dbList].filter(f =>
+    f.reading && f.name.length < name.length && name.startsWith(f.name)
+  );
+  if (candidates.length) {
+    candidates.sort((a, b) => b.name.length - a.name.length);
+    return candidates[0].reading;
+  }
+  return null;
+}
+function tryAutoFillReading() {
+  const name = $('af-name').value.trim();
+  if (!name || $('af-reading').value.trim()) return;
+  const lang = document.querySelector('input[name="af-lang"]:checked').value;
+  const auto = findAutoReading(name, lang);
+  if (auto) $('af-reading').value = auto;
+}
+
 // オートコンプリート
 $('af-name').addEventListener('input', () => {
   const lang = document.querySelector('input[name="af-lang"]:checked').value;
   const q = $('af-name').value.trim();
   const results = searchFonts(q, lang);
   const box = $('af-suggestions');
+  tryAutoFillReading();
   if (!results.length) { box.classList.remove('open'); return; }
   box.innerHTML = results.map(f => `
     <div class="suggestion-item"
@@ -6001,6 +6028,7 @@ function checkSimilarFonts(name) {
 $('af-name').addEventListener('blur', () => {
   const name = $('af-name').value.trim();
   checkSimilarFonts(name);
+  tryAutoFillReading();
 });
 
 $('af-submit').addEventListener('click', async () => {
@@ -6221,14 +6249,14 @@ function renderUsageFontList() {
     type: 'assigned', f, u,
     ts: u.createdAt?.toMillis?.() || 0
   }));
-  // 検索時：0=フォント名前方一致 1=フォント名部分一致 2=読み方前方一致 3=読み方部分一致 4=その他一致（メーカー/場所/日付/未定）
+  // 検索時：0=名前/読み方の前方一致 1=名前/読み方の部分一致 2=その他一致（メーカー/場所/日付/未定）
   // 同順位内はcreatedAtの新しい順
   const rankOf = (item) => {
     if (item.type === 'assigned') return fontMatchRank(item.f, q, qHira);
     const u = item.u;
     if ('フォント未定'.startsWith(q) && q) return 0;
     if ('フォント未定'.includes(q) || (qHira && 'みてい'.includes(qHira))) return 1;
-    return 4;
+    return 2;
   };
   const combined = [...unassignedWithMeta, ...assignedWithMeta]
     .sort((a, b) => {
