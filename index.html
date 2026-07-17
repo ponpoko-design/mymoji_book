@@ -6684,27 +6684,33 @@ function openPhotoEditor(src, onApply, onClose, originalUrl, photoInfo) {
   const xhr = new XMLHttpRequest();
   xhr.open('GET', src, true);
   xhr.responseType = 'blob';
+  // 画像src設定後、クロップ枠のセットアップを必ず実行する（読み込み成功・失敗どちらでも）
+  const finishLoad = (finalSrc) => {
+    const setup = () => {
+      applyBtn.disabled = false;
+      applyBtn.textContent = '完了';
+      requestAnimationFrame(() => peSetupCrop());
+    };
+    if (img.src === finalSrc && img.complete) {
+      // 既に同じsrcで読み込み済み（onloadが発火しないケース）
+      setup();
+    } else {
+      img.onload = setup;
+      img.onerror = setup; // 画像自体の読み込みが失敗してもUIは操作可能にする
+      img.src = finalSrc;
+    }
+  };
   xhr.onload = () => {
     if (xhr.status === 200) {
       const blobUrl = URL.createObjectURL(xhr.response);
-      img.onload = () => {
-        peOriginalSrc = blobUrl;
-        applyBtn.disabled = false;
-        applyBtn.textContent = '完了';
-        // 画像ロード完了後にクロップ枠をセットアップ
-        requestAnimationFrame(() => peSetupCrop());
-      };
-      img.src = blobUrl;
+      peOriginalSrc = blobUrl;
+      finishLoad(blobUrl);
     } else {
-      img.src = src;
-      applyBtn.disabled = false;
-      applyBtn.textContent = '完了';
+      finishLoad(src);
     }
   };
   xhr.onerror = () => {
-    img.src = src;
-    applyBtn.disabled = false;
-    applyBtn.textContent = '完了';
+    finishLoad(src);
   };
   xhr.send();
 }
@@ -7060,10 +7066,15 @@ $('pe-rotate-right').addEventListener('click', () => { peRotation = (peRotation 
 let cropRect = { x: 0.1, y: 0.1, x2: 0.9, y2: 0.9 }; // 0-1の比率
 const MIN_CROP = 0.05;
 
-function peSetupCrop() {
+function peSetupCrop(attempt) {
+  attempt = attempt || 0;
   const img = $('photo-editor-img');
   const imgRect = img.getBoundingClientRect();
-  if (!imgRect.width) return;
+  if (!imgRect.width) {
+    // レイアウト確定前のタイミングの可能性があるため、少し待って再試行（最大1秒）
+    if (attempt < 20) setTimeout(() => peSetupCrop(attempt + 1), 50);
+    return;
+  }
   updateCropUI();
 
   // ハンドルのドラッグ
