@@ -4182,6 +4182,7 @@ async function openDetail(id) {
       if (_ctxMenu.classList.contains('active')) return;
       const url = el.dataset.url;
       const memo = el.dataset.memo;
+      const tappedIdx = parseInt(el.dataset.idx ?? '0');
       lightboxCurrentFontName = f.name || '';
       // 全写真配列を渡してスワイプ対応
       const photosArr = photos.map((p, pi) => ({
@@ -4240,7 +4241,7 @@ async function openDetail(id) {
           }, origUrl, photoInfo2);
         }
       }));
-      openLightbox(url, memo, null, f.name, photosArr, id);
+      openLightbox(url, memo, null, f.name, photosArr, id, tappedIdx);
     });
   });
   $('detail-content').querySelectorAll('.usage-card').forEach(el => {
@@ -4499,6 +4500,7 @@ function openUsageDetail(fontId, usageId, usages) {
     el.addEventListener('click', () => {
       const url = el.dataset.url;
       const memo = el.dataset.memo;
+      const tappedIdx = parseInt(el.dataset.idx ?? '0');
       // 全写真配列を渡してスワイプ対応
       const photosArr = (u.photos || []).map((p, pi) => ({
         url: p.url,  // ライトボックス表示は最新URL
@@ -4554,7 +4556,7 @@ function openUsageDetail(fontId, usageId, usages) {
           }, origUrl, photoInfo);
         }
       }));
-      openLightbox(url, memo, null, f ? f.name : '', photosArr, fontId);
+      openLightbox(url, memo, null, f ? f.name : '', photosArr, fontId, tappedIdx);
     });
   });
 
@@ -5307,11 +5309,16 @@ let lightboxCurrentFontId = '';
 let lightboxPhotos = [];   // [{url, memo, onEdit}]
 let lightboxIndex = 0;
 
-function openLightbox(url, memo, onEdit, fontName, photosArr, fontId) {
+function openLightbox(url, memo, onEdit, fontName, photosArr, fontId, initialIndex) {
   if (photosArr && photosArr.length > 0) {
     lightboxPhotos = photosArr;
-    lightboxIndex = photosArr.findIndex(p => p.url === url);
-    if (lightboxIndex < 0) lightboxIndex = 0;
+    // initialIndexが指定されていればそれを優先（URLの重複があっても確実に正しい写真を開ける）
+    if (typeof initialIndex === 'number' && initialIndex >= 0 && initialIndex < photosArr.length) {
+      lightboxIndex = initialIndex;
+    } else {
+      lightboxIndex = photosArr.findIndex(p => p.url === url);
+      if (lightboxIndex < 0) lightboxIndex = 0;
+    }
   } else {
     lightboxPhotos = [{ url, memo, onEdit, fontId: fontId || '', fontName: fontName || '' }];
     lightboxIndex = 0;
@@ -8160,12 +8167,12 @@ function renderOboeakiList() {
                   const updatedPhotos = (e.photos||[]).map((pe3, i2) => ({
                     url: i2 === pi ? latestUrl3 : obPhotoUrl(pe3), memo: ''
                   }));
-                  openLightbox(latestUrl3, '', null, '', updatedPhotos, null);
+                  openLightbox(latestUrl3, '', null, '', updatedPhotos, null, pi);
                 }, origUrl3, { fontId: null, usageId: null, photoIdx: pi, oboeakiId: e.id, oboeakiEntry: e });
               }
             };
           });
-          openLightbox(url, '', null, '', allPhotos, null);
+          openLightbox(url, '', null, '', allPhotos, null, idx);
         });
         slot.querySelector('.ob-img-slot-del').addEventListener('click', async ev => {
           ev.stopPropagation();
