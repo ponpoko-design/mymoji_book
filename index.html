@@ -2070,11 +2070,29 @@
   <div style="padding:16px 20px;border-bottom:1px solid var(--c-border);">
     <button id="menu-export-fonts" style="width:100%;padding:10px 16px;border-radius:50px;border:1.5px solid var(--c-border);background:none;font-size:14px;color:var(--c-text);cursor:pointer;font-family:inherit;touch-action:manipulation;text-align:left;">フォント一覧を書き出し（テキスト）</button>
     <div style="font-size:12px;color:var(--c-text-sub);margin-top:8px;line-height:1.6;">登録済みフォントの「フォント名・読み方・メーカー・カテゴリ・言語」をテキストファイルでダウンロードします（読み方確認用の一時機能）。</div>
+    <button id="menu-import-readings" style="width:100%;padding:10px 16px;border-radius:50px;border:1.5px solid var(--c-border);background:none;font-size:14px;color:var(--c-text);cursor:pointer;font-family:inherit;touch-action:manipulation;text-align:left;margin-top:10px;">読み方を一括反映する</button>
+    <div style="font-size:12px;color:var(--c-text-sub);margin-top:8px;line-height:1.6;">確認済みの読み方リストを登録済みフォントに一括で書き込みます（読み方確認用の一時機能）。</div>
   </div>
   <!-- アカウントセクション -->
   <div style="padding:20px;">
     <div style="font-size:12px;font-weight:700;color:var(--c-text-sub);letter-spacing:0.08em;margin-bottom:12px;">ACCOUNT</div>
     <button id="menu-logout" style="padding:10px 16px;border-radius:50px;border:1.5px solid var(--c-border);background:none;font-size:14px;color:#e05c7a;cursor:pointer;font-family:inherit;touch-action:manipulation;text-align:left;width:100%;">ログアウト</button>
+  </div>
+</div>
+
+<!-- 読み方一括反映モーダル（読み方確認用・一時機能） -->
+<div id="import-readings-overlay" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,0.4);"></div>
+<div id="import-readings-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:401;width:calc(100% - 32px);max-width:520px;max-height:80vh;overflow-y:auto;background:#fff;border-radius:16px;padding:20px;">
+  <div style="font-size:16px;font-weight:700;margin-bottom:8px;">読み方を一括反映</div>
+  <div style="font-size:13px;color:var(--c-text-sub);line-height:1.6;margin-bottom:10px;">
+    以下は確認済みの読み方リストです（タブ区切り：フォント名・読み方・メーカー・カテゴリ）。内容はそのままでOKなら「反映する」を、直したい場合はここで編集してから実行してください。<br>
+    フォント名が完全一致した登録済みフォントに「読み方」を書き込みます。メーカーが空欄だったフォントには、このリストのメーカーも合わせて入力します。
+  </div>
+  <textarea id="import-readings-textarea" style="width:100%;height:220px;font-size:12px;font-family:monospace;padding:10px;border:1.4px solid var(--c-border);border-radius:10px;white-space:pre;"></textarea>
+  <div id="import-readings-log" style="font-size:12px;color:var(--c-text-sub);margin-top:10px;line-height:1.6;white-space:pre-wrap;"></div>
+  <div style="display:flex;gap:10px;margin-top:14px;">
+    <button id="import-readings-run" style="flex:1;padding:10px 16px;border-radius:50px;border:none;background:linear-gradient(135deg,#9b7fe8,#5aaae8);color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;">反映する</button>
+    <button id="import-readings-close" style="padding:10px 16px;border-radius:50px;border:1.5px solid var(--c-border);background:none;font-size:14px;color:var(--c-text);cursor:pointer;font-family:inherit;">閉じる</button>
   </div>
 </div>
 
@@ -2818,6 +2836,29 @@ function highlightMatch(text, query) {
     text.slice(idx+query.length);
 }
 
+// ── カタカナ→ひらがな変換（読み方検索用） ──────────
+function kataToHira(str) {
+  return (str || '').replace(/[\u30a1-\u30f6]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0x60));
+}
+function normalizeReading(str) {
+  return kataToHira((str || '').toLowerCase());
+}
+// フォント名・読み方に対する検索マッチ順位（小さいほど上位）
+// 0: フォント名が前方一致  1: フォント名に部分一致
+// 2: 読み方（ひらがな正規化）に部分一致  3: マッチなし（呼び出し側で別条件により含まれている場合のみ）
+function fontMatchRank(f, q, qHira) {
+  const name = (f.name || '').toLowerCase();
+  if (q && name.startsWith(q)) return 0;
+  if (q && name.includes(q)) return 1;
+  const reading = normalizeReading(f.reading);
+  if (reading && qHira && reading.includes(qHira)) return 2;
+  return 3;
+}
+function fontReadingMatches(f, q, qHira) {
+  const reading = normalizeReading(f.reading);
+  return !!(reading && qHira && reading.includes(qHira));
+}
+
 // ── Weight Database ────────────────────────
 const WEIGHT_DB = {
   // モリサワ
@@ -3110,7 +3151,133 @@ $('menu-overlay').addEventListener('click', closeMenu);
 $('menu-fontcount-btn').addEventListener('click', () => { closeMenu(); openFontCountPanel(); });
 $('fontcount-back').addEventListener('click', closeFontCountPanel);
 
-// ── フォント一覧書き出し（読み方確認用・一時機能） ──
+// ── 読み方一括反映（読み方確認用・一時機能） ──
+const IMPORT_READINGS_DEFAULT = `フォント名\t読み方\tメーカー\tカテゴリ
+A1ゴシック\tえーわんごしっく\tモリサワ\tゴシック
+A1明朝\tえーわんみんちょう\tモリサワ\t明朝
+ADS あかり\tあかり\tデザインシグナル\tその他
+ADSひかり\tひかり\tデザインシグナル\tその他
+ADSユーミンウォーク\tゆーみんうぉーく\tデザインシグナル\tその他
+BIZ UDGothic\tびずゆーでぃーごしっく\tGoogle\tUD
+Noto Sans JP\tのとさん\tGoogle\tゴシック
+UD角ゴ_ラージ\tゆーでぃーかくごらーじ\tフォントワークス\tUD
+UD新ゴ\tゆーでぃーしんご\tモリサワ\tUD
+UD新ゴNT\tゆーでぃーしんごえぬてぃー\tモリサワ\tUD
+Zen Maru Gothic\tぜんまるごしっく\tGoogle\t丸ゴ
+あんずもじ\tあんずもじ\t\tその他
+うつくし明朝\tうつくしみんちょう\tフロップデザイン\t明朝
+カッコウ\tかっこう\t\tその他
+キリギリス\tきりぎりす\t\tその他
+クックハンド\tくっくはんど\tフォントワークス\tその他
+コーポレートロゴver3\tこーぽれーとろごばーじょんすりー\t\tその他
+ココン\tここん\t\tその他
+ゴシックMB101\tごしっくえむびーいちまるいち\tモリサワ\tゴシック
+こぶりなゴシック\tこぶりなごしっく\tフォントワークス\tゴシック
+すずむし\tすずむし\tモリサワ\tその他
+タイポス\tたいぽす\tモリサワ\tその他
+たづがねゴシック\tたづがねごしっく\tフォントワークス\tゴシック
+つばめ\tつばめ\tフォントワークス\tその他
+テレ朝UD\tてれあさゆーでぃー\tフォントワークス\tUD
+テロップ明朝\tてろっぷみんちょう\tフォントワークス\t明朝
+ニューシネマA\tにゅーしねまえー\tモリサワ\tその他
+バナナスリップplus\tばななすりっぷぷらす\t\tその他
+ハミング\tはみんぐ\tフォントワークス\tその他
+パンダベーカリー\tぱんだべーかりー\t鈴木メモ\tその他
+ヒラギノUD角ゴ\tひらぎのゆーでぃーかくご\t字游工房\tUD
+ヒラギノUD丸ゴ\tひらぎのゆーでぃーまるご\t字游工房\tUD
+ヒラギノUD明朝\tひらぎのゆーでぃーみんちょう\t字游工房\tUD
+ヒラギノ角ゴシック\tひらぎのかくごしっく\t字游工房\tゴシック
+ヒラギノ明朝\tひらぎのみんちょう\t字游工房\t明朝
+フォーク\tふぉーく\tモリサワ\tその他
+ベビポップ\tべびぽっぷ\tフォントワークス\tその他
+ユールカ\tゆーるか\tフォントワークス\tその他
+丸アンチック\tまるあんちっく\tモリサワ\t丸ゴ
+丸フォーク\tまるふぉーく\tモリサワ\tその他
+丸明オールド\tまるみんおーるど\t砧書体制作所\t明朝
+秀英角ゴシック 金\tしゅうえいかくごしっくきん\tDNP\tゴシック
+秀英角ゴシック　銀\tしゅうえいかくごしっくぎん\tDNP\tゴシック
+秀英丸ゴシック\tしゅうえいまるごしっく\tDNP\t丸ゴ
+秀英明朝\tしゅうえいみんちょう\tDNP\t明朝
+小塚ゴシック\tこづかごしっく\tモリサワ\tゴシック
+新ゴ\tしんご\tモリサワ\tゴシック
+青空\tあおぞら\t\tその他
+石井明朝オールドスタイル\tいしいみんちょうおーるどすたいる\t写研\t明朝
+筑紫AMゴシック\tつくしあんてぃーくもだんごしっく\tフォントワークス\tゴシック
+筑紫ANB丸ゴ\tつくしあんてぃーくびーまるごしっく\tフォントワークス\t丸ゴ
+筑紫AN丸ゴOV\tつくしあんてぃーくまるごしっくおーぶい\tフォントワークス\tその他
+筑紫Aオールド明朝\tつくしえーおーるどみんちょう\tフォントワークス\t明朝
+筑紫A丸ゴシック\tつくしえーまるごしっく\tフォントワークス\t丸ゴ
+筑紫Bオールド明朝\tつくしびーおーるどみんちょう\tフォントワークス\t明朝
+筑紫B丸ゴシック\tつくしびーまるごしっく\tフォントワークス\t丸ゴ
+筑紫B明朝\tつくしびーみんちょう\tフォントワークス\t明朝
+筑紫Cオールド明朝\tつくししーおーるどみんちょう\tフォントワークス\t明朝
+筑紫Q明朝L\tつくしきゅーみんちょう\tフォントワークス\t明朝
+筑紫アンティークLゴシック\tつくしあんてぃーくえるごしっく\tフォントワークス\tゴシック
+筑紫アンティークSゴシック\tつくしあんてぃーくえすごしっく\tフォントワークス\tゴシック
+筑紫オールドゴシック\tつくしおーるどごしっく\tフォントワークス\tゴシック
+筑紫ゴシック\tつくしごしっく\tフォントワークス\tゴシック
+筑紫明朝\tつくしみんちょう\tフォントワークス\t明朝
+中ゴシックBBB\tちゅうごしっくびーびーびー\tモリサワ\tゴシック
+凸版文久ゴシック\tとっぱんぶんきゅうごしっく\tモリサワ\tゴシック
+游築36ポかな\tゆうつきさんじゅうろくぽかな\t字游工房\t明朝
+貂明朝\tてんみんちょう\tAdobe\t明朝`;
+
+$('menu-import-readings').addEventListener('click', () => {
+  closeMenu();
+  $('import-readings-textarea').value = IMPORT_READINGS_DEFAULT;
+  $('import-readings-log').textContent = '';
+  $('import-readings-overlay').style.display = 'block';
+  $('import-readings-modal').style.display = 'block';
+});
+$('import-readings-close').addEventListener('click', () => {
+  $('import-readings-overlay').style.display = 'none';
+  $('import-readings-modal').style.display = 'none';
+});
+$('import-readings-overlay').addEventListener('click', () => {
+  $('import-readings-overlay').style.display = 'none';
+  $('import-readings-modal').style.display = 'none';
+});
+
+$('import-readings-run').addEventListener('click', async () => {
+  const raw = $('import-readings-textarea').value;
+  const log = $('import-readings-log');
+  log.textContent = '反映中...';
+  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+  if (lines[0] && lines[0].startsWith('フォント名')) lines.shift();
+
+  let updated = 0;
+  const notFound = [];
+  for (const line of lines) {
+    const cols = line.split('\t');
+    const name = (cols[0] || '').trim();
+    const reading = (cols[1] || '').trim();
+    const maker = (cols[2] || '').trim();
+    if (!name) continue;
+    const f = fonts.find(x => x.name === name);
+    if (!f) { notFound.push(name); continue; }
+    const updates = {};
+    if (reading && f.reading !== reading) updates.reading = reading;
+    if (maker && (!f.maker || !f.maker.trim())) updates.maker = maker;
+    if (Object.keys(updates).length === 0) continue;
+    try {
+      await updateDoc(doc(db, 'fonts', f.id), updates);
+      Object.assign(f, updates);
+      updated++;
+    } catch (e) {
+      notFound.push(`${name}（書き込み失敗: ${e.message}）`);
+    }
+  }
+  renderFontList();
+  if (typeof renderUsageFontList === 'function') { try { renderUsageFontList(); } catch(e) {} }
+
+  let msg = `✅ ${updated}件のフォントに反映しました。`;
+  if (notFound.length) {
+    msg += `\n\n⚠️ 見つからなかった／失敗した項目（${notFound.length}件）：\n` + notFound.join('\n');
+  }
+  log.textContent = msg;
+});
+
+
 $('menu-export-fonts').addEventListener('click', () => {
   closeMenu();
   const list = [...fonts].sort((a, b) => (a.name||'').localeCompare(b.name||'', 'ja'));
@@ -3259,17 +3426,20 @@ function renderFontList() {
   });
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
+    const qHira = kataToHira(q);
     list = list.filter(f =>
       (f.name||'').toLowerCase().includes(q) ||
       (f.maker||'').toLowerCase().includes(q) ||
       (f.memo||'').toLowerCase().includes(q) ||
-      (f.usages||[]).some(u => (u.place||'').toLowerCase().includes(q))
+      (f.usages||[]).some(u => (u.place||'').toLowerCase().includes(q)) ||
+      fontReadingMatches(f, q, qHira)
     );
-    // フォント名に含まれるものを上位に、同グループ内は更新日（lastUsageAt or createdAt）の新しい順
+    // 1) フォント名の前方一致 → 2) 部分一致 → 3) 読み方一致 → 4) その他（メーカー/メモ/用例地）
+    // 同順位内は更新日（lastUsageAt or createdAt）の新しい順
     list.sort((a, b) => {
-      const aNameMatch = (a.name||'').toLowerCase().includes(q) ? 0 : 1;
-      const bNameMatch = (b.name||'').toLowerCase().includes(q) ? 0 : 1;
-      if (aNameMatch !== bNameMatch) return aNameMatch - bNameMatch;
+      const ra = fontMatchRank(a, q, qHira);
+      const rb = fontMatchRank(b, q, qHira);
+      if (ra !== rb) return ra - rb;
       const ta = a.lastUsageAt ? a.lastUsageAt.toMillis() : (a.createdAt ? a.createdAt.toMillis() : 0);
       const tb = b.lastUsageAt ? b.lastUsageAt.toMillis() : (b.createdAt ? b.createdAt.toMillis() : 0);
       return tb - ta;
@@ -6001,6 +6171,7 @@ function renderUsageFontList() {
   const wrap = $('usage-font-results');
   wrap.innerHTML = '';
   const q = (($('usage-font-search')?.value) || '').trim().toLowerCase();
+  const qHira = kataToHira(q);
   const isSearch = q.length > 0;
   const label = $('usage-list-label');
   if (label) label.textContent = isSearch ? '検索結果' : '最近登録した用例';
@@ -6012,7 +6183,7 @@ function renderUsageFontList() {
   const filteredUnassigned = isSearch
     ? unassignedSorted.filter(u =>
         'フォント未定'.includes(q) ||
-        'みてい'.includes(q) ||
+        (qHira && 'みてい'.includes(qHira)) ||
         (u.place||'').toLowerCase().includes(q) ||
         (u.date||'').toLowerCase().includes(q)
       )
@@ -6032,7 +6203,8 @@ function renderUsageFontList() {
         (f.name||'').toLowerCase().includes(q) ||
         (f.maker||'').toLowerCase().includes(q) ||
         (u.place||'').toLowerCase().includes(q) ||
-        (u.date||'').toLowerCase().includes(q)
+        (u.date||'').toLowerCase().includes(q) ||
+        fontReadingMatches(f, q, qHira)
       )
     : usageItems.slice(0, 20);
 
@@ -6045,8 +6217,23 @@ function renderUsageFontList() {
     type: 'assigned', f, u,
     ts: u.createdAt?.toMillis?.() || 0
   }));
+  // 検索時：0=フォント名前方一致 1=フォント名部分一致 2=読み方一致 3=その他一致（メーカー/場所/日付/未定）
+  // 同順位内はcreatedAtの新しい順
+  const rankOf = (item) => {
+    if (item.type === 'assigned') return fontMatchRank(item.f, q, qHira);
+    const u = item.u;
+    if ('フォント未定'.startsWith(q) && q) return 0;
+    if ('フォント未定'.includes(q) || (qHira && 'みてい'.includes(qHira))) return 1;
+    return 3;
+  };
   const combined = [...unassignedWithMeta, ...assignedWithMeta]
-    .sort((a, b) => b.ts - a.ts);
+    .sort((a, b) => {
+      if (isSearch) {
+        const ra = rankOf(a), rb = rankOf(b);
+        if (ra !== rb) return ra - rb;
+      }
+      return b.ts - a.ts;
+    });
 
   if (!combined.length) {
     wrap.innerHTML = `<div style="color:var(--c-text-sub);font-size:15px;padding:12px 0;text-align:center;">見つかりません</div>`;
