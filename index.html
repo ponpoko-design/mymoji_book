@@ -4205,9 +4205,8 @@ async function openDetail(id) {
             try {
               if (revertUrl) {
                 const f2 = fonts.find(x => x.id === id);
-                if (f2?.photos) {
-                  const idx2 = f2.photos.findIndex(ph => ph.url === p.url);
-                  if (idx2 >= 0) f2.photos[idx2] = { ...f2.photos[idx2], url: revertUrl, originalUrl: null };
+                if (f2?.photos && pi >= 0 && pi < f2.photos.length) {
+                  f2.photos[pi] = { ...f2.photos[pi], url: revertUrl, originalUrl: null };
                   await updateDoc(doc(db,'fonts',id), { photos: f2.photos, updatedAt: serverTimestamp() });
                   showToast('元の写真に戻しました');
                   openDetail(id);
@@ -4217,12 +4216,9 @@ async function openDetail(id) {
               // ① blobURLで即時表示
               editedBlobUrl = URL.createObjectURL(blob);
               const f2 = fonts.find(x => x.id === id);
-              if (f2?.photos) {
-                const idx2 = f2.photos.findIndex(ph => ph.url === p.url);
-                if (idx2 >= 0) {
-                  const orig2 = origUrl || f2.photos[idx2].originalUrl || f2.photos[idx2].url;
-                  f2.photos[idx2] = { ...f2.photos[idx2], url: editedBlobUrl, originalUrl: orig2 };
-                }
+              if (f2?.photos && pi >= 0 && pi < f2.photos.length) {
+                const orig2 = origUrl || f2.photos[pi].originalUrl || f2.photos[pi].url;
+                f2.photos[pi] = { ...f2.photos[pi], url: editedBlobUrl, originalUrl: orig2 };
                 openDetail(id);
               }
               // ② バックグラウンドでFirebaseにアップロード
@@ -4230,17 +4226,16 @@ async function openDetail(id) {
                 const storageRef = ref(storage, `fonts/${Date.now()}_edited.jpg`);
                 await uploadBytes(storageRef, blob);
                 const newUrl = await getDownloadURL(storageRef) + '&t=' + Date.now();
-                if (f2?.photos) {
-                  const idx2 = f2.photos.findIndex(ph => ph.url === editedBlobUrl);
-                  if (idx2 >= 0) f2.photos[idx2] = { ...f2.photos[idx2], url: newUrl };
+                if (f2?.photos && pi >= 0 && pi < f2.photos.length) {
+                  f2.photos[pi] = { ...f2.photos[pi], url: newUrl };
                   await updateDoc(doc(db,'fonts',id), { photos: f2.photos, updatedAt: serverTimestamp() });
                 }
               } catch(e2) { showToast('保存に失敗しました'); }
             } catch(e2) { showToast('エラーが発生しました'); }
           }, () => {
             // 編集後ライトボックスに戻るとき最新URLで開く
-            const latestUrl = editedBlobUrl || p.url;
-            openLightbox(latestUrl, p.memo || '', null, f.name, null, id);
+            const latestUrl = editedBlobUrl || livePhoto.url;
+            openLightbox(latestUrl, livePhoto.memo || '', null, f.name, null, id);
           }, origUrl, photoInfo2);
         }
       }));
@@ -4527,8 +4522,7 @@ function openUsageDetail(fontId, usageId, usages) {
             try {
               if (revertUrl) {
                 const newPhotos = [...(u.photos||[])];
-                const pi = newPhotos.findIndex(ph => ph.url === p.url);
-                if (pi >= 0) newPhotos[pi] = { ...newPhotos[pi], url: revertUrl, originalUrl: null };
+                if (pi >= 0 && pi < newPhotos.length) newPhotos[pi] = { ...newPhotos[pi], url: revertUrl, originalUrl: null };
                 await updateDoc(doc(db,'fonts',fontId,'usages',usageId), { photos: newPhotos });
                 u.photos = newPhotos;
                 showToast('元の写真に戻しました');
@@ -4538,8 +4532,7 @@ function openUsageDetail(fontId, usageId, usages) {
               // ① blobURLで即時表示
               editedBlobUrl = URL.createObjectURL(blob);
               const newPhotos = [...(u.photos||[])];
-              const pi = newPhotos.findIndex(ph => ph.url === p.url);
-              if (pi >= 0) {
+              if (pi >= 0 && pi < newPhotos.length) {
                 const orig = origUrl || newPhotos[pi].originalUrl || newPhotos[pi].url;
                 newPhotos[pi] = { ...newPhotos[pi], url: editedBlobUrl, originalUrl: orig };
               }
@@ -4550,15 +4543,14 @@ function openUsageDetail(fontId, usageId, usages) {
                 const storageRef = ref(storage, `fonts/${fontId}/usages/${Date.now()}_edited.jpg`);
                 await uploadBytes(storageRef, blob);
                 const newUrl = await getDownloadURL(storageRef) + '&t=' + Date.now();
-                const pi2 = u.photos.findIndex(ph => ph.url === editedBlobUrl);
-                if (pi2 >= 0) u.photos[pi2] = { ...u.photos[pi2], url: newUrl };
+                if (pi >= 0 && pi < u.photos.length) u.photos[pi] = { ...u.photos[pi], url: newUrl };
                 await updateDoc(doc(db,'fonts',fontId,'usages',usageId), { photos: u.photos });
               } catch(e2) { showToast('保存に失敗しました'); }
             } catch(e2) { showToast('エラーが発生しました'); }
           }, () => {
             // 編集後ライトボックスに戻るとき最新URLで開く
-            const latestUrl = editedBlobUrl || p.url;
-            openLightbox(latestUrl, p.memo || '', null, f ? f.name : '', null, fontId);
+            const latestUrl = editedBlobUrl || livePhoto.url;
+            openLightbox(latestUrl, livePhoto.memo || '', null, f ? f.name : '', null, fontId);
           }, origUrl, photoInfo);
         }
       }));
@@ -6500,15 +6492,15 @@ function openUnassignedDetail(id) {
     el.addEventListener('click', () => {
       const url = el.dataset.url;
       const memo = el.dataset.memo;
+      const tappedIdx = parseInt(el.dataset.idx ?? '0');
       openLightbox(url, memo, () => {
         openPhotoEditor(url, async blob => {
           try {
             // ① blobURLで即時表示
             const blobUrl = URL.createObjectURL(blob);
             const uData = unassignedUsages.find(x => x.id === id);
-            if (uData?.photos) {
-              const pi = uData.photos.findIndex(p => p.url === url);
-              if (pi >= 0) uData.photos[pi] = { ...uData.photos[pi], url: blobUrl };
+            if (uData?.photos && tappedIdx >= 0 && tappedIdx < uData.photos.length) {
+              uData.photos[tappedIdx] = { ...uData.photos[tappedIdx], url: blobUrl };
               openUnassignedDetail(id);
             }
             // ② バックグラウンドでFirebaseにアップロード
@@ -6516,9 +6508,8 @@ function openUnassignedDetail(id) {
               const storageRef = ref(storage, `unassigned_usages/${Date.now()}_edited.jpg`);
               await uploadBytes(storageRef, blob);
               const newUrl = await getDownloadURL(storageRef);
-              if (uData?.photos) {
-                const pi2 = uData.photos.findIndex(p => p.url === blobUrl);
-                if (pi2 >= 0) uData.photos[pi2] = { ...uData.photos[pi2], url: newUrl };
+              if (uData?.photos && tappedIdx >= 0 && tappedIdx < uData.photos.length) {
+                uData.photos[tappedIdx] = { ...uData.photos[tappedIdx], url: newUrl };
                 await updateDoc(doc(db,'unassigned_usages',id), { photos: uData.photos });
               }
             } catch(e2) { showToast('保存に失敗しました'); }
@@ -8146,6 +8137,9 @@ function renderOboeakiList() {
               memo: '',
               highlightRect: hlEntry ? hlEntry.highlightRect : null,
               onEdit: () => {
+                // e.ob_highlightsは保存のたびに置き換わるため、閉じ込めたhlEntryではなく毎回読み直す
+                const liveHlEntry = (e.ob_highlights||[]).find(h => h.photoIdx === pi);
+                const liveHighlightRect = liveHlEntry ? liveHlEntry.highlightRect : null;
                 openPhotoEditor(origUrl3 || pu, async (blob, revertUrl) => {
                   try {
                     if (revertUrl) {
@@ -8170,8 +8164,8 @@ function renderOboeakiList() {
                         const storageRef = ref(storage, `users/${uid3}/oboeaki/${e.id}/${Date.now()}_edited.jpg`);
                         await uploadBytes(storageRef, blob);
                         const newUrl3 = await getDownloadURL(storageRef) + '&t=' + Date.now();
-                        e.photos = (e.photos||[]).map((pe3) =>
-                          obPhotoUrl(pe3) === editedBlobUrl3
+                        e.photos = (e.photos||[]).map((pe3, i2) =>
+                          i2 === pi
                             ? obPhotoToObj(pe3, newUrl3, origUrl3)
                             : pe3
                         );
@@ -8185,7 +8179,7 @@ function renderOboeakiList() {
                     url: i2 === pi ? latestUrl3 : obPhotoUrl(pe3), memo: ''
                   }));
                   openLightbox(latestUrl3, '', null, '', updatedPhotos, null, pi);
-                }, origUrl3, { fontId: null, usageId: null, photoIdx: pi, oboeakiId: e.id, oboeakiEntry: e });
+                }, origUrl3, { fontId: null, usageId: null, photoIdx: pi, oboeakiId: e.id, oboeakiEntry: e, highlightRect: liveHighlightRect });
               }
             };
           });
