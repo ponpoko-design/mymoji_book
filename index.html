@@ -523,6 +523,21 @@
     color: var(--c-text-sub); font-size: 15px;
     border: 1.5px dashed var(--c-border);
   }
+  .carousel-item-noimg {
+    background: linear-gradient(135deg, var(--c-lavender), var(--c-sky));
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 14px;
+  }
+  .carousel-noimg-name {
+    color: #4a3d70; font-size: 18px; font-weight: 700;
+    line-height: 1.3;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .carousel-noimg-maker {
+    color: rgba(74,61,112,0.75); font-size: 12px; font-weight: 600;
+    margin-top: 6px;
+  }
 
   /* ── Section label ── */
   .sec-label {
@@ -3413,17 +3428,28 @@ function renderHome() {
 
 function renderCarousel() {
   const wrap = $('home-carousel');
-  const recent = [...fonts].slice(0,5).filter(f => f.photos && f.photos[0]);
+  const recent = [...fonts].slice(0,5);
   if (!recent.length) {
-    wrap.innerHTML = '<div class="carousel-empty">フォントを登録すると写真が表示されます</div>';
+    wrap.innerHTML = '<div class="carousel-empty">フォントを登録すると表示されます</div>';
     return;
   }
-  wrap.innerHTML = recent.map(f => `
-    <div class="carousel-item" data-id="${f.id}">
-      <img src="${f.photos[0].url}" alt="${f.name}" loading="lazy">
-      <div class="carousel-label">${f.name}</div>
-    </div>
-  `).join('');
+  wrap.innerHTML = recent.map(f => {
+    const hasPhoto = f.photos && f.photos[0];
+    if (hasPhoto) {
+      return `
+        <div class="carousel-item" data-id="${f.id}">
+          <img src="${f.photos[0].url}" alt="${f.name}" loading="lazy">
+          <div class="carousel-label">${f.name}</div>
+        </div>
+      `;
+    }
+    return `
+      <div class="carousel-item carousel-item-noimg" data-id="${f.id}">
+        <div class="carousel-noimg-name">${f.name}</div>
+        ${f.maker ? `<div class="carousel-noimg-maker">${f.maker}</div>` : ''}
+      </div>
+    `;
+  }).join('');
   wrap.querySelectorAll('.carousel-item').forEach(el => {
     el.addEventListener('click', () => { homeScrollY = window.scrollY; openDetail(el.dataset.id); });
   });
@@ -8561,15 +8587,43 @@ $('quiz-start-btn').addEventListener('click', async () => {
     return;
   }
   if (pool.length < quizCount) {
-    showToast(`写真が${pool.length}枚しかないため、${pool.length}問で出題します`);
+    showToast(`出題できるフォントが${pool.length}件しかないため、${pool.length}問で出題します`);
   }
   if (quizMode === 'compare') startCompareQuiz(pool);
   else startQuiz(pool);
 });
 
 // ── build pool ───────────────────────────
+// ── クイズ出題履歴（フォント単位でまんべんなく出すための仕組み）──
+// 「写真の枚数が多いフォントほど出やすい」「同じ書体ばかり出る」を解消するため、
+// ①プールはフォント1つにつき1エントリー（写真はランダムに1枚代表選出）に統一
+// ②直近で出題したフォントは優先度を下げ、出題していないフォント／久しぶりのフォントを優先
+// 履歴はFirestore側（各フォントdocの lastQuizzedAt）に保存するので、複数端末でも共通で回転する
+function markFontsQuizzed(fontIds) {
+  const ids = [...new Set(fontIds.filter(Boolean))];
+  if (!ids.length) return;
+  const localNow = Timestamp.now();
+  ids.forEach(id => {
+    // ローカルのfonts配列も即時反映（同一セッション中の次の出題にも反映させるため）
+    const f = fonts.find(x => x.id === id);
+    if (f) f.lastQuizzedAt = localNow;
+    // Firestoreへは非同期・失敗しても出題自体はブロックしない
+    updateDoc(doc(db,'fonts',id), { lastQuizzedAt: serverTimestamp() }).catch(e => console.error('lastQuizzedAt update failed', e));
+  });
+}
+// 未出題・久しぶりのフォントほど先頭に来るよう並べ替える（同程度の古さの中はランダム）
+function sortByLeastRecentlyQuizzed(pool) {
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  pool.sort((a, b) => a.lastQuizzedAt - b.lastQuizzedAt);
+  return pool;
+}
+
 function buildQuizPool() {
   // 4択: フォント詳細photos ＋ 用例photos
+
   // 比較: フォント詳細photosのみ
   const isCompare = quizMode === 'compare';
   const vals       = [...document.querySelectorAll('.quiz-chip.selected')].map(c => c.dataset.val);
@@ -8592,24 +8646,24 @@ function buildQuizPool() {
     if (wantBasic && !wantCheck && !font.basic) continue;
     if (wantCheck && !wantBasic && (!font.checks || !font.checks.length)) continue;
 
-    // フォント詳細photos（4択・比較 共通）
+    // このフォントで使える写真候補を集める（詳細写真＋用例写真）
+    const candidates = [];
     font.photos.forEach(photo => {
-      if (photo && photo.url && !photo.supplement) pool.push({ fontId: font.id, fontName: font.name, photoUrl: photo.url, highlightRect: photo.highlightRect || null });
+      if (photo && photo.url && !photo.supplement) candidates.push({ photoUrl: photo.url, highlightRect: photo.highlightRect || null });
     });
-    // 用例photos（4択のみ・比較は除外）
     if (!isCompare && font.usages) {
       font.usages.forEach(usage => {
         if (usage.photos) usage.photos.forEach(photo => {
-          if (photo && photo.url && !photo.supplement) pool.push({ fontId: font.id, fontName: font.name, photoUrl: photo.url, highlightRect: photo.highlightRect || null });
+          if (photo && photo.url && !photo.supplement) candidates.push({ photoUrl: photo.url, highlightRect: photo.highlightRect || null });
         });
       });
     }
+    if (!candidates.length) continue;
+    // 写真の枚数に関わらず、このフォントはプールに1エントリーだけ（代表写真をランダムに1枚選出）
+    const pick = candidates[Math.floor(Math.random() * candidates.length)];
+    pool.push({ fontId: font.id, fontName: font.name, photoUrl: pick.photoUrl, highlightRect: pick.highlightRect, lastQuizzedAt: font.lastQuizzedAt ? font.lastQuizzedAt.toMillis() : 0 });
   }
-  for (let i = pool.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [pool[i], pool[j]] = [pool[j], pool[i]];
-  }
-  return pool;
+  return sortByLeastRecentlyQuizzed(pool);
 }
 
 // ── build usage-only pool（用例から当てる！）─
@@ -8636,23 +8690,23 @@ function buildUsagePool() {
     if (wantBasic && !wantCheck && !font.basic) continue;
     if (wantCheck && !wantBasic && (!font.checks || !font.checks.length)) continue;
 
-    // 用例写真のみをプールに追加
+    // このフォントの用例写真候補を集める
+    const candidates = [];
     font.usages.forEach(usage => {
       if (usage.photos) {
         usage.photos.forEach(photo => {
           if (photo && photo.url && !photo.supplement) {
-            pool.push({ fontId: font.id, fontName: font.name, photoUrl: photo.url, highlightRect: photo.highlightRect || null });
+            candidates.push({ photoUrl: photo.url, highlightRect: photo.highlightRect || null });
           }
         });
       }
     });
+    if (!candidates.length) continue;
+    // 写真の枚数に関わらず、このフォントはプールに1エントリーだけ
+    const pick = candidates[Math.floor(Math.random() * candidates.length)];
+    pool.push({ fontId: font.id, fontName: font.name, photoUrl: pick.photoUrl, highlightRect: pick.highlightRect, lastQuizzedAt: font.lastQuizzedAt ? font.lastQuizzedAt.toMillis() : 0 });
   }
-  // シャッフル
-  for (let i = pool.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [pool[i], pool[j]] = [pool[j], pool[i]];
-  }
-  return pool;
+  return sortByLeastRecentlyQuizzed(pool);
 }
 
 // ── build choices（同言語に絞る）────────────
@@ -8705,8 +8759,9 @@ function choiceHTML(name, idx, small) {
 
 // ── 4択 ─────────────────────────────────
 function startQuiz(pool) {
-  // poolはシャッフル済み。quizCount分スライスして出題
+  // poolは「出題していないフォント優先」順。quizCount分スライスして出題
   quizQuestions = pool.slice(0, quizCount);
+  markFontsQuizzed(quizQuestions.map(q => q.fontId));
   quizCurrent = 0; quizScore = 0; quizLog = [];
   quizShowPlay();
   renderQuizQuestion();
@@ -8823,6 +8878,9 @@ function startCompareQuiz(pool) {
   }
   cmpQuestions = pairs.slice(0, quizCount);
   if (!cmpQuestions.length) { showToast('比較クイズに使えるフォントが足りません'); return; }
+  const usedNames = cmpQuestions.flatMap(p => [p.a.fontName, p.b.fontName]);
+  const usedIds = usedNames.map(n => (fonts.find(f => f.name === n) || {}).id).filter(Boolean);
+  markFontsQuizzed(usedIds);
   cmpCurrent = 0; cmpScore = 0; cmpLog = [];
   quizShowCompare();
   renderCmpQuestion();
