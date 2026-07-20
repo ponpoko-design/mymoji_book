@@ -676,8 +676,6 @@
   }
 
   /* フォーム系ヘッダーはサイズ小さめ・中央固定 */
-  #screen-add-font .app-header h1,
-  #screen-add-usage .app-header h1,
   #screen-edit-font .app-header h1,
   #screen-edit-usage .app-header h1,
   #screen-detail .app-header h1,
@@ -685,6 +683,15 @@
   #screen-edit-font .app-header h1,
   #screen-unassigned-detail .app-header h1 {
     font-size: 17px;
+    font-weight: 800;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+  #screen-add-font .app-header h1,
+  #screen-add-usage .app-header h1 {
+    font-size: 21px;
     font-weight: 800;
     position: absolute;
     left: 50%;
@@ -1371,7 +1378,7 @@
   <div id="screen-add-font" class="screen">
     <div class="app-header">
       <button class="back-btn" id="add-font-back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <h1>フォントを登録</h1>
+      <h1>フォント追加</h1>
       <button class="header-btn sub-menu-btn" title="メニュー"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
     </div>
     <div class="form-page">
@@ -1433,7 +1440,7 @@
   <div id="screen-add-usage" class="screen">
     <div class="app-header">
       <button class="back-btn" id="add-usage-back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <h1>用例を登録</h1>
+      <h1>用例採集</h1>
       <button class="header-btn sub-menu-btn" title="メニュー"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
     </div>
     <div class="form-page" id="add-usage-body">
@@ -1658,7 +1665,7 @@
   <div id="screen-oboeaki" class="screen">
     <div class="app-header">
       <div></div>
-      <h1 style="position:absolute;left:50%;transform:translateX(-50%);font-size:17px;font-weight:800;white-space:nowrap;">フォント覚えがき</h1>
+      <h1 style="position:absolute;left:50%;transform:translateX(-50%);font-size:21px;font-weight:800;white-space:nowrap;">覚えがき</h1>
       <button class="header-btn sub-menu-btn" title="メニュー"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
     </div>
 
@@ -1736,7 +1743,7 @@
   <div id="screen-quiz" class="screen">
     <div class="app-header">
       <button class="back-btn" id="quiz-header-back" style="visibility:hidden;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <h1 id="quiz-header-title" style="position:absolute;left:50%;transform:translateX(-50%);font-size:17px;font-weight:800;white-space:nowrap;">文字クイズ</h1>
+      <h1 id="quiz-header-title" style="position:absolute;left:50%;transform:translateX(-50%);font-size:21px;font-weight:800;white-space:nowrap;">文字クイズ</h1>
       <button class="header-btn sub-menu-btn" title="メニュー"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
     </div>
 
