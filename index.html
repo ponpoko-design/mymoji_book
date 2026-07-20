@@ -202,6 +202,13 @@
   .mihon-custom-wrap {
     margin-bottom: 10px;
   }
+  .mihon-extra-block {
+    margin-bottom: 10px;
+  }
+  .mihon-extra-label {
+    font-size: 12px; font-weight: 700; color: var(--c-text-sub);
+    letter-spacing: 0.06em; margin-bottom: 6px;
+  }
   .mihon-custom-input {
     width: 100%; min-height: 72px;
     background: var(--c-card); border-radius: var(--radius);
@@ -1577,6 +1584,11 @@
       </div>
       <!-- 固定文字表示 -->
       <div class="mihon-text-display" id="mihon-text-display">あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン1234567890　？！　「」（）</div>
+      <!-- マティス専用：従属欧文の追加表示（今回限りの特別対応） -->
+      <div class="mihon-extra-block" id="mihon-extra-block" style="display:none;">
+        <div class="mihon-extra-label" id="mihon-extra-label"></div>
+        <div class="mihon-text-display" id="mihon-extra-display"></div>
+      </div>
       <!-- 自由記入欄 -->
       <div class="mihon-custom-wrap" id="mihon-custom-wrap">
         <textarea class="mihon-custom-input" id="mihon-custom-input" placeholder="ひらがな･カタカナのみ、ためせます" rows="3" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
@@ -9268,6 +9280,23 @@ function applyMihonFont(fontValue) {
     display.style.fontFamily = fontValue;
     display.textContent = isEn ? MIHON_TEXT_EN : MIHON_TEXT_JA;
   }
+  // マティス専用：ひらがな・カタカナ表示のあとに従属欧文（アルファベット）を追加表示（今回限りの特別対応）
+  const extraBlock = $('mihon-extra-block');
+  const extraLabel = $('mihon-extra-label');
+  const extraDisplay = $('mihon-extra-display');
+  const isMatisu = fontValue.replace(/['"]/g, '').trim() === 'FOT-マティス Pro DB';
+  if (extraBlock) {
+    if (isMatisu) {
+      extraBlock.style.display = '';
+      if (extraLabel) extraLabel.textContent = 'マティス―従属欧文';
+      if (extraDisplay) {
+        extraDisplay.style.fontFamily = fontValue;
+        extraDisplay.textContent = MIHON_TEXT_EN;
+      }
+    } else {
+      extraBlock.style.display = 'none';
+    }
+  }
   // 自由記入欄：常に表示、選択フォントを適用。欧文/和文でプレースホルダー切替
   if (customWrap) customWrap.style.display = '';
   if (customInput) {
@@ -9301,6 +9330,7 @@ const MIHON_FONTS = [
   { group: '和文', reading: 'ひらぎのゆーでぃーかくご',          label: 'ヒラギノUD角ゴ StdN W5',      value: "'FP-ヒラギノUD角ゴ StdN W5'" },
   { group: '和文', reading: 'ひらぎのゆーでぃーまるご',          label: 'ヒラギノUD丸ゴ StdN W5',      value: "'FP-ヒラギノUD丸ゴ StdN W5'" },
   { group: '和文', reading: 'べびぽっぷ',                        label: 'ベビポップ Std EB',          value: "'FOT-ベビポップ Std EB'" },
+  { group: '和文', reading: 'まてぃす',                          label: 'マティス Pro DB',            value: "'FOT-マティス Pro DB'" },
   { group: '和文', reading: 'まるみんおーるど',                  label: '丸明オールド StdN R',        value: "'丸明オールド StdN R'" },
   { group: '和文', reading: 'ゆーでぃーかくごらーじ',            label: 'UD角ゴ_ラージ Pr6N DB',      value: "'FOT-UD角ゴ_ラージ Pr6N DB'" },
   { group: '和文', reading: 'ゆーるか',                          label: 'ユールカ Std UB',            value: "'FOT-ユールカ Std UB'" },
@@ -9446,7 +9476,7 @@ function initMihonScreen() {
     "'FOT-クックハンド Std R'","'TazuganeGothicStdN-Book'","'FOT-カッコウ Std B'",
     "'FOT-筑紫オールドゴシック Std R'","'FOT-筑紫オールドゴシック Std M'",
     "'FOT-筑紫アンティークLゴ Std B'","'FOT-筑紫アンティークSゴ Std B'","'FOT-筑紫A丸ゴシック Std M'","'FOT-筑紫B丸ゴシック Std M'","'筑紫AN丸ゴOV StdN U'",
-    "'FOT-UD角ゴ_ラージ Pr6N DB'","'FOT-テロップ明朝 ProN D'","'FP-ヒラギノ丸ゴ StdN W5'","'FP-ヒラギノUD角ゴ StdN W5'","'FP-ヒラギノUD丸ゴ StdN W5'","'FP-ヒラギノ角ゴ ProN W4'",
+    "'FOT-UD角ゴ_ラージ Pr6N DB'","'FOT-テロップ明朝 ProN D'","'FP-ヒラギノ丸ゴ StdN W5'","'FP-ヒラギノUD角ゴ StdN W5'","'FP-ヒラギノUD丸ゴ StdN W5'","'FP-ヒラギノ角ゴ ProN W4'","'FOT-マティス Pro DB'",
     "'AvenirLTPro-Book'","'CochinLTPro'","'CochinLTPro-Italic'","'CopperplateGothicLTPro-32AB'","'GillSansMTPro-Book'","'NeueFrutigerWorld-Book'",
     "'AGaramondPro-Regular'","'LinoscriptStd'","'MinionPro-Regular'","'MistralStd'",
     "'SabonLTPro-Roman'","'ZapfinoExtraLTPro'","'BookmanOldStyle'","'Swiss721BT-Regular'",
