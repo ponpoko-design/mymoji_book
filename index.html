@@ -1450,9 +1450,11 @@
     <div class="form-page" id="add-usage-body">
       <!-- Step 1: 最近登録した用例 -->
       <div id="usage-step1">
-        <div class="search-box" style="margin-bottom:12px;">
-          <span class="search-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
-          <input type="text" id="usage-font-search" placeholder="フォント名・用例・未定で検索">
+        <div style="position:sticky;top:var(--header-h);z-index:5;margin:-16px -20px 12px;padding:12px 20px;background:rgba(244,240,255,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--c-border);">
+          <div class="search-box" style="margin-bottom:0;">
+            <span class="search-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
+            <input type="text" id="usage-font-search" placeholder="フォント名・用例・未定で検索">
+          </div>
         </div>
         <p id="usage-list-label" style="font-size:13px;font-weight:700;color:var(--c-text-sub);letter-spacing:0.08em;margin-bottom:12px;">最近登録した用例</p>
         <div id="usage-font-results" class="font-list" style="padding:0;"></div>
@@ -1674,7 +1676,7 @@
     </div>
 
     <!-- 検索＋並び替え（ホームと同じピル型） -->
-    <div style="display:flex;align-items:center;gap:8px;padding:8px 16px 10px;">
+    <div style="position:sticky;top:var(--header-h);z-index:5;display:flex;align-items:center;gap:8px;padding:8px 16px 10px;background:rgba(244,240,255,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--c-border);">
       <div class="search-box">
         <span class="search-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
         <input type="text" id="oboeaki-search-input" placeholder="フォント名・メモで検索" autocomplete="off">
