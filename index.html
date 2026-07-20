@@ -1450,12 +1450,13 @@
     <div class="form-page" id="add-usage-body">
       <!-- Step 1: 最近登録した用例 -->
       <div id="usage-step1">
-        <div style="position:sticky;top:var(--header-h);z-index:5;margin:-16px -20px 12px;padding:12px 20px;background:rgba(244,240,255,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--c-border);">
-          <div class="search-box" style="margin-bottom:0;">
+        <div style="position:fixed;top:var(--header-h);left:50%;transform:translateX(-50%);width:100%;max-width:var(--max-w);box-sizing:border-box;z-index:5;height:62px;display:flex;align-items:center;padding:0 20px;background:rgba(244,240,255,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--c-border);">
+          <div class="search-box" style="margin-bottom:0;width:100%;">
             <span class="search-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
             <input type="text" id="usage-font-search" placeholder="フォント名・用例・未定で検索">
           </div>
         </div>
+        <div style="height:62px;"></div>
         <p id="usage-list-label" style="font-size:13px;font-weight:700;color:var(--c-text-sub);letter-spacing:0.08em;margin-bottom:12px;">最近登録した用例</p>
         <div id="usage-font-results" class="font-list" style="padding:0;"></div>
         <button id="usage-skip-font" style="display:none;">あとで決める</button>
@@ -1676,7 +1677,7 @@
     </div>
 
     <!-- 検索＋並び替え（ホームと同じピル型） -->
-    <div style="position:sticky;top:var(--header-h);z-index:5;display:flex;align-items:center;gap:8px;padding:8px 16px 10px;background:rgba(244,240,255,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--c-border);">
+    <div style="position:fixed;top:var(--header-h);left:50%;transform:translateX(-50%);width:100%;max-width:var(--max-w);box-sizing:border-box;z-index:5;height:58px;display:flex;align-items:center;gap:8px;padding:0 16px;background:rgba(244,240,255,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--c-border);">
       <div class="search-box">
         <span class="search-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
         <input type="text" id="oboeaki-search-input" placeholder="フォント名・メモで検索" autocomplete="off">
@@ -1690,6 +1691,7 @@
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
       </button>
     </div>
+    <div style="height:58px;"></div>
 
     <!-- エントリ一覧 -->
     <div id="oboeaki-list" style="padding:0 16px 120px;overflow-y:auto;"></div>
