@@ -6,7 +6,7 @@
 <meta name="format-detection" content="telephone=no">
 <title>MyMoji Book</title>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
-<script src="https://webfont.fontplus.jp/accessor/script/fontplus.js?KXzscaaeJDE%3D&box=h5a2eVCZExw%3D&pm=1&aa=1&ab=1"></script>
+<script src="https://webfont.fontplus.jp/accessor/script/fontplus.js?KXzscaaeJDE%3D&box=h5a2eVCZExw%3D&aa=1&ab=1"></script>
 <style>
   :root {
     --c-lavender: #d3c3fc;
@@ -9292,6 +9292,8 @@ function applyMihonFont(fontValue) {
       if (extraDisplay) {
         extraDisplay.style.fontFamily = fontValue;
         extraDisplay.textContent = MIHON_TEXT_EN;
+        const slider = $('mihon-size-slider');
+        if (slider) extraDisplay.style.fontSize = slider.value + 'px';
       }
     } else {
       extraBlock.style.display = 'none';
@@ -9431,6 +9433,8 @@ function initMihonScreen() {
         if (display) display.style.fontSize = px + 'px';
         const customInput = $('mihon-custom-input');
         if (customInput) customInput.style.fontSize = px + 'px';
+        const extraDisplay = $('mihon-extra-display');
+        if (extraDisplay) extraDisplay.style.fontSize = px + 'px';
       });
     }
     // 自由記入欄：ひらがな・カタカナ以外を除去
