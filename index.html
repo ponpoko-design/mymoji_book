@@ -43,6 +43,9 @@
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
   button, a, .nav-btn, .back-btn, .fav-btn, .cat-chip, .sort-btn, .font-card, .usage-card, .carousel-item, .photo-thumb, .photo-slot { touch-action: manipulation; }
 
+  html {
+    overscroll-behavior: none;
+  }
   body {
     font-family: 'Zen Maru Gothic', 'Meiryo UI', sans-serif;
     background: var(--c-bg);
@@ -62,6 +65,7 @@
     position: relative;
     background: var(--c-bg);
     overflow-x: hidden;
+    overscroll-behavior: none;
   }
 
   /* ── Fluid background blobs ── */
