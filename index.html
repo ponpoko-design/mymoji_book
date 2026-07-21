@@ -1469,18 +1469,18 @@
       <h1>用例採集</h1>
       <button class="header-btn sub-menu-btn" title="メニュー"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
     </div>
+    <div id="usage-searchbar-wrap" style="position:relative;">
+      <div id="usage-searchbar" style="box-sizing:border-box;height:62px;display:flex;align-items:center;padding:0 20px;background-color:#f4f0ff;border-bottom:1px solid var(--c-border);">
+        <div class="search-box" style="margin-bottom:0;width:100%;">
+          <span class="search-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
+          <input type="text" id="usage-font-search" placeholder="フォント名・用例・未定で検索">
+        </div>
+      </div>
+      <div id="usage-searchbar-spacer" style="height:0;"></div>
+    </div>
     <div class="form-page" id="add-usage-body">
       <!-- Step 1: 最近登録した用例 -->
       <div id="usage-step1">
-        <div id="usage-searchbar-wrap" style="position:relative;">
-          <div id="usage-searchbar" style="box-sizing:border-box;height:62px;display:flex;align-items:center;background-color:#f4f0ff;">
-            <div class="search-box" style="margin-bottom:0;width:100%;">
-              <span class="search-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
-              <input type="text" id="usage-font-search" placeholder="フォント名・用例・未定で検索">
-            </div>
-          </div>
-          <div id="usage-searchbar-spacer" style="height:0;"></div>
-        </div>
         <p id="usage-list-label" style="font-size:13px;font-weight:700;color:var(--c-text-sub);letter-spacing:0.08em;margin-bottom:12px;">最近登録した用例</p>
         <div id="usage-font-results" class="font-list" style="padding:0;"></div>
         <button id="usage-skip-font" style="display:none;">あとで決める</button>
@@ -7873,7 +7873,7 @@ function setupScrollPin(wrapId, barId, spacerId, barHeight, pinnedPadding) {
   return check;
 }
 const checkOboeakiPin = setupScrollPin('oboeaki-searchbar-wrap', 'oboeaki-searchbar', 'oboeaki-searchbar-spacer', 58, null);
-const checkUsagePin = setupScrollPin('usage-searchbar-wrap', 'usage-searchbar', 'usage-searchbar-spacer', 62, '0 20px');
+const checkUsagePin = setupScrollPin('usage-searchbar-wrap', 'usage-searchbar', 'usage-searchbar-spacer', 62, null);
 
 function initOboeaki() {
   loadOboeakiEntries().then(() => renderOboeakiList());
