@@ -293,10 +293,11 @@
 
   /* ── Login ── */
   .login-logo {
-    font-size: 28px; font-weight: 800; letter-spacing: 0.02em;
-    background: linear-gradient(135deg, #9b7fe8, #5aaae8);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    display: flex; justify-content: center;
     margin-bottom: 6px;
+  }
+  .login-logo svg {
+    height: 34px; width: auto; display: block;
   }
   .login-sub { color: var(--c-text-sub); font-size: 15px; margin-bottom: 40px; }
   .login-card {
@@ -890,7 +891,7 @@
   .suggestion-highlight { color: #9b7fe8; }
 
   /* ── Form page ── */
-  .form-page { padding: 16px 20px; }
+  .form-page { padding: 16px 20px; background: var(--c-bg); }
   .form-page h2 { font-size: 20px; font-weight: 400; margin-bottom: 20px; }
 
   .radio-group { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -1297,7 +1298,7 @@
 
   <!-- ===== LOGIN ===== -->
   <div id="screen-login" class="screen">
-    <div class="login-logo">MyMoji Book</div>
+    <div class="login-logo"><svg viewBox="40 421 957 114" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" aria-label="MyMoji Book"><use xlink:href="#mymoji-logo-paths" href="#mymoji-logo-paths"/></svg></div>
     <div class="login-sub">私だけのフォント辞書</div>
     <div class="login-card">
       <div class="form-group">
