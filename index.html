@@ -1061,6 +1061,17 @@
     background: linear-gradient(135deg, rgba(122,184,245,0.25), rgba(100,200,240,0.25));
     border-color: #7ab8f5; color: #2a7abf;
   }
+  /* スクロールで実際に隠れる位置まで来た時だけfixedに切り替える（JS制御） */
+  .searchbar-pinned {
+    position: fixed !important;
+    top: var(--header-h);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: var(--max-w);
+    z-index: 5;
+  }
+
   /* 覚えがき検索：タップ中はアイコン・並び替えボタンをたたんで検索欄を全幅に広げる */
   #oboeaki-searchbar .oboeaki-extra-btns {
     display: flex; align-items: center; gap: 8px; flex-shrink: 0;
@@ -1460,13 +1471,15 @@
     <div class="form-page" id="add-usage-body">
       <!-- Step 1: 最近登録した用例 -->
       <div id="usage-step1">
-        <div id="usage-searchbar" style="position:fixed;top:var(--header-h);left:50%;transform:translateX(-50%) translateZ(0);-webkit-transform:translateX(-50%) translateZ(0);width:100%;max-width:var(--max-w);box-sizing:border-box;z-index:5;height:62px;display:flex;align-items:center;padding:0 20px;background-color:#f4f0ff;border-bottom:1px solid var(--c-border);isolation:isolate;backdrop-filter:none;-webkit-backdrop-filter:none;">
-          <div class="search-box" style="margin-bottom:0;width:100%;">
-            <span class="search-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
-            <input type="text" id="usage-font-search" placeholder="フォント名・用例・未定で検索">
+        <div id="usage-searchbar-wrap" style="position:relative;">
+          <div id="usage-searchbar" style="box-sizing:border-box;height:62px;display:flex;align-items:center;background-color:#f4f0ff;">
+            <div class="search-box" style="margin-bottom:0;width:100%;">
+              <span class="search-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
+              <input type="text" id="usage-font-search" placeholder="フォント名・用例・未定で検索">
+            </div>
           </div>
+          <div id="usage-searchbar-spacer" style="height:0;"></div>
         </div>
-        <div id="usage-searchbar-spacer" style="height:62px;"></div>
         <p id="usage-list-label" style="font-size:13px;font-weight:700;color:var(--c-text-sub);letter-spacing:0.08em;margin-bottom:12px;">最近登録した用例</p>
         <div id="usage-font-results" class="font-list" style="padding:0;"></div>
         <button id="usage-skip-font" style="display:none;">あとで決める</button>
@@ -1687,23 +1700,25 @@
     </div>
 
     <!-- 検索＋並び替え（ホームと同じピル型） -->
-    <div id="oboeaki-searchbar" style="position:fixed;top:var(--header-h);left:50%;transform:translateX(-50%) translateZ(0);-webkit-transform:translateX(-50%) translateZ(0);width:100%;max-width:var(--max-w);box-sizing:border-box;z-index:5;height:58px;display:flex;align-items:center;gap:8px;padding:0 16px;background-color:#f4f0ff;border-bottom:1px solid var(--c-border);isolation:isolate;backdrop-filter:none;-webkit-backdrop-filter:none;">
-      <div class="search-box">
-        <span class="search-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
-        <input type="text" id="oboeaki-search-input" placeholder="フォント名・メモで検索" autocomplete="off">
+    <div id="oboeaki-searchbar-wrap" style="position:relative;">
+      <div id="oboeaki-searchbar" style="box-sizing:border-box;height:58px;display:flex;align-items:center;gap:8px;padding:0 16px;background-color:#f4f0ff;border-bottom:1px solid var(--c-border);">
+        <div class="search-box">
+          <span class="search-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
+          <input type="text" id="oboeaki-search-input" placeholder="フォント名・メモで検索" autocomplete="off">
+        </div>
+        <div class="oboeaki-extra-btns">
+          <button id="oboeaki-img-toggle-btn" title="画像を全て開閉" style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;border:1.5px solid var(--c-border);background:rgba(255,255,255,0.9);cursor:pointer;flex-shrink:0;touch-action:manipulation;padding:0;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </button>
+          <button id="oboeaki-sort-btn" style="display:flex;align-items:center;gap:5px;white-space:nowrap;font-size:13px;padding:8px 14px;border-radius:50px;border:1.5px solid var(--c-border);background:rgba(255,255,255,0.9);color:var(--c-text-sub);cursor:pointer;font-family:inherit;flex-shrink:0;font-weight:600;touch-action:manipulation;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="16" y2="12"/><line x1="4" y1="18" x2="12" y2="18"/></svg>
+            <span id="oboeaki-sort-label">新着順</span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+        </div>
       </div>
-      <div class="oboeaki-extra-btns">
-        <button id="oboeaki-img-toggle-btn" title="画像を全て開閉" style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;border:1.5px solid var(--c-border);background:rgba(255,255,255,0.9);cursor:pointer;flex-shrink:0;touch-action:manipulation;padding:0;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        </button>
-        <button id="oboeaki-sort-btn" style="display:flex;align-items:center;gap:5px;white-space:nowrap;font-size:13px;padding:8px 14px;border-radius:50px;border:1.5px solid var(--c-border);background:rgba(255,255,255,0.9);color:var(--c-text-sub);cursor:pointer;font-family:inherit;flex-shrink:0;font-weight:600;touch-action:manipulation;">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="16" y2="12"/><line x1="4" y1="18" x2="12" y2="18"/></svg>
-          <span id="oboeaki-sort-label">新着順</span>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
-        </button>
-      </div>
+      <div id="oboeaki-searchbar-spacer" style="height:0;"></div>
     </div>
-    <div id="oboeaki-searchbar-spacer" style="height:58px;"></div>
 
     <!-- エントリ一覧 -->
     <div id="oboeaki-list" style="padding:0 16px 120px;overflow-y:auto;"></div>
@@ -6223,8 +6238,7 @@ function initAddUsage() {
   // step表示だけ即時（FABタップ可能な状態を最速で確保）
   $('usage-step1').style.display = 'block';
   $('usage-step2').style.display = 'none';
-  syncFixedBarHeight('usage-searchbar', 'usage-searchbar-spacer');
-  requestAnimationFrame(() => syncFixedBarHeight('usage-searchbar', 'usage-searchbar-spacer'));
+  if (typeof checkUsagePin === 'function') checkUsagePin();
   // 重い処理は次フレームへ
   setTimeout(() => {
     $('usage-font-search').value = '';
@@ -7824,29 +7838,45 @@ async function loadOboeakiEntries() {
     .sort((a,b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
 }
 
-// 固定表示の検索バーは position:fixed で実寸をとるため、
-// 直下のスペーサーに実際の高さを同期し、リストが隠れないようにする
-function syncFixedBarHeight(barId, spacerId) {
+// 検索バーは通常は普通のフロー内に置き、スクロールしてヘッダー下に
+// めり込むタイミングだけ JS で position:fixed に切り替える。
+// （常時 fixed にすると一部端末で背景装飾が透けて見える不具合を避けるため）
+function setupScrollPin(wrapId, barId, spacerId, barHeight, pinnedPadding) {
+  const wrap = document.getElementById(wrapId);
   const bar = document.getElementById(barId);
   const spacer = document.getElementById(spacerId);
-  if (!bar || !spacer) return;
-  const h = bar.getBoundingClientRect().height;
-  if (h > 0) spacer.style.height = h + 'px';
+  if (!wrap || !bar || !spacer) return () => {};
+  let pinned = false;
+  function headerH() {
+    return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-h')) || 56;
+  }
+  function check() {
+    if (wrap.offsetParent === null) return; // 非表示画面はスキップ
+    const shouldPin = wrap.getBoundingClientRect().top <= headerH() - 2;
+    if (shouldPin && !pinned) {
+      pinned = true;
+      bar.classList.add('searchbar-pinned');
+      if (pinnedPadding) bar.style.padding = pinnedPadding;
+      spacer.style.height = barHeight + 'px';
+    } else if (!shouldPin && pinned) {
+      pinned = false;
+      bar.classList.remove('searchbar-pinned');
+      if (pinnedPadding) bar.style.padding = '';
+      spacer.style.height = '0px';
+    }
+  }
+  window.addEventListener('scroll', check, { passive: true });
+  document.getElementById('app')?.addEventListener('scroll', check, { passive: true });
+  window.addEventListener('resize', check);
+  check();
+  return check;
 }
-function syncAllFixedSearchBars() {
-  syncFixedBarHeight('oboeaki-searchbar', 'oboeaki-searchbar-spacer');
-  syncFixedBarHeight('usage-searchbar', 'usage-searchbar-spacer');
-}
-window.addEventListener('resize', syncAllFixedSearchBars);
-window.addEventListener('orientationchange', () => setTimeout(syncAllFixedSearchBars, 200));
-if (document.fonts && document.fonts.ready) {
-  document.fonts.ready.then(syncAllFixedSearchBars);
-}
+const checkOboeakiPin = setupScrollPin('oboeaki-searchbar-wrap', 'oboeaki-searchbar', 'oboeaki-searchbar-spacer', 58, null);
+const checkUsagePin = setupScrollPin('usage-searchbar-wrap', 'usage-searchbar', 'usage-searchbar-spacer', 62, '0 20px');
 
 function initOboeaki() {
   loadOboeakiEntries().then(() => renderOboeakiList());
-  syncFixedBarHeight('oboeaki-searchbar', 'oboeaki-searchbar-spacer');
-  requestAnimationFrame(() => syncFixedBarHeight('oboeaki-searchbar', 'oboeaki-searchbar-spacer'));
+  checkOboeakiPin();
   if (oboeakiInited) return;
   oboeakiInited = true;
 
