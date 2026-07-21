@@ -1071,6 +1071,8 @@
     width: 100%;
     max-width: var(--max-w);
     z-index: 5;
+    background: var(--c-card);
+    border-bottom: 1px solid var(--c-border);
   }
 
   /* 覚えがき検索：タップ中はアイコン・並び替えボタンをたたんで検索欄を全幅に広げる */
@@ -1470,7 +1472,7 @@
       <button class="header-btn sub-menu-btn" title="メニュー"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
     </div>
     <div id="usage-searchbar-wrap" style="position:relative;">
-      <div id="usage-searchbar" style="box-sizing:border-box;height:62px;display:flex;align-items:center;padding:0 20px;background-color:#f4f0ff;border-bottom:1px solid var(--c-border);">
+      <div id="usage-searchbar" style="box-sizing:border-box;height:62px;display:flex;align-items:center;padding:0 20px;">
         <div class="search-box" style="margin-bottom:0;width:100%;">
           <span class="search-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
           <input type="text" id="usage-font-search" placeholder="フォント名・用例・未定で検索">
@@ -1702,7 +1704,7 @@
 
     <!-- 検索＋並び替え（ホームと同じピル型） -->
     <div id="oboeaki-searchbar-wrap" style="position:relative;">
-      <div id="oboeaki-searchbar" style="box-sizing:border-box;height:58px;display:flex;align-items:center;gap:8px;padding:0 16px;background-color:#f4f0ff;border-bottom:1px solid var(--c-border);">
+      <div id="oboeaki-searchbar" style="box-sizing:border-box;height:58px;display:flex;align-items:center;gap:8px;padding:0 16px;">
         <div class="search-box">
           <span class="search-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
           <input type="text" id="oboeaki-search-input" placeholder="フォント名・メモで検索" autocomplete="off">
