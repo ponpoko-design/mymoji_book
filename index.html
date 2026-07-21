@@ -891,8 +891,13 @@
   .suggestion-highlight { color: #9b7fe8; }
 
   /* ── Form page ── */
-  .form-page { padding: 16px 20px; background: var(--c-bg); }
+  .form-page { padding: 16px 20px; }
   .form-page h2 { font-size: 20px; font-weight: 400; margin-bottom: 20px; }
+  /* タブレット幅では.form-pageが600pxに狭まり左右に余白ができるため、
+     画面全体（フル幅）にも同じ背景を敷いて継ぎ目・透けを防ぐ */
+  #screen-add-font, #screen-edit-font, #screen-add-usage, #screen-edit-usage {
+    background: var(--c-bg);
+  }
 
   .radio-group { display: flex; gap: 10px; flex-wrap: wrap; }
   .radio-label {
